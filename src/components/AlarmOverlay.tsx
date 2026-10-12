@@ -5,7 +5,7 @@ import { cancelAlarm, dispatchAlarm, emergencyNumbers } from '@/lib/store'
 import { startTracking } from '@/lib/location'
 import { startSiren, stopSiren } from '@/lib/siren'
 import { buildSosMessage, clockTime, mapsLink, smsHref, telHref } from '@/lib/sos'
-import { PATIENT } from '@/lib/fixtures'
+import { appStore } from '@/lib/store'
 
 export function AlarmOverlay() {
   const alarm = useApp((s) => s.alarm)
@@ -133,7 +133,7 @@ function Dispatched() {
   }
 
   const resolve = () => {
-    const okMsg = `${PATIENT.name} is safe now — the Lifeline alert at ${clockTime(alarm.startedAt ?? Date.now())} is resolved. Thank you.`
+    const okMsg = `${appStore.state.profile.name} is safe now — the Lifeline alert at ${clockTime(alarm.startedAt ?? Date.now())} is resolved. Thank you.`
     if (!alarm.demo && Object.keys(done).length && smsContacts.length && confirm('Send an "I\'m OK" message to your contacts?')) {
       window.location.href = smsHref(smsContacts.map((c) => c.phone), okMsg)
     }

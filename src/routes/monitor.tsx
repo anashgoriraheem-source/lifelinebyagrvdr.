@@ -6,7 +6,7 @@ import { VitalCard } from '@/components/VitalCard'
 import { LocationCard } from '@/components/LocationCard'
 import { MotionCard } from '@/components/MotionCard'
 import { SosButton } from '@/components/SosButton'
-import { DEMO_DEVICE, PATIENT, SCENARIOS } from '@/lib/fixtures'
+import { DEMO_DEVICE, SCENARIOS } from '@/lib/fixtures'
 import { VITAL_META, classify, isStale } from '@/lib/detection'
 import { set } from '@/lib/store'
 import type { VitalKey } from '@/lib/types'
@@ -21,6 +21,7 @@ export const Route = createFileRoute('/monitor')({
 const KEYS: VitalKey[] = ['bp', 'glucose', 'hr', 'spo2']
 
 function Monitor() {
+  const PATIENT = useApp((s) => s.profile)
   const demo = useApp((s) => s.demoMode)
   const scenario = useApp((s) => s.scenario)
   const vitals = useApp((s) => s.vitals)

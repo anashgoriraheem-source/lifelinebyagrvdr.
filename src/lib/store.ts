@@ -1,7 +1,7 @@
 import { Store } from '@tanstack/react-store'
-import { DEFAULT_CONTACTS, DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY, SEED_LOG } from './fixtures'
+import { PATIENT, DEFAULT_CONTACTS, DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY, SEED_LOG } from './fixtures'
 import type {
-  AlarmReason, AlarmState, Contact, LocationFix, LocationStatus, LogEntry, Reading, Threshold, VitalKey,
+  AlarmReason, AlarmState, Profile, Contact, LocationFix, LocationStatus, LogEntry, Reading, Threshold, VitalKey,
 } from './types'
 
 export interface AppState {
@@ -18,6 +18,11 @@ export interface AppState {
   location: { status: LocationStatus; fix: LocationFix | null; error: string | null }
   assistantOpen: boolean
   device: DeviceState
+  profile: Profile
+  userId: string | null
+  userEmail: string | null
+  /** Active live-location incident in the cloud, if signed in. */
+  incident: { id: string; token: string } | null
 }
 
 export interface DeviceState {
@@ -43,6 +48,10 @@ const initial: AppState = {
   location: { status: 'idle', fix: null, error: null },
   assistantOpen: false,
   device: { status: 'idle', name: null, vitals: [] },
+  profile: { name: PATIENT.name, age: PATIENT.age, bloodType: PATIENT.bloodType, conditions: PATIENT.conditions, allergies: PATIENT.allergies, medications: PATIENT.medications },
+  userId: null,
+  userEmail: null,
+  incident: null,
 }
 
 export const appStore = new Store<AppState>(initial)
@@ -85,7 +94,7 @@ export function cancelAlarm(note: string) {
 
 /* ---- settings persistence (device-local until accounts land, see PLAN.md) ---- */
 
-type Persisted = Pick<AppState, 'contacts' | 'countryCode' | 'countdownSeconds' | 'thresholds' | 'demoMode'>
+type Persisted = Pick<AppState, 'contacts' | 'countryCode' | 'countdownSeconds' | 'thresholds' | 'demoMode' | 'profile'>
 
 export function loadSettings() {
   try {
@@ -97,7 +106,7 @@ export function loadSettings() {
   appStore.subscribe((s) => {
     const p: Persisted = {
       contacts: s.contacts, countryCode: s.countryCode, countdownSeconds: s.countdownSeconds,
-      thresholds: s.thresholds, demoMode: s.demoMode,
+      thresholds: s.thresholds, demoMode: s.demoMode, profile: s.profile,
     }
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(p))
   })

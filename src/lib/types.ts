@@ -69,3 +69,12 @@ export interface LocationFix {
   accuracy: number
   at: number
 }
+
+export interface Profile {
+  name: string
+  age: number | null
+  bloodType: string
+  conditions: string[]
+  allergies: string[]
+  medications: string[]
+}
