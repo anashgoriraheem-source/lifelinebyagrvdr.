@@ -5,21 +5,23 @@
  * Twilio arrives in a later milestone (see PLAN.md).
  */
 import type { AlarmReason, LocationFix } from './types'
-import { PATIENT } from './fixtures'
+import { appStore } from './store'
 
 export const mapsLink = (f: LocationFix) => `https://maps.google.com/?q=${f.lat.toFixed(6)},${f.lng.toFixed(6)}`
 
 export const clockTime = (t: number) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
 export function buildSosMessage(reason: AlarmReason | null, fix: LocationFix | null, opts: { test?: boolean } = {}) {
-  const p = PATIENT
+  const p = appStore.state.profile
+  const inc = appStore.state.incident
+  const track = inc && typeof window !== 'undefined' ? `${window.location.origin}/track/${inc.token}` : null
   const lines = [
     `${opts.test ? '[TEST — no action needed] ' : ''}EMERGENCY: ${p.name} (${p.age}, blood ${p.bloodType}) needs help.`,
     reason ? `Reason: ${reason.label} — ${reason.reading} at ${clockTime(Date.now())}.` : 'Reason: SOS pressed.',
     fix
       ? `Location: ${mapsLink(fix)} (±${Math.round(fix.accuracy)} m, ${clockTime(fix.at)})`
       : 'Location: unavailable — please call.',
-    `Conditions: ${p.conditions.join(', ')}. Allergies: ${p.allergies.join(', ')}. Meds: ${p.medications.join(', ')}.`,
+    `Conditions: ${p.conditions.join(', ') || 'none listed'}. Allergies: ${p.allergies.join(', ') || 'none listed'}. Meds: ${p.medications.join(', ') || 'none listed'}.`,
     'Sent via Lifeline.',
   ]
   return lines.join('\n')
