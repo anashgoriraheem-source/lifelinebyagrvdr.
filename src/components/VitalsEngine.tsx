@@ -25,7 +25,24 @@ export function VitalsEngine() {
     const id = setInterval(() => {
       const s = appStore.state
       if (!s.demoMode) {
-        if (Object.keys(s.vitals).length) set({ vitals: {}, history: { bp: [], glucose: [], hr: [], spo2: [] } })
+        // Real wearable: readings arrive over Bluetooth; run detection here and raise REAL alarms.
+        const now = Date.now()
+        const live: Partial<Record<VitalKey, VitalStatus>> = {}
+        for (const k of Object.keys(VITAL_META) as VitalKey[]) {
+          const r = s.vitals[k]
+          if (!r || now - r.receivedAt > 30_000) continue
+          live[k] = statuses[k] = classify(k, r, s.thresholds[k], statuses[k])
+        }
+        if (s.alarm.phase !== 'idle') {
+          sustained = createSustainTracker()
+          return
+        }
+        const hit = sustained(live)
+        if (hit.length) {
+          const k = hit[0]
+          const r = s.vitals[k]!
+          raiseAlarm({ type: 'vital', vital: k, label: `${VITAL_META[k].label} critical`, reading: `${formatReading(k, r)} ${r.unit}` }, { demo: false })
+        }
         return
       }
       tickNo++
