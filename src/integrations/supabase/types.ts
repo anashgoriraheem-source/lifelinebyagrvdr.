@@ -14,13 +14,145 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contacts: {
+        Row: {
+          call: boolean
+          created_at: string
+          id: string
+          name: string
+          phone: string
+          position: number
+          relationship: string
+          sms: boolean
+          user_id: string
+        }
+        Insert: {
+          call?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          phone: string
+          position?: number
+          relationship?: string
+          sms?: boolean
+          user_id: string
+        }
+        Update: {
+          call?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          position?: number
+          relationship?: string
+          sms?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      incidents: {
+        Row: {
+          accuracy: number | null
+          id: string
+          lat: number | null
+          lng: number | null
+          location_at: string | null
+          reading: string
+          reason: string
+          resolved_at: string | null
+          share_token: string
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_at?: string | null
+          reading?: string
+          reason: string
+          resolved_at?: string | null
+          share_token?: string
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_at?: string | null
+          reading?: string
+          reason?: string
+          resolved_at?: string | null
+          share_token?: string
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          allergies: string[]
+          blood_type: string
+          conditions: string[]
+          full_name: string
+          id: string
+          medications: string[]
+          updated_at: string
+        }
+        Insert: {
+          age?: number | null
+          allergies?: string[]
+          blood_type?: string
+          conditions?: string[]
+          full_name?: string
+          id: string
+          medications?: string[]
+          updated_at?: string
+        }
+        Update: {
+          age?: number | null
+          allergies?: string[]
+          blood_type?: string
+          conditions?: string[]
+          full_name?: string
+          id?: string
+          medications?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_shared_incident: {
+        Args: { _token: string }
+        Returns: {
+          accuracy: number
+          age: number
+          allergies: string[]
+          blood_type: string
+          conditions: string[]
+          full_name: string
+          lat: number
+          lng: number
+          location_at: string
+          medications: string[]
+          reading: string
+          reason: string
+          resolved_at: string
+          started_at: string
+          status: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
