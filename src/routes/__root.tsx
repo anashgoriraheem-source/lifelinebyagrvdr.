@@ -1,6 +1,7 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
+import type { QueryClient } from '@tanstack/react-query'
 
-import '../styles.css'
+import appCss from '../styles.css?url'
 import { Nav } from '@/components/Nav'
 import { AlarmOverlay } from '@/components/AlarmOverlay'
 import { Assistant } from '@/components/Assistant'
@@ -10,7 +11,7 @@ const siteName = 'Lifeline — automatic emergency response'
 const siteDescription =
   'Lifeline watches your vitals from real Bluetooth health devices, detects emergencies and falls, shares your live location and helps you reach police, ambulance and family — with a voice first-aid assistant.'
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
@@ -24,6 +25,7 @@ export const Route = createRootRoute({
       { name: 'twitter:card', content: 'summary_large_image' },
     ],
     links: [
+      { rel: 'stylesheet', href: appCss },
       { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
       { rel: 'manifest', href: '/manifest.webmanifest' },
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
