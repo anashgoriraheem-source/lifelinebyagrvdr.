@@ -10,6 +10,7 @@ import { DEMO_DEVICE, PATIENT, SCENARIOS } from '@/lib/fixtures'
 import { VITAL_META, classify, isStale } from '@/lib/detection'
 import { set } from '@/lib/store'
 import type { VitalKey } from '@/lib/types'
+import { disconnectWearable, pairWearable } from '@/core/ble/connect'
 
 export const Route = createFileRoute('/monitor')({
   ssr: false,
@@ -25,6 +26,7 @@ function Monitor() {
   const vitals = useApp((s) => s.vitals)
   const thresholds = useApp((s) => s.thresholds)
   const log = useApp((s) => s.log)
+  const device = useApp((s) => s.device)
   const now = useNow()
 
   const statuses = KEYS.map((k) => ({ k, s: isStale(k, vitals[k], now) ? 'unknown' : classify(k, vitals[k], thresholds[k]) }))
@@ -55,12 +57,28 @@ function Monitor() {
         <span className="font-semibold text-slate-900">{PATIENT.name}</span>
         {demo ? (
           <span className="flex items-center gap-1.5"><Bluetooth className="size-4 text-sky-500" />{DEMO_DEVICE.name} · <Battery className="size-4" />{DEMO_DEVICE.battery}%</span>
+        ) : device.status === 'connected' ? (
+          <span className="flex items-center gap-1.5 text-emerald-700"><Bluetooth className="size-4" />{device.name} · live ({device.vitals.join(', ')})</span>
         ) : (
-          <span className="flex items-center gap-1.5"><Bluetooth className="size-4" />No device paired · Bluetooth pairing arrives next release</span>
+          <span className="flex items-center gap-1.5"><Bluetooth className="size-4" />
+            {device.status === 'connecting' ? 'Connecting…' : device.status === 'reconnecting' ? `Reconnecting to ${device.name}…` : device.status === 'error' ? device.error : device.status === 'disconnected' ? `${device.name} disconnected` : 'No device paired'}
+          </span>
         )}
-        {!demo && (
-          <button onClick={() => set({ demoMode: true })} className="ml-auto rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-slate-300 hover:bg-white">Try demo mode</button>
-        )}
+        <div className="ml-auto flex gap-2">
+          {device.status === 'connected' || device.status === 'reconnecting' ? (
+            <button onClick={disconnectWearable} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-slate-300 hover:bg-white">Disconnect</button>
+          ) : (
+            <button
+              onClick={() => pairWearable().catch((e: Error) => e.name !== 'NotFoundError' && alert(e.message))}
+              className="flex items-center gap-1 rounded-full bg-sky-600 px-3 py-1 text-xs font-bold text-white"
+            >
+              <Bluetooth className="size-3.5" /> Connect wearable
+            </button>
+          )}
+          {!demo && device.status !== 'connected' && (
+            <button onClick={() => set({ demoMode: true })} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-slate-300 hover:bg-white">Try demo mode</button>
+          )}
+        </div>
       </div>
 
       {/* Headline + SOS */}

@@ -17,6 +17,14 @@ export interface AppState {
   log: LogEntry[]
   location: { status: LocationStatus; fix: LocationFix | null; error: string | null }
   assistantOpen: boolean
+  device: DeviceState
+}
+
+export interface DeviceState {
+  status: 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'disconnected' | 'error'
+  name: string | null
+  vitals: VitalKey[]
+  error?: string
 }
 
 const SETTINGS_KEY = 'lifeline:settings:v1'
@@ -34,6 +42,7 @@ const initial: AppState = {
   log: SEED_LOG,
   location: { status: 'idle', fix: null, error: null },
   assistantOpen: false,
+  device: { status: 'idle', name: null, vitals: [] },
 }
 
 export const appStore = new Store<AppState>(initial)
