@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Battery, Bluetooth, FlaskConical, ShieldCheck } from 'lucide-react'
 import { useApp } from '@/hooks/useApp'
@@ -36,30 +37,30 @@ function Monitor() {
   const anyData = statuses.some((x) => x.s !== 'unknown')
 
   const headline = !anyData
-    ? { t: 'No device connected', d: 'Connect a Bluetooth health device, or switch on demo mode to try Lifeline.', c: 'text-slate-900' }
+    ? { t: 'No device connected', d: 'Connect a Bluetooth health device, or switch on demo mode to try Lifeline.', c: 'text-foreground' }
     : crit.length
-      ? { t: `${VITAL_META[crit[0].k].label} critical`, d: 'Alarm triggers after 3 s sustained beyond your limit.', c: 'text-rose-600' }
+      ? { t: `${VITAL_META[crit[0].k].label} critical`, d: 'Alarm triggers after 3 s sustained beyond your limit.', c: 'text-critical' }
       : warn.length
-        ? { t: `Watching ${VITAL_META[warn[0].k].label.toLowerCase()}`, d: 'Close to your limit. No alarm yet.', c: 'text-amber-700' }
-        : { t: 'All vitals stable', d: 'Readings every second. Alarm after 3 s sustained critical value or any fall / jolt.', c: 'text-slate-900' }
+        ? { t: `Watching ${VITAL_META[warn[0].k].label.toLowerCase()}`, d: 'Close to your limit. No alarm yet.', c: 'text-warning' }
+        : { t: 'Available readings in range', d: 'Only readings your connected device provides are shown. Keep this page open to monitor.', c: 'text-foreground' }
 
   return (
     <main className="mx-auto max-w-6xl px-4 pb-32 pt-6">
       {demo && (
-        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl bg-amber-100 px-4 py-3 text-sm text-amber-950 ring-1 ring-amber-300">
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-lg bg-warning-soft px-4 py-3 text-sm text-warning ring-1 ring-warning-soft">
           <FlaskConical className="size-4.5 shrink-0" />
           <p className="mr-auto"><b>DEMO MODE: no real alerts.</b> Readings are simulated. Automatic alarms won't contact anyone — the SOS button always works for real.</p>
-          <button onClick={() => set({ demoMode: false, scenario: 'stable' })} className="rounded-full bg-amber-950 px-3 py-1.5 text-xs font-bold text-amber-50">Use real devices</button>
+          <Button onClick={() => set({ demoMode: false, scenario: 'stable' })} className="rounded-full bg-warning px-3 py-1.5 text-xs font-bold text-warning">Use real devices</Button>
         </div>
       )}
 
       {/* Patient + devices */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
-        <span className="font-semibold text-slate-900">{PATIENT.name}</span>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+        <span className="font-semibold text-foreground">{PATIENT.name || 'Your monitoring session'}</span>
         {demo ? (
-          <span className="flex items-center gap-1.5"><Bluetooth className="size-4 text-sky-500" />{DEMO_DEVICE.name} · <Battery className="size-4" />{DEMO_DEVICE.battery}%</span>
+          <span className="flex items-center gap-1.5"><Bluetooth className="size-4 text-primary" />{DEMO_DEVICE.name} · <Battery className="size-4" />{DEMO_DEVICE.battery}%</span>
         ) : device.status === 'connected' ? (
-          <span className="flex items-center gap-1.5 text-emerald-700"><Bluetooth className="size-4" />{device.name} · live ({device.vitals.join(', ')})</span>
+          <span className="flex items-center gap-1.5 text-success"><Bluetooth className="size-4" />{device.name} · live ({device.vitals.join(', ')})</span>
         ) : (
           <span className="flex items-center gap-1.5"><Bluetooth className="size-4" />
             {device.status === 'connecting' ? 'Connecting…' : device.status === 'reconnecting' ? `Reconnecting to ${device.name}…` : device.status === 'error' ? device.error : device.status === 'disconnected' ? `${device.name} disconnected` : 'No device paired'}
@@ -67,27 +68,27 @@ function Monitor() {
         )}
         <div className="ml-auto flex gap-2">
           {device.status === 'connected' || device.status === 'reconnecting' ? (
-            <button onClick={disconnectWearable} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-slate-300 hover:bg-white">Disconnect</button>
+            <Button onClick={disconnectWearable} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-border hover:bg-card">Disconnect</Button>
           ) : (
-            <button
+            <Button
               onClick={() => pairWearable().catch((e: Error) => e.name !== 'NotFoundError' && alert(e.message))}
-              className="flex items-center gap-1 rounded-full bg-sky-600 px-3 py-1 text-xs font-bold text-white"
+              className="flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground"
             >
               <Bluetooth className="size-3.5" /> Connect wearable
-            </button>
+            </Button>
           )}
           {!demo && device.status !== 'connected' && (
-            <button onClick={() => set({ demoMode: true })} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-slate-300 hover:bg-white">Try demo mode</button>
+            <Button onClick={() => set({ demoMode: true })} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-border hover:bg-card">Try demo mode</Button>
           )}
         </div>
       </div>
 
       {/* Headline + SOS */}
-      <section className="mt-4 flex items-center gap-6 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+      <section className="mt-6 flex flex-wrap items-center gap-6 border-y border-border py-7">
         <div className="mr-auto">
-          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400"><ShieldCheck className="size-4" /> Status</p>
-          <h1 className={`mt-2 font-display text-3xl font-extrabold tracking-tight sm:text-5xl ${headline.c}`}>{headline.t}</h1>
-          <p className="mt-2 max-w-xl text-slate-500">{headline.d}</p>
+          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-normal text-muted-foreground"><ShieldCheck className="size-4" /> Status</p>
+          <h1 className={`mt-2 font-display text-3xl font-extrabold tracking-normal sm:text-5xl ${headline.c}`}>{headline.t}</h1>
+          <p className="mt-2 max-w-xl text-muted-foreground">{headline.d}</p>
         </div>
         <SosButton />
       </section>
@@ -98,18 +99,18 @@ function Monitor() {
       </section>
 
       {demo && (
-        <section className="mt-5 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <h2 className="text-sm font-semibold text-slate-600">Simulate a reading</h2>
-          <p className="text-xs text-slate-500">Push the demo feed into danger zones to see detection, the alarm and the first-aid assistant.</p>
+        <section className="mt-5 rounded-lg bg-card p-5 shadow-sm ring-1 ring-border">
+          <h2 className="text-sm font-semibold text-muted-foreground">Simulate a reading</h2>
+          <p className="text-xs text-muted-foreground">Push the demo feed into danger zones to see detection, the alarm and the first-aid assistant.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {SCENARIOS.map((sc) => (
-              <button
+              <Button
                 key={sc.key}
                 onClick={() => set({ scenario: sc.key })}
-                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${scenario === sc.key ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${scenario === sc.key ? 'bg-secondary text-primary-foreground' : 'bg-muted text-foreground hover:bg-muted'}`}
               >
                 {sc.label}
-              </button>
+              </Button>
             ))}
           </div>
         </section>
@@ -121,26 +122,26 @@ function Monitor() {
       </section>
 
       <section className="mt-5 grid gap-4 lg:grid-cols-[1fr_1.4fr]">
-        <article className="rounded-3xl bg-slate-900 p-5 text-white shadow-sm">
-          <h2 className="text-sm font-semibold text-slate-300">Medical profile</h2>
-          <p className="mt-1 text-xs text-slate-400">Shared with contacts and responders in an emergency.</p>
+        <article className="rounded-lg bg-secondary p-5 text-primary-foreground shadow-sm">
+          <h2 className="text-sm font-semibold text-muted-foreground">Medical profile</h2>
+          <p className="mt-1 text-xs text-muted-foreground">Included in messages you choose to send.</p>
           <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
-            <div><dt className="text-xs text-slate-400">Blood type</dt><dd className="font-mono text-2xl font-bold">{PATIENT.bloodType}</dd></div>
-            <div><dt className="text-xs text-slate-400">Age</dt><dd className="font-mono text-2xl font-bold">{PATIENT.age}</dd></div>
-            <div className="col-span-2"><dt className="text-xs text-slate-400">Conditions</dt><dd>{PATIENT.conditions.join(' · ')}</dd></div>
-            <div><dt className="text-xs text-slate-400">Allergies</dt><dd className="text-rose-300">{PATIENT.allergies.join(' · ')}</dd></div>
-            <div><dt className="text-xs text-slate-400">Medications</dt><dd>{PATIENT.medications.join(' · ')}</dd></div>
+            <div><dt className="text-xs text-muted-foreground">Blood type</dt><dd className="font-mono text-2xl font-bold">{PATIENT.bloodType || '—'}</dd></div>
+            <div><dt className="text-xs text-muted-foreground">Age</dt><dd className="font-mono text-2xl font-bold">{PATIENT.age ?? '—'}</dd></div>
+            <div className="col-span-2"><dt className="text-xs text-muted-foreground">Conditions</dt><dd>{PATIENT.conditions.join(' · ') || 'Not entered'}</dd></div>
+            <div><dt className="text-xs text-muted-foreground">Allergies</dt><dd className="text-critical">{PATIENT.allergies.join(' · ') || 'Not entered'}</dd></div>
+            <div><dt className="text-xs text-muted-foreground">Medications</dt><dd>{PATIENT.medications.join(' · ') || 'Not entered'}</dd></div>
           </dl>
-          <Link to="/contacts" className="mt-5 inline-block text-xs font-semibold text-sky-300 hover:underline">Emergency contacts →</Link>
+          <Link to="/contacts" className="mt-5 inline-block text-xs font-semibold text-primary hover:underline">Emergency contacts →</Link>
         </article>
-        <article className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <h2 className="text-sm font-semibold text-slate-600">Activity log</h2>
-          <ul className="mt-3 max-h-72 divide-y divide-slate-100 overflow-y-auto">
+        <article className="rounded-lg bg-card p-5 shadow-sm ring-1 ring-border">
+          <h2 className="text-sm font-semibold text-muted-foreground">Activity log</h2>
+          <ul className="mt-3 max-h-72 divide-y divide-border overflow-y-auto">
             {log.map((l) => (
               <li key={l.id} className="flex gap-3 py-2.5 text-sm">
-                <span className={`mt-1.5 size-2 shrink-0 rounded-full ${l.kind === 'alarm' || l.kind === 'sos' ? 'bg-rose-500' : l.kind === 'cancel' ? 'bg-amber-500' : l.kind === 'location' ? 'bg-sky-500' : 'bg-slate-300'}`} />
-                <span className="mr-auto text-slate-700">{l.text}</span>
-                <time className="shrink-0 text-xs text-slate-400">{formatWhen(l.at, now)}</time>
+                <span className={`mt-1.5 size-2 shrink-0 rounded-full ${l.kind === 'alarm' || l.kind === 'sos' ? 'bg-destructive' : l.kind === 'cancel' ? 'bg-warning' : l.kind === 'location' ? 'bg-primary' : 'bg-muted'}`} />
+                <span className="mr-auto text-foreground">{l.text}</span>
+                <time className="shrink-0 text-xs text-muted-foreground">{formatWhen(l.at, now)}</time>
               </li>
             ))}
           </ul>

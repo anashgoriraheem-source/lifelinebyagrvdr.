@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { Move3d } from 'lucide-react'
 import { useMotion } from '@/hooks/useMotion'
 import { addLog, raiseAlarm, set } from '@/lib/store'
@@ -15,34 +16,34 @@ export function MotionCard() {
   const pct = mag == null ? 0 : Math.min(100, (mag / (4 * 9.81)) * 100)
 
   return (
-    <article className="flex flex-col rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <article className="flex flex-col rounded-lg bg-card p-5 shadow-sm ring-1 ring-border">
       <div className="flex items-center gap-2">
-        <span className="grid size-8 place-items-center rounded-xl bg-violet-50 text-violet-600"><Move3d className="size-4" /></span>
-        <h3 className="mr-auto text-sm font-semibold text-slate-600">Fall & jolt sensor</h3>
-        <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ring-1 ${motion.permission === 'granted' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-amber-50 text-amber-800 ring-amber-200'}`}>
+        <span className="grid size-8 place-items-center rounded-lg bg-accent text-primary"><Move3d className="size-4" /></span>
+        <h3 className="mr-auto text-sm font-semibold text-muted-foreground">Fall & jolt sensor</h3>
+        <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ring-1 ${motion.permission === 'granted' ? 'bg-success-soft text-success ring-success-soft' : 'bg-warning-soft text-warning ring-warning-soft'}`}>
           {motion.permission === 'granted' ? (motion.checking ? `Checking ${motion.checking}s` : 'Watching') : motion.permission === 'unsupported' ? 'No sensor' : motion.permission === 'denied' ? 'Blocked' : 'Needs access'}
         </span>
       </div>
       <div className="mt-4 flex items-baseline gap-1.5">
-        <span className="font-mono text-4xl font-bold tabular text-slate-900">{mag == null ? '—' : mag.toFixed(1)}</span>
-        <span className="text-sm text-slate-400">m/s² · rest ≈ 9.8</span>
+        <span className="font-mono text-4xl font-bold tabular text-foreground">{mag == null ? '—' : mag.toFixed(1)}</span>
+        <span className="text-sm text-muted-foreground">m/s² · rest ≈ 9.8</span>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full bg-violet-500 transition-[width] duration-150" style={{ width: `${pct}%` }} />
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+        <div className="h-full rounded-full bg-primary transition-[width] duration-150" style={{ width: `${pct}%` }} />
       </div>
-      <p className="mt-3 text-xs leading-relaxed text-slate-500">
+      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
         Detects free-fall → impact → 10 s of stillness, and violent jolts. Works while this page is open on your phone.
       </p>
       <div className="mt-4 flex gap-2">
         {motion.permission !== 'granted' && (
-          <button onClick={motion.enable} disabled={motion.permission === 'unsupported'} className="rounded-full bg-slate-900 px-3.5 py-2 text-xs font-bold text-white disabled:opacity-40">
+          <Button onClick={motion.enable} disabled={motion.permission === 'unsupported'} className="rounded-full bg-secondary px-3.5 py-2 text-xs font-bold text-primary-foreground disabled:opacity-40">
             Enable motion sensor
-          </button>
+          </Button>
         )}
         {demo && (
-          <button onClick={() => set({ scenario: 'fall' })} className="rounded-full px-3.5 py-2 text-xs font-bold text-slate-700 ring-1 ring-slate-300">
+          <Button onClick={() => set({ scenario: 'fall' })} className="rounded-full px-3.5 py-2 text-xs font-bold text-foreground ring-1 ring-border">
             Simulate fall
-          </button>
+          </Button>
         )}
       </div>
     </article>

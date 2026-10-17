@@ -48,16 +48,16 @@ export function SosButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
         if (e.key === 'Enter' || e.key === ' ') raiseAlarm({ type: 'sos', label: 'SOS pressed', reading: 'manual panic button' }, { demo: false, immediate: true })
       }}
       aria-label="SOS — press and hold to call for help"
-      className={`relative ${dim} shrink-0 select-none touch-none rounded-full bg-rose-600 text-white shadow-xl shadow-rose-600/40 transition active:scale-95`}
+      className={`relative ${dim} shrink-0 select-none touch-none rounded-full bg-destructive text-primary-foreground shadow-sm shadow-surface-shadow/40 transition active:scale-95`}
     >
-      <span className="pointer-events-none absolute inset-0 rounded-full bg-rose-500 animate-ring" />
+      <span className="pointer-events-none absolute inset-0 rounded-full bg-destructive animate-ring" />
       <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 -rotate-90">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="white" strokeOpacity={0.25} strokeWidth="4" />
-        <circle cx="50" cy="50" r={r} fill="none" stroke="white" strokeWidth="4" strokeDasharray={c} strokeDashoffset={c * (1 - progress)} strokeLinecap="round" />
+        <circle cx="50" cy="50" r={r} fill="none" stroke="currentColor" strokeOpacity={0.25} strokeWidth="4" />
+        <circle cx="50" cy="50" r={r} fill="none" stroke="currentColor" strokeWidth="4" strokeDasharray={c} strokeDashoffset={c * (1 - progress)} strokeLinecap="round" />
       </svg>
       <span className="relative flex flex-col items-center leading-none">
-        <span className={`font-display font-extrabold tracking-wide ${size === 'lg' ? 'text-3xl' : 'text-lg'}`}>SOS</span>
-        {size === 'lg' && <span className="mt-1 text-[10px] font-semibold uppercase tracking-widest opacity-80">Hold</span>}
+        <span className={`font-display font-extrabold tracking-normal ${size === 'lg' ? 'text-3xl' : 'text-lg'}`}>SOS</span>
+        {size === 'lg' && <span className="mt-1 text-[10px] font-semibold uppercase tracking-normal opacity-80">Hold</span>}
       </span>
     </button>
   )
