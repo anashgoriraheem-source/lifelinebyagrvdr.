@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, HeartPulse, Mic, MicOff, Phone, RotateCcw, Send, Sparkles, Square, Volume2, VolumeX, X, Play, Siren, MapPin, Share2 } from 'lucide-react'
 import { useApp } from '@/hooks/useApp'
@@ -24,7 +25,7 @@ export function Assistant() {
     {
       id: seq++,
       role: 'assistant',
-      text: 'Hi, I\'m your Lifeline assistant. Ask for first-aid steps ("someone is choking"), your status or location, or say "SOS". Tap the mic to talk.',
+      text: 'How can I help? Tell me what is happening, or ask about your readings.',
     },
   ])
   const [input, setInput] = useState('')
@@ -84,44 +85,44 @@ export function Assistant() {
   return (
     <>
       {!open && alarmPhase !== 'countdown' && (
-        <button
+        <Button
           onClick={() => set({ assistantOpen: true })}
-          className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-slate-900 py-3 pl-4 pr-5 font-semibold text-white shadow-2xl shadow-slate-900/30 transition hover:-translate-y-0.5"
+          className="assistant-launch fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-secondary py-3 px-4 font-semibold text-foreground shadow-sm shadow-surface-shadow/30 transition hover:-translate-y-0.5"
         >
-          <Sparkles className="size-5 text-rose-400" /> First-aid assistant
-        </button>
+          <Sparkles className="size-5 text-primary" /> First aid
+        </Button>
       )}
       {open && alarmPhase !== 'countdown' && (
         <section
           aria-label="Lifeline assistant"
-          className={`fixed inset-x-2 bottom-2 z-50 flex flex-col ${alarmPhase !== 'idle' ? 'max-h-[46dvh] sm:max-h-[min(720px,calc(100dvh-1rem))]' : 'max-h-[min(720px,calc(100dvh-1rem))]'} overflow-hidden rounded-3xl border bg-white shadow-2xl sm:inset-x-auto sm:bottom-5 sm:right-5 sm:w-[420px] ${alarmPhase !== 'idle' ? 'border-rose-300 ring-4 ring-rose-500/30' : 'border-slate-200'}`}
+          className={`assistant-panel fixed inset-x-2 bottom-2 z-50 flex flex-col ${alarmPhase !== 'idle' ? 'max-h-[46dvh] sm:h-[min(720px,calc(100dvh-1rem))]' : 'h-[min(720px,calc(100dvh-1rem))]'} overflow-hidden rounded-lg border bg-card shadow-sm sm:inset-x-auto sm:bottom-5 sm:right-5 sm:w-[420px] ${alarmPhase !== 'idle' ? 'border-destructive ring-4 ring-destructive/30' : 'border-border'}`}
         >
-          <header className={`flex items-center gap-2 px-4 py-3 ${alarmPhase !== 'idle' ? 'bg-rose-600 text-white' : 'bg-slate-900 text-white'}`}>
+          <header className={`flex items-center gap-2 px-4 py-3 ${alarmPhase !== 'idle' ? 'bg-destructive text-primary-foreground' : 'bg-secondary text-primary-foreground'}`}>
             <HeartPulse className="size-5" />
             <div className="mr-auto leading-tight">
               <p className="font-display font-bold">{alarmPhase !== 'idle' ? 'Emergency guidance' : 'Lifeline assistant'}</p>
-              <p className="text-[11px] opacity-75">Works offline · voice guided</p>
+              <p className="text-[11px] opacity-75">On-device guidance · not generative AI</p>
             </div>
-            <button
+            <Button
               onClick={() => (voiceOn ? (speech.stopSpeaking(), setVoiceOn(false)) : setVoiceOn(true))}
               disabled={!speech.supported.tts}
               title={voiceOn ? 'Voice replies on' : 'Voice replies off'}
-              className="grid size-9 place-items-center rounded-full hover:bg-white/15 disabled:opacity-40"
+              className="grid size-9 place-items-center rounded-full hover:bg-card/15 disabled:opacity-40"
             >
               {voiceOn ? <Volume2 className="size-4.5" /> : <VolumeX className="size-4.5" />}
-            </button>
-            <button onClick={() => set({ assistantOpen: false })} className="grid size-9 place-items-center rounded-full hover:bg-white/15" aria-label="Close assistant">
+            </Button>
+            <Button onClick={() => set({ assistantOpen: false })} className="grid size-9 place-items-center rounded-full hover:bg-card/15" aria-label="Close assistant">
               <X className="size-4.5" />
-            </button>
+            </Button>
           </header>
 
-          <div ref={scroller} className="flex-1 space-y-3 overflow-y-auto bg-slate-50 px-4 py-4">
+          <div ref={scroller} className="flex-1 space-y-3 overflow-y-auto bg-background px-4 py-4">
             {msgs.map((m) =>
               m.role === 'user' ? (
-                <p key={m.id} className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-slate-900 px-3.5 py-2 text-sm text-white">{m.text}</p>
+                <p key={m.id} className="ml-auto w-fit max-w-[85%] rounded-lg rounded-br-md bg-secondary px-3.5 py-2 text-sm text-primary-foreground">{m.text}</p>
               ) : (
                 <div key={m.id} className="max-w-[92%] space-y-2">
-                  <p className="w-fit whitespace-pre-line rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm ring-1 ring-slate-200">{m.text}</p>
+                  <p className="w-fit whitespace-pre-line rounded-lg rounded-bl-md bg-card px-3.5 py-2.5 text-sm text-foreground shadow-sm ring-1 ring-border">{m.text}</p>
                   {m.guide && active?.guide.id === m.guide.id && m.id === lastGuideMsg(msgs) && (
                     <GuidePlayer guide={active.guide} step={active.step} setStep={(step) => setActive({ guide: active.guide, step })} speech={speech} />
                   )}
@@ -137,12 +138,12 @@ export function Assistant() {
             )}
           </div>
 
-          <div className="border-t border-slate-200 bg-white px-3 pb-3 pt-2">
+          <div className="border-t border-border bg-card px-3 pb-3 pt-2">
             <div className="-mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1 pb-1">
               {QUICK_CHIPS.map((c) => (
-                <button key={c} onClick={() => ask(c)} className="shrink-0 rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:border-slate-400">
+                <Button key={c} onClick={() => ask(c)} className="shrink-0 rounded-full border border-border px-3 py-1 text-xs font-medium text-foreground hover:border-border">
                   {c}
-                </button>
+                </Button>
               ))}
             </div>
             <form
@@ -152,26 +153,26 @@ export function Assistant() {
               }}
               className="flex items-center gap-2"
             >
-              <button
+              <Button
                 type="button"
                 disabled={!speech.supported.stt}
                 onClick={() => (speech.listening ? speech.stopListening() : speech.listen((t) => ask(t, true)))}
                 title={speech.supported.stt ? 'Speak' : 'Voice input is not supported in this browser'}
-                className={`grid size-11 shrink-0 place-items-center rounded-full transition disabled:opacity-40 ${speech.listening ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                className={`grid size-11 shrink-0 place-items-center rounded-full transition disabled:opacity-40 ${speech.listening ? 'bg-destructive text-primary-foreground' : 'bg-muted text-foreground hover:bg-muted'}`}
               >
                 {speech.listening ? <MicOff className="size-5" /> : <Mic className="size-5" />}
-              </button>
+              </Button>
               <input
                 value={speech.listening ? speech.interim || 'Listening…' : input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder='Try "someone is choking"'
-                className="h-11 min-w-0 flex-1 rounded-full bg-slate-100 px-4 text-sm outline-none focus:ring-2 focus:ring-slate-300"
+                aria-label="Message the first-aid assistant" placeholder='Describe what is happening…'
+                className="h-11 min-w-0 flex-1 rounded-full bg-muted px-4 text-sm outline-none focus:ring-2 focus:ring-border"
               />
-              <button type="submit" className="grid size-11 shrink-0 place-items-center rounded-full bg-slate-900 text-white" aria-label="Send">
+              <Button type="submit" className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary text-primary-foreground" aria-label="Send">
                 <Send className="size-4.5" />
-              </button>
+              </Button>
             </form>
-            <p className="mt-2 text-center text-[10.5px] leading-snug text-slate-500">
+            <p className="mt-2 text-center text-xs leading-snug text-muted-foreground">
               Not a doctor or a medical device. In an emergency, always call your local emergency number.
             </p>
           </div>
@@ -185,11 +186,11 @@ const lastGuideMsg = (msgs: Msg[]) => [...msgs].reverse().find((m) => m.guide)?.
 
 function ActionChip({ a, onRun }: { a: Action; onRun: (a: Action) => void }) {
   const base = 'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition'
-  if (a.kind === 'call') return <button onClick={() => onRun(a)} className={`${base} bg-rose-600 text-white hover:bg-rose-700`}><Phone className="size-3.5" />{a.label}</button>
-  if (a.kind === 'start-sos') return <button onClick={() => onRun(a)} className={`${base} bg-rose-100 text-rose-800 ring-1 ring-rose-300 hover:bg-rose-200`}><Siren className="size-3.5" />Yes, start SOS</button>
-  if (a.kind === 'open-guide') return <button onClick={() => onRun(a)} className={`${base} bg-white text-slate-700 ring-1 ring-slate-300 hover:ring-slate-500`}>{guideById(a.id)?.title}</button>
-  if (a.kind === 'start-location') return <button onClick={() => onRun(a)} className={`${base} bg-sky-100 text-sky-800`}><MapPin className="size-3.5" />Turn on location</button>
-  return <button onClick={() => onRun(a)} className={`${base} bg-sky-100 text-sky-800`}><Share2 className="size-3.5" />Share location</button>
+  if (a.kind === 'call') return <Button onClick={() => onRun(a)} className={`${base} bg-destructive text-primary-foreground hover:bg-destructive`}><Phone className="size-3.5" />{a.label}</Button>
+  if (a.kind === 'start-sos') return <Button onClick={() => onRun(a)} className={`${base} bg-critical-soft text-critical ring-1 ring-destructive hover:bg-critical-soft`}><Siren className="size-3.5" />Yes, start SOS</Button>
+  if (a.kind === 'open-guide') return <Button onClick={() => onRun(a)} className={`${base} bg-card text-foreground ring-1 ring-border hover:ring-border`}>{guideById(a.id)?.title}</Button>
+  if (a.kind === 'start-location') return <Button onClick={() => onRun(a)} className={`${base} bg-accent text-primary`}><MapPin className="size-3.5" />Turn on location</Button>
+  return <Button onClick={() => onRun(a)} className={`${base} bg-accent text-primary`}><Share2 className="size-3.5" />Share location</Button>
 }
 
 const COMMANDS = { next: /\b(next|done|okay|ok|continue)\b/, back: /\b(back|previous)\b/, repeat: /\b(repeat|again|what)\b/, stop: /\b(stop|pause|quiet)\b/ }
@@ -237,46 +238,46 @@ function GuidePlayer({ guide, step, setStep, speech }: { guide: Guide; step: num
   const go = (i: number) => (playing ? say(i) : setStep(i))
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-      <div className="flex items-center gap-2 border-b border-slate-100 px-3.5 py-2.5">
+    <div className="overflow-hidden rounded-lg bg-card shadow-sm ring-1 ring-border">
+      <div className="flex items-center gap-2 border-b border-border px-3.5 py-2.5">
         <p className="mr-auto font-display text-sm font-bold">{guide.title}</p>
-        {guide.call === 'always' && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose-700">Call now</span>}
+        {guide.call === 'always' && <span className="rounded-full bg-critical-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-normal text-critical">Call now</span>}
       </div>
       <ol className="space-y-1 px-2 py-2">
         {guide.steps.map((s, i) => (
           <li key={i}>
-            <button
+            <Button
               onClick={() => go(i)}
-              className={`flex w-full gap-2.5 rounded-xl px-2 py-1.5 text-left text-[13px] leading-snug transition ${i === step ? 'bg-rose-50 text-slate-900 ring-1 ring-rose-200' : i < step ? 'text-slate-400' : 'text-slate-600 hover:bg-slate-50'}`}
+              className={`flex w-full gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px] leading-snug transition ${i === step ? 'bg-critical-soft text-foreground ring-1 ring-destructive' : i < step ? 'text-muted-foreground' : 'text-muted-foreground hover:bg-background'}`}
             >
-              <span className={`mt-px grid size-5 shrink-0 place-items-center rounded-full text-[10px] font-bold ${i === step ? 'bg-rose-600 text-white' : 'bg-slate-100'}`}>{i + 1}</span>
+              <span className={`mt-px grid size-5 shrink-0 place-items-center rounded-full text-[10px] font-bold ${i === step ? 'bg-destructive text-primary-foreground' : 'bg-muted'}`}>{i + 1}</span>
               {s}
-            </button>
+            </Button>
           </li>
         ))}
       </ol>
       {guide.avoid && (
-        <div className="mx-3 mb-2 rounded-xl bg-amber-50 px-3 py-2 text-xs text-amber-900">
+        <div className="mx-3 mb-2 rounded-lg bg-warning-soft px-3 py-2 text-xs text-warning">
           {guide.avoid.map((a) => <p key={a}>⚠ {a}</p>)}
         </div>
       )}
-      <div className="flex items-center gap-1.5 border-t border-slate-100 bg-slate-50 px-2.5 py-2">
-        <button onClick={() => go(Math.max(0, step - 1))} className="grid size-9 place-items-center rounded-full hover:bg-slate-200" aria-label="Previous step"><ChevronLeft className="size-4.5" /></button>
+      <div className="flex items-center gap-1.5 border-t border-border bg-background px-2.5 py-2">
+        <Button onClick={() => go(Math.max(0, step - 1))} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Previous step"><ChevronLeft className="size-4.5" /></Button>
         {playing ? (
-          <button onClick={() => { setPlaying(false); playingRef.current = false; gen.current++; speech.stopSpeaking(); speech.stopListening() }} className="flex items-center gap-1.5 rounded-full bg-slate-900 px-3.5 py-2 text-xs font-bold text-white">
+          <Button onClick={() => { setPlaying(false); playingRef.current = false; gen.current++; speech.stopSpeaking(); speech.stopListening() }} className="flex items-center gap-1.5 rounded-full bg-secondary px-3.5 py-2 text-xs font-bold text-primary-foreground">
             <Square className="size-3.5" /> {speech.listening ? 'Listening… say "next"' : 'Stop'}
-          </button>
+          </Button>
         ) : (
-          <button disabled={!speech.supported.tts} onClick={() => { setPlaying(true); playingRef.current = true; say(step) }} className="flex items-center gap-1.5 rounded-full bg-rose-600 px-3.5 py-2 text-xs font-bold text-white disabled:opacity-40">
+          <Button disabled={!speech.supported.tts} onClick={() => { setPlaying(true); playingRef.current = true; say(step) }} className="flex items-center gap-1.5 rounded-full bg-destructive px-3.5 py-2 text-xs font-bold text-primary-foreground disabled:opacity-40">
             <Play className="size-3.5" /> Read aloud
-          </button>
+          </Button>
         )}
-        <button onClick={() => go(step)} className="grid size-9 place-items-center rounded-full hover:bg-slate-200" aria-label="Repeat step"><RotateCcw className="size-4" /></button>
-        <button onClick={() => go(Math.min(total - 1, step + 1))} className="grid size-9 place-items-center rounded-full hover:bg-slate-200" aria-label="Next step"><ChevronRight className="size-4.5" /></button>
+        <Button onClick={() => go(step)} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Repeat step"><RotateCcw className="size-4" /></Button>
+        <Button onClick={() => go(Math.min(total - 1, step + 1))} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Next step"><ChevronRight className="size-4.5" /></Button>
         {guide.metronome && (
-          <button onClick={() => setBeat((b) => !b)} className={`ml-auto rounded-full px-3 py-2 text-xs font-bold ${beat ? 'bg-rose-600 text-white animate-pulse' : 'bg-white ring-1 ring-slate-300'}`}>
+          <Button onClick={() => setBeat((b) => !b)} className={`ml-auto rounded-full px-3 py-2 text-xs font-bold ${beat ? 'bg-destructive text-primary-foreground animate-pulse' : 'bg-card ring-1 ring-border'}`}>
             {beat ? 'Beat on · 110/min' : 'CPR beat'}
-          </button>
+          </Button>
         )}
       </div>
     </div>

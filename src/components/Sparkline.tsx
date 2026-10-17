@@ -1,5 +1,6 @@
+import { Button } from '@/components/ui/button'
 export function Sparkline({ data, color = 'currentColor', height = 36 }: { data: number[]; color?: string; height?: number }) {
-  if (data.length < 2) return <div style={{ height }} className="rounded bg-slate-100/60" />
+  if (data.length < 2) return <div style={{ height }} className="rounded bg-muted/60" />
   const w = 120
   const min = Math.min(...data)
   const max = Math.max(...data)

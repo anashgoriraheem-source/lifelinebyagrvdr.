@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { Activity, Droplet, Gauge, Wind } from 'lucide-react'
 import { useApp } from '@/hooks/useApp'
 import { useNow } from '@/hooks/useNow'
@@ -8,10 +9,10 @@ import { Sparkline } from './Sparkline'
 const ICON = { bp: Gauge, glucose: Droplet, hr: Activity, spo2: Wind }
 
 const STATUS: Record<VitalStatus, { label: string; badge: string; text: string; line: string }> = {
-  normal: { label: 'Normal', badge: 'bg-emerald-50 text-emerald-700 ring-emerald-200', text: 'text-slate-900', line: '#10b981' },
-  warning: { label: 'Watch', badge: 'bg-amber-50 text-amber-800 ring-amber-200', text: 'text-amber-700', line: '#f59e0b' },
-  critical: { label: 'Critical', badge: 'bg-rose-600 text-white ring-rose-600', text: 'text-rose-600', line: '#e11d48' },
-  unknown: { label: 'No data', badge: 'bg-slate-100 text-slate-500 ring-slate-200', text: 'text-slate-300', line: '#94a3b8' },
+  normal: { label: 'Normal', badge: 'bg-success-soft text-success ring-success-soft', text: 'text-foreground', line: 'var(--success)' },
+  warning: { label: 'Watch', badge: 'bg-warning-soft text-warning ring-warning-soft', text: 'text-warning', line: 'var(--warning)' },
+  critical: { label: 'Critical', badge: 'bg-destructive text-primary-foreground ring-destructive', text: 'text-critical', line: 'var(--critical)' },
+  unknown: { label: 'No data', badge: 'bg-muted text-muted-foreground ring-border', text: 'text-muted-foreground', line: 'var(--muted-foreground)' },
 }
 
 export function VitalCard({ k, delay = 0 }: { k: VitalKey; delay?: number }) {
@@ -32,23 +33,23 @@ export function VitalCard({ k, delay = 0 }: { k: VitalKey; delay?: number }) {
   return (
     <article
       style={{ animationDelay: `${delay}ms` }}
-      className={`animate-fade-up relative flex flex-col rounded-3xl bg-white p-5 shadow-sm ring-1 transition ${status === 'critical' ? 'ring-2 ring-rose-500 shadow-rose-200' : 'ring-slate-200'}`}
+      className={`animate-fade-up relative flex flex-col rounded-lg bg-card p-5 shadow-sm ring-1 transition ${status === 'critical' ? 'ring-2 ring-destructive shadow-surface-shadow' : 'ring-border'}`}
     >
       <div className="flex items-center gap-2">
-        <span className="grid size-8 place-items-center rounded-xl bg-slate-100 text-slate-600"><Icon className="size-4" /></span>
-        <h3 className="mr-auto text-sm font-semibold text-slate-600">{meta.label}</h3>
+        <span className="grid size-8 place-items-center rounded-lg bg-muted text-muted-foreground"><Icon className="size-4" /></span>
+        <h3 className="mr-auto text-sm font-semibold text-muted-foreground">{meta.label}</h3>
         <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ring-1 ${st.badge}`}>{st.label}</span>
       </div>
       <div className="mt-4 flex items-baseline gap-1.5">
-        <span className={`font-mono text-5xl font-bold tracking-tight tabular ${st.text}`}>{r && !stale ? formatReading(k, r) : '—'}</span>
-        <span className="text-sm font-medium text-slate-400">{meta.unit}</span>
+        <span className={`font-mono text-4xl font-bold tracking-normal tabular ${st.text}`}>{r && !stale ? formatReading(k, r) : '—'}</span>
+        <span className="text-sm font-medium text-muted-foreground">{meta.unit}</span>
       </div>
-      <div className="mt-3 text-slate-400" style={{ color: st.line }}>
+      <div className="mt-3 text-muted-foreground" style={{ color: st.line }}>
         <Sparkline data={hist} color={st.line} />
       </div>
-      <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-500">
-        <span className={`rounded-md px-1.5 py-0.5 font-semibold ${demo ? 'bg-amber-100 text-amber-800' : source === 'Live' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>{source}</span>
-        <span className="truncate">{r ? `${r.source} · ${ago! < 2 ? 'just now' : `${ago}s ago`}` : 'No connected device provides this'}</span>
+      <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
+        <span className={`rounded-md px-1.5 py-0.5 font-semibold ${demo ? 'bg-warning-soft text-warning' : source === 'Live' ? 'bg-success-soft text-success' : 'bg-muted text-muted-foreground'}`}>{source}</span>
+        <span className="truncate">{r ? `${r.source} · ${(ago ?? 0) < 2 ? 'just now' : `${ago}s ago`}` : 'No connected device provides this'}</span>
       </div>
     </article>
   )
