@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { raiseAlarm } from '@/lib/store'
 
 const HOLD_MS = 1200
@@ -8,9 +9,12 @@ export function SosButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
   const [progress, setProgress] = useState(0)
   const raf = useRef<number | null>(null)
   const start = useRef(0)
+  useEffect(() => () => { if (raf.current) cancelAnimationFrame(raf.current) }, [])
 
   const begin = (e: React.PointerEvent) => {
     e.preventDefault()
+    if (raf.current) return
+    e.currentTarget.setPointerCapture(e.pointerId)
     navigator.vibrate?.(30)
     start.current = performance.now()
     const step = () => {
@@ -37,18 +41,18 @@ export function SosButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
   const r = 46
   const c = 2 * Math.PI * r
   return (
-    <button
+    <Button
       type="button"
       onPointerDown={begin}
       onPointerUp={end}
-      onPointerLeave={end}
+      onLostPointerCapture={end}
       onPointerCancel={end}
       onContextMenu={(e) => e.preventDefault()}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') raiseAlarm({ type: 'sos', label: 'SOS pressed', reading: 'manual panic button' }, { demo: false, immediate: true })
       }}
-      aria-label="SOS — press and hold to call for help"
-      className={`relative ${dim} shrink-0 select-none touch-none rounded-full bg-destructive text-primary-foreground shadow-sm shadow-surface-shadow/40 transition active:scale-95`}
+      aria-label="SOS — hold to open emergency actions" variant="destructive"
+      className={`relative h-auto p-0 ${dim} shrink-0 select-none touch-none rounded-full bg-destructive text-primary-foreground shadow-sm shadow-surface-shadow/40 transition active:scale-95`}
     >
       <span className="pointer-events-none absolute inset-0 rounded-full bg-destructive animate-ring" />
       <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 -rotate-90">
@@ -59,6 +63,6 @@ export function SosButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
         <span className={`font-display font-extrabold tracking-normal ${size === 'lg' ? 'text-3xl' : 'text-lg'}`}>SOS</span>
         {size === 'lg' && <span className="mt-1 text-[10px] font-semibold uppercase tracking-normal opacity-80">Hold</span>}
       </span>
-    </button>
+    </Button>
   )
 }

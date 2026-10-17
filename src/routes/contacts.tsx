@@ -11,7 +11,7 @@ import type { Contact, VitalKey } from '@/lib/types'
 
 export const Route = createFileRoute('/contacts')({
   ssr: false,
-  head: () => ({ meta: [{ title: 'Contacts & alerts · Lifeline' }] }),
+  head: () => ({ meta: [{ title: 'Contacts and alerts · Lifeline' }, { name: 'description', content: 'Manage your personal emergency contacts and alert preferences.' }, { property: 'og:title', content: 'Contacts and alerts · Lifeline' }, { property: 'og:description', content: 'Manage your personal emergency contacts and alert preferences.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }),
   component: Contacts,
 })
 
@@ -38,7 +38,7 @@ function Contacts() {
   const smsList = contacts.filter((c) => c.sms)
 
   return (
-    <main className="mx-auto max-w-4xl px-4 pb-32 pt-6">
+    <main id="main-content" className="mx-auto max-w-4xl px-4 pb-32 pt-6">
       <h1 className="font-display text-4xl font-extrabold tracking-normal">Contacts & alerts</h1>
       <p className="mt-1 text-muted-foreground">Your trusted people and emergency calling preferences.</p>
 

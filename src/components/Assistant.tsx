@@ -87,7 +87,7 @@ export function Assistant() {
       {!open && alarmPhase !== 'countdown' && (
         <Button
           onClick={() => set({ assistantOpen: true })}
-          className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-secondary py-3 px-4 font-semibold text-primary-foreground shadow-sm shadow-surface-shadow/30 transition hover:-translate-y-0.5"
+          className="assistant-launch fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-secondary py-3 px-4 font-semibold text-foreground shadow-sm shadow-surface-shadow/30 transition hover:-translate-y-0.5"
         >
           <Sparkles className="size-5 text-primary" /> First aid
         </Button>
@@ -95,7 +95,7 @@ export function Assistant() {
       {open && alarmPhase !== 'countdown' && (
         <section
           aria-label="Lifeline assistant"
-          className={`fixed inset-x-2 bottom-2 z-50 flex flex-col ${alarmPhase !== 'idle' ? 'max-h-[46dvh] sm:h-[min(720px,calc(100dvh-1rem))]' : 'h-[min(720px,calc(100dvh-1rem))]'} overflow-hidden rounded-lg border bg-card shadow-sm sm:inset-x-auto sm:bottom-5 sm:right-5 sm:w-[420px] ${alarmPhase !== 'idle' ? 'border-destructive ring-4 ring-destructive/30' : 'border-border'}`}
+          className={`assistant-panel fixed inset-x-2 bottom-2 z-50 flex flex-col ${alarmPhase !== 'idle' ? 'max-h-[46dvh] sm:h-[min(720px,calc(100dvh-1rem))]' : 'h-[min(720px,calc(100dvh-1rem))]'} overflow-hidden rounded-lg border bg-card shadow-sm sm:inset-x-auto sm:bottom-5 sm:right-5 sm:w-[420px] ${alarmPhase !== 'idle' ? 'border-destructive ring-4 ring-destructive/30' : 'border-border'}`}
         >
           <header className={`flex items-center gap-2 px-4 py-3 ${alarmPhase !== 'idle' ? 'bg-destructive text-primary-foreground' : 'bg-secondary text-primary-foreground'}`}>
             <HeartPulse className="size-5" />
