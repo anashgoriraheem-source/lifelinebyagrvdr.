@@ -47,7 +47,7 @@ function Monitor() {
   return (
     <main id="main-content" className="mx-auto max-w-6xl px-4 pb-32 pt-6">
       {demo && (
-        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-lg bg-warning-soft px-4 py-3 text-sm text-warning ring-1 ring-warning-soft">
+        <div className="mb-5 flex flex-wrap items-center gap-3 rounded-lg bg-warning-soft px-4 py-3 text-sm text-foreground ring-1 ring-warning-soft">
           <FlaskConical className="size-4.5 shrink-0" />
           <p className="mr-auto"><b>DEMO MODE: no real alerts.</b> Readings are simulated. Automatic alarms won't contact anyone — the SOS button always works for real.</p>
           <Button onClick={() => set({ demoMode: false, scenario: 'stable' })} className="rounded-full bg-warning px-3 py-1.5 text-xs font-bold text-warning">Use real devices</Button>
@@ -107,7 +107,7 @@ function Monitor() {
               <Button
                 key={sc.key}
                 onClick={() => set({ scenario: sc.key })}
-                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${scenario === sc.key ? 'bg-secondary text-primary-foreground' : 'bg-muted text-foreground hover:bg-muted'}`}
+                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${scenario === sc.key ? 'bg-secondary text-foreground' : 'bg-muted text-foreground hover:bg-muted'}`}
               >
                 {sc.label}
               </Button>
@@ -122,7 +122,7 @@ function Monitor() {
       </section>
 
       <section className="mt-5 grid gap-4 lg:grid-cols-[1fr_1.4fr]">
-        <article className="rounded-lg bg-secondary p-5 text-primary-foreground shadow-sm">
+        <article className="rounded-lg bg-secondary p-5 text-foreground shadow-sm">
           <h2 className="text-sm font-semibold text-muted-foreground">Medical profile</h2>
           <p className="mt-1 text-xs text-muted-foreground">Included in messages you choose to send.</p>
           <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">

@@ -40,7 +40,7 @@ export function LocationCard() {
         </div>
         <Button
           onClick={() => (tracking ? stopTracking() : startTracking())}
-          className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold transition ${tracking ? 'bg-primary text-primary-foreground' : 'bg-secondary text-primary-foreground hover:bg-secondary'}`}
+          className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold transition ${tracking ? 'bg-primary text-primary-foreground' : 'bg-secondary text-foreground hover:bg-secondary'}`}
         >
           {tracking ? <LocateFixed className="size-4" /> : <Crosshair className="size-4" />}
           {tracking ? 'Stop tracking' : 'Start tracking'}

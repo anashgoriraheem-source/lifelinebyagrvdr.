@@ -35,7 +35,7 @@ function Countdown({ total }: { total: number }) {
   }, [alarm.startedAt, total])
 
   return (
-    <div role="alertdialog" aria-modal="true" aria-label="Emergency countdown" aria-live="assertive" className="fixed inset-0 z-40 flex flex-col items-center justify-between overflow-y-auto bg-destructive px-6 py-10 text-primary-foreground">
+    <div role="alertdialog" aria-modal="true" aria-label="Emergency countdown" aria-live="assertive" className="fixed inset-0 z-40 flex flex-col items-center justify-between overflow-y-auto bg-destructive px-6 py-10 text-destructive-foreground">
       {alarm.demo && <DemoStrip />}
       <div className="mt-6 text-center">
         <AlertTriangle className="mx-auto size-12 animate-flash" strokeWidth={2.2} />
@@ -147,7 +147,7 @@ function Dispatched() {
   }
 
   return (
-    <div role="alertdialog" aria-modal="true" aria-label="Emergency response actions" className="fixed inset-0 z-40 overflow-y-auto bg-secondary text-primary-foreground">
+    <div role="alertdialog" aria-modal="true" aria-label="Emergency response actions" className="fixed inset-0 z-40 overflow-y-auto bg-secondary text-foreground">
       <div className="bg-destructive px-5 pb-6 pt-8">
         <div className="mx-auto max-w-2xl">
           {alarm.demo && <DemoStrip />}
@@ -164,7 +164,7 @@ function Dispatched() {
             href={alarm.demo ? undefined : telHref(n.general)}
             onClick={() => mark('call-general')}
             aria-disabled={alarm.demo}
-            className={`mt-5 flex items-center justify-center gap-3 rounded-lg bg-card py-5 text-2xl font-extrabold text-critical shadow-sm ${alarm.demo ? 'pointer-events-none opacity-60' : 'active:scale-[0.98]'}`}
+            className={`mt-5 flex items-center justify-center gap-3 rounded-lg bg-card py-5 text-2xl font-extrabold text-foreground shadow-sm ${alarm.demo ? 'pointer-events-none opacity-60' : 'active:scale-[0.98]'}`}
           >
             <Phone className="size-7" strokeWidth={2.6} /> Call emergency {n.general}
           </a>

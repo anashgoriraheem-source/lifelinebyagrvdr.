@@ -52,7 +52,7 @@ export function SosButton({ size = 'lg' }: { size?: 'lg' | 'sm' }) {
         if (e.key === 'Enter' || e.key === ' ') raiseAlarm({ type: 'sos', label: 'SOS pressed', reading: 'manual panic button' }, { demo: false, immediate: true })
       }}
       aria-label="SOS — hold to open emergency actions" variant="destructive"
-      className={`relative h-auto p-0 ${dim} shrink-0 select-none touch-none rounded-full bg-destructive text-primary-foreground shadow-sm shadow-surface-shadow/40 transition active:scale-95`}
+      className={`relative h-auto p-0 ${dim} shrink-0 select-none touch-none rounded-full bg-destructive text-destructive-foreground shadow-sm shadow-surface-shadow/40 transition active:scale-95`}
     >
       <span className="pointer-events-none absolute inset-0 rounded-full bg-destructive animate-ring" />
       <svg viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 -rotate-90">

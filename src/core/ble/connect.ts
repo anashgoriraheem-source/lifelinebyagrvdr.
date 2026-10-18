@@ -29,7 +29,7 @@ let manualDisconnect = false
 export const bluetoothSupported = () => typeof navigator !== 'undefined' && 'bluetooth' in navigator
 
 function push(key: VitalKey, r: Partial<Reading>) {
-  if (!r.value) return
+  if (r.value == null || !Number.isFinite(r.value) || r.value <= 0) return
   const now = Date.now()
   const reading: Reading = { value: r.value, value2: r.value2, unit: r.unit ?? '', source: device?.name ?? 'Wearable', measuredAt: now, receivedAt: now, quality: 'good' }
   set((s) => ({
@@ -45,7 +45,10 @@ async function subscribe(server: Server) {
       const svc = await server.getPrimaryService(s.service)
       const ch = await svc.getCharacteristic(s.char)
       ch.addEventListener('characteristicvaluechanged', () => {
-        if (ch.value) push(s.key, s.parse(new Uint8Array(ch.value.buffer)))
+        if (!ch.value) return
+        try { push(s.key, s.parse(new Uint8Array(ch.value.buffer, ch.value.byteOffset, ch.value.byteLength))) } catch {
+          set((state) => { const vitals = { ...state.vitals }; delete vitals[s.key]; return { vitals, device: { ...state.device, error: 'A device measurement could not be read. Check your device and reconnect.' } } })
+        }
       })
       await ch.startNotifications()
       found.push(s.key)
@@ -74,7 +77,7 @@ export async function pairWearable() {
     optionalServices: SERVICES.map((s) => s.service),
   })
   manualDisconnect = false
-  set({ demoMode: false, scenario: 'stable' })
+  set({ demoMode: false, scenario: 'stable', vitals: {}, history: {bp:[],hr:[],spo2:[],glucose:[]} })
   device.addEventListener('gattserverdisconnected', onDisconnected)
   try {
     await connectGatt()
@@ -87,9 +90,10 @@ export async function pairWearable() {
 async function onDisconnected() {
   if (manualDisconnect) return
   addLog('device', `${device?.name ?? 'Wearable'} disconnected — reconnecting`)
-  set((s) => ({ device: { ...s.device, status: 'reconnecting' } }))
+  set((s) => ({ device: { ...s.device, status: 'reconnecting' }, vitals: {} }))
   for (let i = 0; i < 5 && !manualDisconnect; i++) {
     await new Promise((r) => setTimeout(r, 2000 * (i + 1)))
+    if (manualDisconnect) return
     try {
       await connectGatt()
       return

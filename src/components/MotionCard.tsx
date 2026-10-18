@@ -36,7 +36,7 @@ export function MotionCard() {
       </p>
       <div className="mt-4 flex gap-2">
         {motion.permission !== 'granted' && (
-          <Button onClick={motion.enable} disabled={motion.permission === 'unsupported'} className="rounded-full bg-secondary px-3.5 py-2 text-xs font-bold text-primary-foreground disabled:opacity-40">
+          <Button onClick={motion.enable} disabled={motion.permission === 'unsupported'} className="rounded-full bg-secondary px-3.5 py-2 text-xs font-bold text-foreground disabled:opacity-40">
             Enable motion sensor
           </Button>
         )}

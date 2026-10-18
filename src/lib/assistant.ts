@@ -32,12 +32,12 @@ export function respond(input: string, s: AppState): Reply {
   const n = emergencyNumbers(s)
   const callAll: Action[] = [{ kind: 'call', number: n.general, label: `Call ${n.general}` }]
   const inAlarm = s.alarm.phase !== 'idle'
-  const prefix = inAlarm ? (s.alarm.demo ? 'Demo alert — nobody is being contacted. ' : 'Help is being contacted. ') : ''
+  const prefix = inAlarm ? (s.alarm.demo ? 'Demo alert — nobody is being contacted. ' : 'An alert is active. No call or message delivery has been confirmed. ') : ''
 
   // 1. Explicit emergency requests.
   if (has(q, 'police')) {
     return {
-      text: `${prefix}Police: ${n.police}. All-in-one emergency: ${n.general}. I can also start SOS, which prepares a message with your live location for police, ambulance and your contacts.`,
+      text: `${prefix}Police: ${n.police}. All-in-one emergency: ${n.general}. I can also start SOS, which prepares a message with your current location for police, ambulance and your contacts.`,
       actions: [{ kind: 'call', number: n.police, label: `Call police ${n.police}` }, { kind: 'start-sos' }],
     }
   }
@@ -49,7 +49,7 @@ export function respond(input: string, s: AppState): Reply {
   }
   if (has(q, 'sos', 'emergency', 'call for help', 'send alert', 'need help') || /^help( me)?[.!]*$/.test(q)) {
     return {
-      text: `${prefix}Do you want me to start SOS? It sounds the alarm, shares your live location and prepares messages for emergency services and your contacts. If life is at risk, call ${n.general} now.`,
+      text: `${prefix}Do you want me to start SOS? It sounds the alarm, prepares your location and messages for emergency services and your contacts. If life is at risk, call ${n.general} now.`,
       actions: [{ kind: 'start-sos' }, ...callAll],
     }
   }
@@ -66,7 +66,7 @@ export function respond(input: string, s: AppState): Reply {
     return {
       text: s.location.status === 'denied'
         ? 'Location access is blocked. Enable it for this site in your browser settings so SOS messages can include where you are.'
-        : "I don't have your location yet. Turn on location tracking so SOS messages include a live map link.",
+        : "I don't have your location yet. Turn on location tracking so SOS messages include a map link.",
       actions: [{ kind: 'start-location' }],
     }
   }
@@ -97,7 +97,7 @@ export function respond(input: string, s: AppState): Reply {
       const r = s.vitals[reason.vital]
       id = r ? guideFor(reason.vital, r, s.thresholds[reason.vital]) : VITAL_META[reason.vital].guide
     } else if (reason?.type === 'fall' || reason?.type === 'jolt') id = 'fall'
-    if (id) return guideReply(guideById(id)!, s, prefix)
+    if (id) { const guide = guideById(id); if (guide) return guideReply(guide, s, prefix) }
     return {
       text: `${prefix}Tell me what is happening — for example "chest pain", "choking", "low sugar" or "not breathing" — and I'll guide you step by step. If anyone's life is at risk, call ${n.general} first.`,
       actions: [{ kind: 'open-guide', id: 'cpr' }, { kind: 'open-guide', id: 'chest-pain' }, { kind: 'open-guide', id: 'low-sugar' }, ...callAll],
@@ -118,7 +118,7 @@ export function respond(input: string, s: AppState): Reply {
 
   if (has(q, 'connect', 'watch', 'bluetooth', 'pair', 'device', 'band')) {
     return {
-      text: 'Lifeline connects to devices using standard Bluetooth health profiles: heart-rate straps, watches in heart-rate broadcast mode, pulse oximeters, BP cuffs and glucometers. Use Chrome or Edge on Android or desktop; iPhone Safari does not support Web Bluetooth (the native app will). On Garmin, turn on "Broadcast Heart Rate". On Polar and Coros, enable HR sharing. Apple Watch, Galaxy Watch and Fitbit need their cloud or native connection. Device pairing is on the way in the next release.',
+      text: 'Lifeline connects to devices using standard Bluetooth health profiles: heart-rate straps, watches in heart-rate broadcast mode, pulse oximeters, BP cuffs and glucometers. Use Chrome or Edge on Android or desktop; iPhone Safari does not support Web Bluetooth ; no iOS native app is connected here. On Garmin, turn on "Broadcast Heart Rate". On Polar and Coros, enable HR sharing. Apple Watch, Galaxy Watch and Fitbit need their cloud or native connection. Open Monitor and select Connect wearable. Only measurements exposed by that device can be read.',
     }
   }
 
