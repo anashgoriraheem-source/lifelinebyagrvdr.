@@ -11,7 +11,7 @@ const ICON = { bp: Gauge, glucose: Droplet, hr: Activity, spo2: Wind }
 const STATUS: Record<VitalStatus, { label: string; badge: string; text: string; line: string }> = {
   normal: { label: 'Normal', badge: 'bg-success-soft text-success ring-success-soft', text: 'text-foreground', line: 'var(--success)' },
   warning: { label: 'Watch', badge: 'bg-warning-soft text-warning ring-warning-soft', text: 'text-warning', line: 'var(--warning)' },
-  critical: { label: 'Critical', badge: 'bg-destructive text-primary-foreground ring-destructive', text: 'text-critical', line: 'var(--critical)' },
+  critical: { label: 'Critical', badge: 'bg-destructive text-destructive-foreground ring-destructive', text: 'text-critical', line: 'var(--critical)' },
   unknown: { label: 'No data', badge: 'bg-muted text-muted-foreground ring-border', text: 'text-muted-foreground', line: 'var(--muted-foreground)' },
 }
 

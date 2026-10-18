@@ -55,7 +55,7 @@ function Contacts() {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: 'Emergency', num: n.general, icon: Siren, c: 'bg-destructive text-primary-foreground' },
+            { label: 'Emergency', num: n.general, icon: Siren, c: 'bg-destructive text-destructive-foreground' },
             { label: 'Police', num: n.police, icon: Shield, c: 'bg-muted' },
             { label: 'Ambulance', num: n.ambulance, icon: Ambulance, c: 'bg-muted' },
             { label: 'Fire', num: n.fire, icon: Flame, c: 'bg-muted' },
@@ -79,7 +79,7 @@ function Contacts() {
             <h2 className="font-display text-xl font-bold">Personal contacts</h2>
             <p className="text-sm text-muted-foreground">First in the list is your primary contact. Saved locally on this device.</p>
           </div>
-          <Button onClick={() => setEditing('new')} className="flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-sm font-bold text-primary-foreground">
+          <Button onClick={() => setEditing('new')} className="flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-sm font-bold text-foreground">
             <Plus className="size-4" /> Add
           </Button>
         </div>
@@ -91,7 +91,7 @@ function Contacts() {
         <ol className="mt-4 space-y-2">
           {contacts.map((c, i) => (
             <li key={c.id} className="flex flex-wrap items-center gap-3 rounded-lg bg-background p-3 ring-1 ring-border">
-              <span className="grid size-7 place-items-center rounded-full bg-secondary font-mono text-xs font-bold text-primary-foreground">{i + 1}</span>
+              <span className="grid size-7 place-items-center rounded-full bg-secondary font-mono text-xs font-bold text-foreground">{i + 1}</span>
               <div className="mr-auto min-w-0">
                 <p className="truncate font-semibold">{c.name}{i === 0 && <span className="ml-2 text-xs text-primary">Primary</span>}</p>
                 <p className="text-xs text-muted-foreground">{c.relationship} · <span className="font-mono">{c.phone}</span></p>
@@ -219,7 +219,7 @@ function ContactForm({ initial, onClose }: { initial: Contact | null; onClose: (
           <Toggle on={f.call} onClick={() => setF({ ...f, call: !f.call })} icon={<Phone className="size-3.5" />} label="Call" />
           <Toggle on={f.sms} onClick={() => setF({ ...f, sms: !f.sms })} icon={<MessageSquare className="size-3.5" />} label="SMS" />
         </div>
-        <Button className="mt-6 w-full rounded-lg bg-secondary py-3 font-bold text-primary-foreground">Save contact</Button>
+        <Button className="mt-6 w-full rounded-lg bg-secondary py-3 font-bold text-foreground">Save contact</Button>
       </form>
     </div>
   )

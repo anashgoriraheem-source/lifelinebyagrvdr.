@@ -97,7 +97,7 @@ export function Assistant() {
           aria-label="Lifeline assistant"
           className={`assistant-panel fixed inset-x-2 bottom-2 z-50 flex flex-col ${alarmPhase !== 'idle' ? 'max-h-[46dvh] sm:h-[min(720px,calc(100dvh-1rem))]' : 'h-[min(720px,calc(100dvh-1rem))]'} overflow-hidden rounded-lg border bg-card shadow-sm sm:inset-x-auto sm:bottom-5 sm:right-5 sm:w-[420px] ${alarmPhase !== 'idle' ? 'border-destructive ring-4 ring-destructive/30' : 'border-border'}`}
         >
-          <header className={`flex items-center gap-2 px-4 py-3 ${alarmPhase !== 'idle' ? 'bg-destructive text-primary-foreground' : 'bg-secondary text-primary-foreground'}`}>
+          <header className={`flex items-center gap-2 px-4 py-3 ${alarmPhase !== 'idle' ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-foreground'}`}>
             <HeartPulse className="size-5" />
             <div className="mr-auto leading-tight">
               <p className="font-display font-bold">{alarmPhase !== 'idle' ? 'Emergency guidance' : 'Lifeline assistant'}</p>
@@ -119,7 +119,7 @@ export function Assistant() {
           <div ref={scroller} className="flex-1 space-y-3 overflow-y-auto bg-background px-4 py-4">
             {msgs.map((m) =>
               m.role === 'user' ? (
-                <p key={m.id} className="ml-auto w-fit max-w-[85%] rounded-lg rounded-br-md bg-secondary px-3.5 py-2 text-sm text-primary-foreground">{m.text}</p>
+                <p key={m.id} className="ml-auto w-fit max-w-[85%] rounded-lg rounded-br-md bg-secondary px-3.5 py-2 text-sm text-foreground">{m.text}</p>
               ) : (
                 <div key={m.id} className="max-w-[92%] space-y-2">
                   <p className="w-fit whitespace-pre-line rounded-lg rounded-bl-md bg-card px-3.5 py-2.5 text-sm text-foreground shadow-sm ring-1 ring-border">{m.text}</p>
@@ -158,7 +158,7 @@ export function Assistant() {
                 disabled={!speech.supported.stt}
                 onClick={() => (speech.listening ? speech.stopListening() : speech.listen((t) => ask(t, true)))}
                 title={speech.supported.stt ? 'Speak' : 'Voice input is not supported in this browser'}
-                className={`grid size-11 shrink-0 place-items-center rounded-full transition disabled:opacity-40 ${speech.listening ? 'bg-destructive text-primary-foreground' : 'bg-muted text-foreground hover:bg-muted'}`}
+                className={`grid size-11 shrink-0 place-items-center rounded-full transition disabled:opacity-40 ${speech.listening ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-foreground hover:bg-muted'}`}
               >
                 {speech.listening ? <MicOff className="size-5" /> : <Mic className="size-5" />}
               </Button>
@@ -168,7 +168,7 @@ export function Assistant() {
                 aria-label="Message the first-aid assistant" placeholder='Describe what is happening…'
                 className="h-11 min-w-0 flex-1 rounded-full bg-muted px-4 text-sm outline-none focus:ring-2 focus:ring-border"
               />
-              <Button type="submit" className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary text-primary-foreground" aria-label="Send">
+              <Button type="submit" className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary text-foreground" aria-label="Send">
                 <Send className="size-4.5" />
               </Button>
             </form>
@@ -186,7 +186,7 @@ const lastGuideMsg = (msgs: Msg[]) => [...msgs].reverse().find((m) => m.guide)?.
 
 function ActionChip({ a, onRun }: { a: Action; onRun: (a: Action) => void }) {
   const base = 'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition'
-  if (a.kind === 'call') return <Button onClick={() => onRun(a)} className={`${base} bg-destructive text-primary-foreground hover:bg-destructive`}><Phone className="size-3.5" />{a.label}</Button>
+  if (a.kind === 'call') return <Button onClick={() => onRun(a)} className={`${base} bg-destructive text-destructive-foreground hover:bg-destructive`}><Phone className="size-3.5" />{a.label}</Button>
   if (a.kind === 'start-sos') return <Button onClick={() => onRun(a)} className={`${base} bg-critical-soft text-critical ring-1 ring-destructive hover:bg-critical-soft`}><Siren className="size-3.5" />Yes, start SOS</Button>
   if (a.kind === 'open-guide') return <Button onClick={() => onRun(a)} className={`${base} bg-card text-foreground ring-1 ring-border hover:ring-border`}>{guideById(a.id)?.title}</Button>
   if (a.kind === 'start-location') return <Button onClick={() => onRun(a)} className={`${base} bg-accent text-primary`}><MapPin className="size-3.5" />Turn on location</Button>
@@ -250,7 +250,7 @@ function GuidePlayer({ guide, step, setStep, speech }: { guide: Guide; step: num
               onClick={() => go(i)}
               className={`flex w-full gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px] leading-snug transition ${i === step ? 'bg-critical-soft text-foreground ring-1 ring-destructive' : i < step ? 'text-muted-foreground' : 'text-muted-foreground hover:bg-background'}`}
             >
-              <span className={`mt-px grid size-5 shrink-0 place-items-center rounded-full text-[10px] font-bold ${i === step ? 'bg-destructive text-primary-foreground' : 'bg-muted'}`}>{i + 1}</span>
+              <span className={`mt-px grid size-5 shrink-0 place-items-center rounded-full text-[10px] font-bold ${i === step ? 'bg-destructive text-destructive-foreground' : 'bg-muted'}`}>{i + 1}</span>
               {s}
             </Button>
           </li>
@@ -264,18 +264,18 @@ function GuidePlayer({ guide, step, setStep, speech }: { guide: Guide; step: num
       <div className="flex items-center gap-1.5 border-t border-border bg-background px-2.5 py-2">
         <Button onClick={() => go(Math.max(0, step - 1))} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Previous step"><ChevronLeft className="size-4.5" /></Button>
         {playing ? (
-          <Button onClick={() => { setPlaying(false); playingRef.current = false; gen.current++; speech.stopSpeaking(); speech.stopListening() }} className="flex items-center gap-1.5 rounded-full bg-secondary px-3.5 py-2 text-xs font-bold text-primary-foreground">
+          <Button onClick={() => { setPlaying(false); playingRef.current = false; gen.current++; speech.stopSpeaking(); speech.stopListening() }} className="flex items-center gap-1.5 rounded-full bg-secondary px-3.5 py-2 text-xs font-bold text-foreground">
             <Square className="size-3.5" /> {speech.listening ? 'Listening… say "next"' : 'Stop'}
           </Button>
         ) : (
-          <Button disabled={!speech.supported.tts} onClick={() => { setPlaying(true); playingRef.current = true; say(step) }} className="flex items-center gap-1.5 rounded-full bg-destructive px-3.5 py-2 text-xs font-bold text-primary-foreground disabled:opacity-40">
+          <Button disabled={!speech.supported.tts} onClick={() => { setPlaying(true); playingRef.current = true; say(step) }} className="flex items-center gap-1.5 rounded-full bg-destructive px-3.5 py-2 text-xs font-bold text-destructive-foreground disabled:opacity-40">
             <Play className="size-3.5" /> Read aloud
           </Button>
         )}
         <Button onClick={() => go(step)} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Repeat step"><RotateCcw className="size-4" /></Button>
         <Button onClick={() => go(Math.min(total - 1, step + 1))} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Next step"><ChevronRight className="size-4.5" /></Button>
         {guide.metronome && (
-          <Button onClick={() => setBeat((b) => !b)} className={`ml-auto rounded-full px-3 py-2 text-xs font-bold ${beat ? 'bg-destructive text-primary-foreground animate-pulse' : 'bg-card ring-1 ring-border'}`}>
+          <Button onClick={() => setBeat((b) => !b)} className={`ml-auto rounded-full px-3 py-2 text-xs font-bold ${beat ? 'bg-destructive text-destructive-foreground animate-pulse' : 'bg-card ring-1 ring-border'}`}>
             {beat ? 'Beat on · 110/min' : 'CPR beat'}
           </Button>
         )}

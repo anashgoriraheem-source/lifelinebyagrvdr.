@@ -1,5 +1,6 @@
 import { Store } from '@tanstack/react-store'
-import { PATIENT, DEFAULT_CONTACTS, DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY, SEED_LOG } from './fixtures'
+import { DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY } from './fixtures'
+import { persistedSettingsSchema } from './settings'
 import type {
   AlarmReason, AlarmState, Profile, Contact, LocationFix, LocationStatus, LogEntry, Reading, Threshold, VitalKey,
 } from './types'
@@ -35,20 +36,20 @@ export interface DeviceState {
 const SETTINGS_KEY = 'lifeline:settings:v1'
 
 const initial: AppState = {
-  demoMode: true,
+  demoMode: false,
   scenario: 'stable',
   vitals: {},
   history: { bp: [], glucose: [], hr: [], spo2: [] },
   thresholds: DEFAULT_THRESHOLDS,
-  contacts: DEFAULT_CONTACTS,
+  contacts: [],
   countryCode: 'IN',
   countdownSeconds: 15,
   alarm: { phase: 'idle', reason: null, startedAt: null, demo: false },
-  log: SEED_LOG,
+  log: [],
   location: { status: 'idle', fix: null, error: null },
   assistantOpen: false,
   device: { status: 'idle', name: null, vitals: [] },
-  profile: { name: PATIENT.name, age: PATIENT.age, bloodType: PATIENT.bloodType, conditions: PATIENT.conditions, allergies: PATIENT.allergies, medications: PATIENT.medications },
+  profile: { name: '', age: null, bloodType: '', conditions: [], allergies: [], medications: [] },
   userId: null,
   userEmail: null,
   incident: null,
@@ -96,18 +97,22 @@ export function cancelAlarm(note: string) {
 
 type Persisted = Pick<AppState, 'contacts' | 'countryCode' | 'countdownSeconds' | 'thresholds' | 'demoMode' | 'profile'>
 
+let unsubscribeSettings: (() => void) | null = null
 export function loadSettings() {
+  unsubscribeSettings?.()
   try {
     const raw = localStorage.getItem(SETTINGS_KEY)
-    if (raw) set(JSON.parse(raw) as Partial<Persisted>)
-  } catch {
-    /* ignore corrupt settings */
-  }
-  appStore.subscribe((s) => {
-    const p: Persisted = {
-      contacts: s.contacts, countryCode: s.countryCode, countdownSeconds: s.countdownSeconds,
-      thresholds: s.thresholds, demoMode: s.demoMode, profile: s.profile,
+    if (raw) {
+      const parsed = persistedSettingsSchema.safeParse(JSON.parse(raw))
+      if (parsed.success) set(parsed.data)
     }
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(p))
+  } catch { /* inaccessible or corrupt browser storage */ }
+  let previous = ''
+  unsubscribeSettings = appStore.subscribe((s) => {
+    const p: Persisted = { contacts: s.contacts, countryCode: s.countryCode, countdownSeconds: s.countdownSeconds, thresholds: s.thresholds, demoMode: s.demoMode, profile: s.profile }
+    const next = JSON.stringify(p)
+    if (next === previous) return
+    try { localStorage.setItem(SETTINGS_KEY, next); previous = next } catch { /* Monitoring must work without storage. */ }
   })
+  return () => { unsubscribeSettings?.(); unsubscribeSettings = null }
 }
