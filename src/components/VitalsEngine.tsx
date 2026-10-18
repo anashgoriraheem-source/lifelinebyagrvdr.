@@ -17,7 +17,7 @@ const drift = (cur: number | undefined, target: number, noise: number) => {
  */
 export function VitalsEngine() {
   useEffect(() => {
-    loadSettings()
+    const unloadSettings = loadSettings()
     let sustained = createSustainTracker()
     const statuses: Partial<Record<VitalKey, VitalStatus>> = {}
     let tickNo = 0
@@ -40,7 +40,8 @@ export function VitalsEngine() {
         const hit = sustained(live)
         if (hit.length) {
           const k = hit[0]
-          const r = s.vitals[k]!
+          const r = s.vitals[k]
+          if (!r) return
           raiseAlarm({ type: 'vital', vital: k, label: `${VITAL_META[k].label} critical`, reading: `${formatReading(k, r)} ${r.unit}` }, { demo: false })
         }
         return
@@ -67,7 +68,7 @@ export function VitalsEngine() {
         v.glucose = mk(Math.round(drift(v.glucose?.value, t.glucose, 4)), 'mg/dL')
       }
       const history = { ...s.history }
-      for (const k of Object.keys(history) as VitalKey[]) history[k] = [...history[k], v[k]!.value].slice(-RING)
+      for (const k of Object.keys(history) as VitalKey[]) { const reading = v[k]; if (reading) history[k] = [...history[k], reading.value].slice(-RING) }
       set({ vitals: v, history })
 
       for (const k of Object.keys(VITAL_META) as VitalKey[]) statuses[k] = classify(k, v[k], s.thresholds[k], statuses[k])
@@ -79,13 +80,15 @@ export function VitalsEngine() {
       const fired = sustained(statuses)
       if (fired.length) {
         const k = fired[0]
+        const reading = v[k]
+        if (!reading) return
         raiseAlarm(
-          { type: 'vital', vital: k, label: `${VITAL_META[k].label} critical`, reading: `${formatReading(k, v[k]!)} ${v[k]!.unit}` },
+          { type: 'vital', vital: k, label: `${VITAL_META[k].label} critical`, reading: `${formatReading(k, reading)} ${reading.unit}` },
           { demo: true },
         )
       }
     }, 1000)
-    return () => clearInterval(id)
+    return () => { clearInterval(id); unloadSettings() }
   }, [])
   return null
 }
