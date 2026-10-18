@@ -23,6 +23,7 @@ export function useSpeech(lang = 'en-IN') {
   const [listening, setListening] = useState(false)
   const [speaking, setSpeaking] = useState(false)
   const [interim, setInterim] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const recRef = useRef<Recognition | null>(null)
 
   useEffect(() => {
@@ -38,9 +39,10 @@ export function useSpeech(lang = 'en-IN') {
       if (!('speechSynthesis' in window)) return onEnd?.()
       window.speechSynthesis.cancel()
       const u = new SpeechSynthesisUtterance(text.replace(/https?:\/\/\S+/g, 'map link'))
-      u.lang = lang
+      const spokenLanguage = /[\u0600-\u06ff\u0900-\u097f\u0a00-\u0a7f]/u.test(text) ? lang : 'en-IN'
+      u.lang = spokenLanguage
       u.rate = 0.95
-      const voice = window.speechSynthesis.getVoices().find((v) => v.lang === lang) ?? window.speechSynthesis.getVoices().find((v) => v.lang.startsWith('en'))
+      const voice = window.speechSynthesis.getVoices().find((v) => v.lang === spokenLanguage) ?? window.speechSynthesis.getVoices().find((v) => v.lang.startsWith('en'))
       if (voice) u.voice = voice
       u.onstart = () => setSpeaking(true)
       u.onend = () => {
@@ -82,10 +84,11 @@ export function useSpeech(lang = 'en-IN') {
         }
       }
       rec.onend = () => setListening(false)
-      rec.onerror = () => setListening(false)
+      rec.onerror = (e) => { setListening(false); setError(e.error === 'not-allowed' ? 'Microphone access was denied. You can still type.' : 'Voice input failed. Try again or type your message.') }
       recRef.current = rec
       setListening(true)
-      rec.start()
+      setError(null)
+      try { rec.start() } catch { setListening(false); setError('Voice input could not start. Try again or type.') }
     },
     [lang],
   )
@@ -95,5 +98,5 @@ export function useSpeech(lang = 'en-IN') {
     setListening(false)
   }, [])
 
-  return { supported, listening, speaking, interim, speak, stopSpeaking, listen, stopListening }
+  return { supported, listening, speaking, interim, error, speak, stopSpeaking, listen, stopListening }
 }

@@ -97,9 +97,9 @@ export function cancelAlarm(note: string) {
 
 type Persisted = Pick<AppState, 'contacts' | 'countryCode' | 'countdownSeconds' | 'thresholds' | 'demoMode' | 'profile'>
 
-let unsubscribeSettings: (() => void) | null = null
+let unsubscribeSettings: { unsubscribe: () => void } | null = null
 export function loadSettings() {
-  unsubscribeSettings?.()
+  unsubscribeSettings?.unsubscribe()
   try {
     const raw = localStorage.getItem(SETTINGS_KEY)
     if (raw) {
@@ -114,5 +114,5 @@ export function loadSettings() {
     if (next === previous) return
     try { localStorage.setItem(SETTINGS_KEY, next); previous = next } catch { /* Monitoring must work without storage. */ }
   })
-  return () => { unsubscribeSettings?.(); unsubscribeSettings = null }
+  return () => { unsubscribeSettings?.unsubscribe(); unsubscribeSettings = null }
 }

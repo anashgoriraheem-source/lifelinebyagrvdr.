@@ -9,6 +9,7 @@ import { appStore, raiseAlarm, set } from '@/lib/store'
 import { startTracking } from '@/lib/location'
 import { mapsLink, telHref } from '@/lib/sos'
 import { tick } from '@/lib/siren'
+import { ASSISTANT_LANGUAGES, normaliseAssistantRequest, type AssistantLanguage } from '@/lib/assistantLanguages'
 
 interface Msg extends Reply {
   id: number
@@ -30,8 +31,10 @@ export function Assistant() {
   ])
   const [input, setInput] = useState('')
   const [voiceOn, setVoiceOn] = useState(false)
+  const [language, setLanguage] = useState<AssistantLanguage>('en')
   const [active, setActive] = useState<{ guide: Guide; step: number } | null>(null)
-  const speech = useSpeech()
+  const locale = ASSISTANT_LANGUAGES.find(l => l.code === language) ?? ASSISTANT_LANGUAGES[0]
+  const speech = useSpeech(locale.voice)
   const scroller = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -52,9 +55,9 @@ export function Assistant() {
       if (!text.trim()) return
       setMsgs((m) => [...m, { id: seq++, role: 'user', text }])
       setInput('')
-      push(respond(text, appStore.state), voiceOn || viaVoice)
+      push(respond(normaliseAssistantRequest(text, language), appStore.state), voiceOn || viaVoice)
     },
-    [push, voiceOn],
+    [push, voiceOn, language],
   )
 
   // Emergency mode: once help is being called, switch to calm first-aid guidance, spoken aloud.
@@ -66,7 +69,7 @@ export function Assistant() {
   }, [alarmPhase, alarmStart])
 
   const runAction = (a: Action) => {
-    if (a.kind === 'call') window.location.href = telHref(a.number)
+    if (a.kind === 'call') { if (appStore.state.alarm.demo) return; window.location.href = telHref(a.number) }
     else if (a.kind === 'start-sos') raiseAlarm({ type: 'sos', label: 'SOS from assistant', reading: 'requested by voice or chat' }, { demo: false, immediate: true })
     else if (a.kind === 'open-guide') {
       const g = guideById(a.id)
@@ -85,9 +88,8 @@ export function Assistant() {
   return (
     <>
       {!open && alarmPhase !== 'countdown' && (
-        <Button
-          onClick={() => set({ assistantOpen: true })}
-          className="assistant-launch fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-secondary py-3 px-4 font-semibold text-foreground shadow-sm shadow-surface-shadow/30 transition hover:-translate-y-0.5"
+        <Button variant="secondary"
+          onClick={() => set({ assistantOpen: true })} className="assistant-launch fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-lg border border-border bg-secondary py-3 px-4 font-semibold text-foreground shadow-sm shadow-surface-shadow/30 transition hover:-translate-y-0.5"
         >
           <Sparkles className="size-5 text-primary" /> First aid
         </Button>
@@ -103,7 +105,7 @@ export function Assistant() {
               <p className="font-display font-bold">{alarmPhase !== 'idle' ? 'Emergency guidance' : 'Lifeline assistant'}</p>
               <p className="text-[11px] opacity-75">On-device guidance · not generative AI</p>
             </div>
-            <Button
+            <Button variant="ghost"
               onClick={() => (voiceOn ? (speech.stopSpeaking(), setVoiceOn(false)) : setVoiceOn(true))}
               disabled={!speech.supported.tts}
               title={voiceOn ? 'Voice replies on' : 'Voice replies off'}
@@ -111,15 +113,22 @@ export function Assistant() {
             >
               {voiceOn ? <Volume2 className="size-4.5" /> : <VolumeX className="size-4.5" />}
             </Button>
-            <Button onClick={() => set({ assistantOpen: false })} className="grid size-9 place-items-center rounded-full hover:bg-card/15" aria-label="Close assistant">
+            <Button variant="ghost" onClick={() => set({ assistantOpen: false })} className="grid size-9 place-items-center rounded-full hover:bg-card/15" aria-label="Close assistant">
               <X className="size-4.5" />
             </Button>
           </header>
+          <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
+            <label htmlFor="assistant-language" className="text-xs text-muted-foreground">Input language</label>
+            <select id="assistant-language" value={language} onChange={(e) => { speech.stopSpeaking(); speech.stopListening(); setLanguage(e.target.value as AssistantLanguage) }} className="min-h-11 rounded-md border border-border px-2 text-sm">
+              {ASSISTANT_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
+            </select>
+            <span className="text-xs text-muted-foreground">Guidance in English</span>
+          </div>
 
           <div ref={scroller} className="flex-1 space-y-3 overflow-y-auto bg-background px-4 py-4">
             {msgs.map((m) =>
               m.role === 'user' ? (
-                <p key={m.id} className="ml-auto w-fit max-w-[85%] rounded-lg rounded-br-md bg-secondary px-3.5 py-2 text-sm text-foreground">{m.text}</p>
+                <p key={m.id} dir="auto" className="ml-auto w-fit max-w-[85%] rounded-lg rounded-br-md bg-secondary px-3.5 py-2 text-sm text-foreground">{m.text}</p>
               ) : (
                 <div key={m.id} className="max-w-[92%] space-y-2">
                   <p className="w-fit whitespace-pre-line rounded-lg rounded-bl-md bg-card px-3.5 py-2.5 text-sm text-foreground shadow-sm ring-1 ring-border">{m.text}</p>
@@ -141,7 +150,7 @@ export function Assistant() {
           <div className="border-t border-border bg-card px-3 pb-3 pt-2">
             <div className="-mx-1 mb-2 flex gap-1.5 overflow-x-auto px-1 pb-1">
               {QUICK_CHIPS.map((c) => (
-                <Button key={c} onClick={() => ask(c)} className="shrink-0 rounded-full border border-border px-3 py-1 text-xs font-medium text-foreground hover:border-border">
+                <Button variant="outline" key={c} onClick={() => ask(c)} className="shrink-0 rounded-full border border-border px-3 py-1 text-xs font-medium text-foreground hover:border-border">
                   {c}
                 </Button>
               ))}
@@ -153,7 +162,7 @@ export function Assistant() {
               }}
               className="flex items-center gap-2"
             >
-              <Button
+              <Button variant="ghost"
                 type="button"
                 disabled={!speech.supported.stt}
                 onClick={() => (speech.listening ? speech.stopListening() : speech.listen((t) => ask(t, true)))}
@@ -163,15 +172,17 @@ export function Assistant() {
                 {speech.listening ? <MicOff className="size-5" /> : <Mic className="size-5" />}
               </Button>
               <input
+                dir={locale.direction}
                 value={speech.listening ? speech.interim || 'Listening…' : input}
                 onChange={(e) => setInput(e.target.value)}
                 aria-label="Message the first-aid assistant" placeholder='Describe what is happening…'
                 className="h-11 min-w-0 flex-1 rounded-full bg-muted px-4 text-sm outline-none focus:ring-2 focus:ring-border"
               />
-              <Button type="submit" className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary text-foreground" aria-label="Send">
+              <Button variant="ghost" type="submit" className="grid size-11 shrink-0 place-items-center rounded-full bg-secondary text-foreground" aria-label="Send">
                 <Send className="size-4.5" />
               </Button>
             </form>
+            {speech.error && <p role="alert" className="mt-2 text-xs text-critical">{speech.error}</p>}
             <p className="mt-2 text-center text-xs leading-snug text-muted-foreground">
               Not a doctor or a medical device. In an emergency, always call your local emergency number.
             </p>
@@ -186,11 +197,11 @@ const lastGuideMsg = (msgs: Msg[]) => [...msgs].reverse().find((m) => m.guide)?.
 
 function ActionChip({ a, onRun }: { a: Action; onRun: (a: Action) => void }) {
   const base = 'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition'
-  if (a.kind === 'call') return <Button onClick={() => onRun(a)} className={`${base} bg-destructive text-destructive-foreground hover:bg-destructive`}><Phone className="size-3.5" />{a.label}</Button>
-  if (a.kind === 'start-sos') return <Button onClick={() => onRun(a)} className={`${base} bg-critical-soft text-critical ring-1 ring-destructive hover:bg-critical-soft`}><Siren className="size-3.5" />Yes, start SOS</Button>
-  if (a.kind === 'open-guide') return <Button onClick={() => onRun(a)} className={`${base} bg-card text-foreground ring-1 ring-border hover:ring-border`}>{guideById(a.id)?.title}</Button>
-  if (a.kind === 'start-location') return <Button onClick={() => onRun(a)} className={`${base} bg-accent text-primary`}><MapPin className="size-3.5" />Turn on location</Button>
-  return <Button onClick={() => onRun(a)} className={`${base} bg-accent text-primary`}><Share2 className="size-3.5" />Share location</Button>
+  if (a.kind === 'call') return <Button variant="ghost" onClick={() => onRun(a)} className={`${base} bg-destructive text-destructive-foreground hover:bg-destructive`}><Phone className="size-3.5" />{a.label}</Button>
+  if (a.kind === 'start-sos') return <Button variant="ghost" onClick={() => onRun(a)} className={`${base} bg-critical-soft text-critical ring-1 ring-destructive hover:bg-critical-soft`}><Siren className="size-3.5" />Yes, start SOS</Button>
+  if (a.kind === 'open-guide') return <Button variant="ghost" onClick={() => onRun(a)} className={`${base} bg-card text-foreground ring-1 ring-border hover:ring-border`}>{guideById(a.id)?.title}</Button>
+  if (a.kind === 'start-location') return <Button variant="ghost" onClick={() => onRun(a)} className={`${base} bg-accent text-primary`}><MapPin className="size-3.5" />Turn on location</Button>
+  return <Button variant="ghost" onClick={() => onRun(a)} className={`${base} bg-accent text-primary`}><Share2 className="size-3.5" />Share location</Button>
 }
 
 const COMMANDS = { next: /\b(next|done|okay|ok|continue)\b/, back: /\b(back|previous)\b/, repeat: /\b(repeat|again|what)\b/, stop: /\b(stop|pause|quiet)\b/ }
@@ -246,7 +257,7 @@ function GuidePlayer({ guide, step, setStep, speech }: { guide: Guide; step: num
       <ol className="space-y-1 px-2 py-2">
         {guide.steps.map((s, i) => (
           <li key={i}>
-            <Button
+            <Button variant="ghost"
               onClick={() => go(i)}
               className={`flex w-full gap-2.5 rounded-lg px-2 py-1.5 text-left text-[13px] leading-snug transition ${i === step ? 'bg-critical-soft text-foreground ring-1 ring-destructive' : i < step ? 'text-muted-foreground' : 'text-muted-foreground hover:bg-background'}`}
             >
@@ -262,9 +273,9 @@ function GuidePlayer({ guide, step, setStep, speech }: { guide: Guide; step: num
         </div>
       )}
       <div className="flex items-center gap-1.5 border-t border-border bg-background px-2.5 py-2">
-        <Button onClick={() => go(Math.max(0, step - 1))} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Previous step"><ChevronLeft className="size-4.5" /></Button>
+        <Button variant="ghost" onClick={() => go(Math.max(0, step - 1))} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Previous step"><ChevronLeft className="size-4.5" /></Button>
         {playing ? (
-          <Button onClick={() => { setPlaying(false); playingRef.current = false; gen.current++; speech.stopSpeaking(); speech.stopListening() }} className="flex items-center gap-1.5 rounded-full bg-secondary px-3.5 py-2 text-xs font-bold text-foreground">
+          <Button variant="ghost" onClick={() => { setPlaying(false); playingRef.current = false; gen.current++; speech.stopSpeaking(); speech.stopListening() }} className="flex items-center gap-1.5 rounded-full bg-secondary px-3.5 py-2 text-xs font-bold text-foreground">
             <Square className="size-3.5" /> {speech.listening ? 'Listening… say "next"' : 'Stop'}
           </Button>
         ) : (
@@ -272,10 +283,10 @@ function GuidePlayer({ guide, step, setStep, speech }: { guide: Guide; step: num
             <Play className="size-3.5" /> Read aloud
           </Button>
         )}
-        <Button onClick={() => go(step)} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Repeat step"><RotateCcw className="size-4" /></Button>
-        <Button onClick={() => go(Math.min(total - 1, step + 1))} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Next step"><ChevronRight className="size-4.5" /></Button>
+        <Button variant="ghost" onClick={() => go(step)} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Repeat step"><RotateCcw className="size-4" /></Button>
+        <Button variant="ghost" onClick={() => go(Math.min(total - 1, step + 1))} className="grid size-9 place-items-center rounded-full hover:bg-muted" aria-label="Next step"><ChevronRight className="size-4.5" /></Button>
         {guide.metronome && (
-          <Button onClick={() => setBeat((b) => !b)} className={`ml-auto rounded-full px-3 py-2 text-xs font-bold ${beat ? 'bg-destructive text-destructive-foreground animate-pulse' : 'bg-card ring-1 ring-border'}`}>
+          <Button variant="ghost" onClick={() => setBeat((b) => !b)} className={`ml-auto rounded-full px-3 py-2 text-xs font-bold ${beat ? 'bg-destructive text-destructive-foreground animate-pulse' : 'bg-card ring-1 ring-border'}`}>
             {beat ? 'Beat on · 110/min' : 'CPR beat'}
           </Button>
         )}
