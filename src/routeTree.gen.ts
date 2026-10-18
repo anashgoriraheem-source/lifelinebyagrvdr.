@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as MonitorRouteImport } from './routes/monitor'
+import { Route as SaathRouteImport } from './routes/saath'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const MonitorRoute = MonitorRouteImport.update({
   path: '/monitor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SaathRoute = SaathRouteImport.update({
+  id: '/saath',
+  path: '/saath',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
+  '/saath': typeof SaathRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
+  '/saath': typeof SaathRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
+  '/saath': typeof SaathRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/contacts' | '/monitor'
+  fullPaths: '/' | '/contacts' | '/monitor' | '/saath'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contacts' | '/monitor'
-  id: '__root__' | '/' | '/contacts' | '/monitor'
+  to: '/' | '/contacts' | '/monitor' | '/saath'
+  id: '__root__' | '/' | '/contacts' | '/monitor' | '/saath'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ContactsRoute: typeof ContactsRoute
   MonitorRoute: typeof MonitorRoute
+  SaathRoute: typeof SaathRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MonitorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/saath': {
+      id: '/saath'
+      path: '/saath'
+      fullPath: '/saath'
+      preLoaderRoute: typeof SaathRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ContactsRoute: ContactsRoute,
   MonitorRoute: MonitorRoute,
+  SaathRoute: SaathRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
