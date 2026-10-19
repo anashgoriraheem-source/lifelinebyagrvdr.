@@ -1,18 +1,96 @@
 {
   "source": "code-archive",
   "capabilities": [
-    {"capability":"Existing application code and real Bluetooth pairing","source":"Current imported Lifeline project","outcome":"Preserve and redesign","status":"in_progress","next_action":"Verify routes and safety states"},
-    {"capability":"Multilingual Saath assistant","source":"Uploaded multilingual archive","outcome":"Preserve compatible offline support","status":"pending","next_action":"Audit runtime and integrate without replacing current emergency assistant"},
-    {"capability":"Database schema","source":"Existing Lovable Cloud tables","outcome":"migrate","status":"preserved","next_action":"No destructive schema changes"},
-    {"capability":"Existing records and auth identities","source":"No record export attached","outcome":"migrate","status":"pending","next_action":"Provide sanitized CSV or JSON records and user identities when migrating existing accounts"},
-    {"capability":"Authentication and account profile","source":"Cloud configured, UI unfinished in current app","outcome":"Preserve infrastructure","status":"pending","next_action":"Complete and verify sign-in and identity-linked profile flow separately"},
-    {"capability":"Authorization","source":"Existing Cloud RLS policies","outcome":"Preserve","status":"unverified","next_action":"Verify private data boundaries with authenticated accounts"},
-    {"capability":"Live incident location sharing","source":"Cloud schema and store incident field","outcome":"Incomplete source capability","status":"pending","next_action":"Complete incident publishing and recipient tracking page"},
-    {"capability":"Automatic SMS and calls","source":"Manual phone and messaging links; provider declined","outcome":"Preserve explicit manual actions","status":"blocked","next_action":"Automatic personal-contact alerts require a configured messaging provider; police and ambulance require supported regional dispatch integration"},
-    {"capability":"Uploaded file bytes","source":"Archive has no runtime user uploads","outcome":"Not applicable","status":"not_detected","next_action":null},
-    {"capability":"External providers","source":"Browser speech, standard Bluetooth, public map embeds","outcome":"Preserve","status":"in_progress","next_action":"Verify safe browser paths and mark device-dependent checks unverified"},
-    {"capability":"Public endpoints, callbacks, webhooks and schedules","source":"No such capabilities detected in archive","outcome":"No removal","status":"not_detected","next_action":null},
-    {"capability":"Secrets","source":"No retained credential-backed service detected","outcome":"Do not request source platform secrets","status":"not_detected","next_action":null},
-    {"capability":"Cutover and published verification","source":"Unpublished Lovable project","outcome":"Preserve source deployment until approved","status":"pending","next_action":"Publish only when requested; verify hosted device and provider flows"}
+    {
+      "capability": "Existing application code and real Bluetooth pairing",
+      "source": "Current imported Lifeline project",
+      "outcome": "Preserve and redesign",
+      "status": "preserved",
+      "next_action": "Redesigned routes verified; physical wearable testing remains device-dependent"
+    },
+    {
+      "capability": "Multilingual Saath assistant",
+      "source": "Uploaded multilingual archive",
+      "outcome": "Preserve compatible offline support",
+      "status": "preserved",
+      "next_action": "Local directory and first-aid input verified with Urdu; guidance remains English"
+    },
+    {
+      "capability": "Database schema",
+      "source": "Existing Lovable Cloud tables",
+      "outcome": "migrate",
+      "status": "preserved",
+      "next_action": "No destructive schema changes"
+    },
+    {
+      "capability": "Existing records and auth identities",
+      "source": "No record export attached",
+      "outcome": "migrate",
+      "status": "pending",
+      "next_action": "Provide sanitized CSV or JSON records and user identities when migrating existing accounts"
+    },
+    {
+      "capability": "Authentication and account profile",
+      "source": "Cloud configured, UI unfinished in current app",
+      "outcome": "Preserve infrastructure",
+      "status": "pending",
+      "next_action": "Complete and verify sign-in and identity-linked profile flow separately"
+    },
+    {
+      "capability": "Authorization",
+      "source": "Existing Cloud RLS policies",
+      "outcome": "Preserve",
+      "status": "unverified",
+      "next_action": "Verify private data boundaries with authenticated accounts"
+    },
+    {
+      "capability": "Live incident location sharing",
+      "source": "Cloud schema and store incident field",
+      "outcome": "Incomplete source capability",
+      "status": "pending",
+      "next_action": "Complete incident publishing and recipient tracking page"
+    },
+    {
+      "capability": "Automatic SMS and calls",
+      "source": "Manual phone and messaging links; provider declined",
+      "outcome": "Preserve explicit manual actions",
+      "status": "blocked",
+      "next_action": "Automatic personal-contact alerts require a configured messaging provider; police and ambulance require supported regional dispatch integration"
+    },
+    {
+      "capability": "Uploaded file bytes",
+      "source": "Archive has no runtime user uploads",
+      "outcome": "Not applicable",
+      "status": "not_detected",
+      "next_action": null
+    },
+    {
+      "capability": "External providers",
+      "source": "Browser speech, standard Bluetooth, public map embeds",
+      "outcome": "Preserve",
+      "status": "unverified",
+      "next_action": "Browser UI verified; physical Bluetooth and speech permission checks remain unverified"
+    },
+    {
+      "capability": "Public endpoints, callbacks, webhooks and schedules",
+      "source": "No such capabilities detected in archive",
+      "outcome": "No removal",
+      "status": "not_detected",
+      "next_action": null
+    },
+    {
+      "capability": "Secrets",
+      "source": "No retained credential-backed service detected",
+      "outcome": "Do not request source platform secrets",
+      "status": "not_detected",
+      "next_action": null
+    },
+    {
+      "capability": "Cutover and published verification",
+      "source": "Unpublished Lovable project",
+      "outcome": "Preserve source deployment until approved",
+      "status": "pending",
+      "next_action": "Publish only when requested; verify hosted device and provider flows"
+    }
   ]
 }
