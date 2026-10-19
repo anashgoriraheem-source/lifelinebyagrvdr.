@@ -133,6 +133,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      clear_my_safety_data: { Args: never; Returns: undefined }
       get_shared_incident: {
         Args: { _token: string }
         Returns: {
@@ -153,6 +154,7 @@ export type Database = {
           status: string
         }[]
       }
+      replace_my_contacts: { Args: { _contacts: Json }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
