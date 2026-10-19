@@ -37,7 +37,7 @@ function Monitor() {
   const anyData = statuses.some((x) => x.s !== 'unknown')
 
   const headline = !anyData
-    ? { t: 'No device connected', d: 'Connect a Bluetooth health device, or switch on demo mode to try Lifeline.', c: 'text-foreground' }
+    ? { t: device.status === 'connected' ? 'Waiting for device readings' : demo ? 'Preparing demo readings' : 'No device connected', d: device.status === 'connected' ? 'The connection is open, but no fresh measurements are available.' : 'Connect a Bluetooth health device, or switch on demo mode to try Lifeline.', c: 'text-foreground' }
     : crit.length
       ? { t: `${VITAL_META[crit[0].k].label} critical`, d: 'Alarm triggers after 3 s sustained beyond your limit.', c: 'text-critical' }
       : warn.length
@@ -50,7 +50,7 @@ function Monitor() {
         <div className="mb-5 flex flex-wrap items-center gap-3 rounded-lg bg-warning-soft px-4 py-3 text-sm text-foreground ring-1 ring-warning-soft">
           <FlaskConical className="size-4.5 shrink-0" />
           <p className="mr-auto"><b>DEMO MODE: no real alerts.</b> Readings are simulated. Automatic alarms won't contact anyone — the SOS button always works for real.</p>
-          <Button onClick={() => set({ demoMode: false, scenario: 'stable' })} className="rounded-full bg-warning px-3 py-1.5 text-xs font-bold text-warning">Use real devices</Button>
+          <Button onClick={() => set({ demoMode: false, scenario: 'stable', vitals: {}, history: {bp:[],hr:[],spo2:[],glucose:[]} })} className="rounded-full bg-warning px-3 py-1.5 text-xs font-bold text-primary-foreground">Use real devices</Button>
         </div>
       )}
 
@@ -60,7 +60,7 @@ function Monitor() {
         {demo ? (
           <span className="flex items-center gap-1.5"><Bluetooth className="size-4 text-primary" />{DEMO_DEVICE.name} · <Battery className="size-4" />{DEMO_DEVICE.battery}%</span>
         ) : device.status === 'connected' ? (
-          <span className="flex items-center gap-1.5 text-success"><Bluetooth className="size-4" />{device.name} · live ({device.vitals.join(', ')})</span>
+          <span className="flex items-center gap-1.5 text-success"><Bluetooth className="size-4" />{device.name} · connected ({device.vitals.join(', ')})</span>
         ) : (
           <span className="flex items-center gap-1.5"><Bluetooth className="size-4" />
             {device.status === 'connecting' ? 'Connecting…' : device.status === 'reconnecting' ? `Reconnecting to ${device.name}…` : device.status === 'error' ? device.error : device.status === 'disconnected' ? `${device.name} disconnected` : 'No device paired'}
@@ -68,7 +68,7 @@ function Monitor() {
         )}
         <div className="ml-auto flex gap-2">
           {device.status === 'connected' || device.status === 'reconnecting' ? (
-            <Button onClick={disconnectWearable} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-border hover:bg-card">Disconnect</Button>
+            <Button variant="outline" onClick={disconnectWearable} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-border hover:bg-card">Disconnect</Button>
           ) : (
             <Button
               onClick={() => pairWearable().catch((e: Error) => e.name !== 'NotFoundError' && alert(e.message))}
@@ -78,7 +78,7 @@ function Monitor() {
             </Button>
           )}
           {!demo && device.status !== 'connected' && (
-            <Button onClick={() => set({ demoMode: true })} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-border hover:bg-card">Try demo mode</Button>
+            <Button variant="outline" onClick={() => set({ demoMode: true })} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-border hover:bg-card">Try demo mode</Button>
           )}
         </div>
       </div>
@@ -99,7 +99,7 @@ function Monitor() {
       </section>
 
       {demo && (
-        <section className="mt-5 rounded-lg bg-card p-5 shadow-sm ring-1 ring-border">
+        <section className="mt-5 border-b border-border py-5">
           <h2 className="text-sm font-semibold text-muted-foreground">Simulate a reading</h2>
           <p className="text-xs text-muted-foreground">Push the demo feed into danger zones to see detection, the alarm and the first-aid assistant.</p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -107,7 +107,7 @@ function Monitor() {
               <Button
                 key={sc.key}
                 onClick={() => set({ scenario: sc.key })}
-                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${scenario === sc.key ? 'bg-secondary text-foreground' : 'bg-muted text-foreground hover:bg-muted'}`}
+                variant={scenario === sc.key ? 'secondary' : 'outline'} aria-pressed={scenario === sc.key} className={`rounded-lg px-3.5 py-1.5 text-sm font-semibold transition ${scenario === sc.key ? 'bg-secondary text-foreground' : 'bg-muted text-foreground hover:bg-muted'}`}
               >
                 {sc.label}
               </Button>

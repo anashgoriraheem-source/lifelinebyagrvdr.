@@ -179,7 +179,7 @@ function Toggle({ on, onClick, icon, label }: { on: boolean; onClick: () => void
 }
 
 function IconBtn({ children, label, ...rest }: { children: React.ReactNode; label: string; onClick: () => void; disabled?: boolean }) {
-  return <Button type="button" aria-label={label} title={label} {...rest} className="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-card hover:text-foreground disabled:opacity-30">{children}</Button>
+  return <Button variant="ghost" size="icon" type="button" aria-label={label} title={label} {...rest} className="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-card hover:text-foreground disabled:opacity-30">{children}</Button>
 }
 
 function ContactForm({ initial, onClose }: { initial: Contact | null; onClose: () => void }) {
@@ -200,11 +200,11 @@ function ContactForm({ initial, onClose }: { initial: Contact | null; onClose: (
       <form onSubmit={save} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="contact-form-title" className="w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-lg border border-border bg-card p-6 shadow-sm">
         <div className="flex items-center">
           <h3 id="contact-form-title" className="mr-auto font-display text-xl font-bold">{initial ? 'Edit contact' : 'New contact'}</h3>
-          <Button type="button" onClick={onClose} aria-label="Close" className="grid size-8 place-items-center rounded-full hover:bg-muted"><X className="size-4" /></Button>
+          <Button variant="ghost" size="icon" type="button" onClick={onClose} aria-label="Close" className="grid size-8 place-items-center rounded-full hover:bg-muted"><X className="size-4" /></Button>
         </div>
         <label className="mt-4 block text-sm font-medium">Name
-          <input className={input} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoFocus />
-          {touched && !nameOk && <span className="text-xs text-critical">Enter a name.</span>}
+          <input aria-label="Name" aria-invalid={touched && !nameOk} aria-describedby={touched && !nameOk ? 'contact-name-error' : undefined} className={input} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoFocus />
+          {touched && !nameOk && <span id="contact-name-error" role="alert" className="text-xs text-critical">Enter a name.</span>}
         </label>
         <label className="mt-3 block text-sm font-medium">Relationship
           <select className={input} value={f.relationship} onChange={(e) => setF({ ...f, relationship: e.target.value })}>
@@ -212,8 +212,8 @@ function ContactForm({ initial, onClose }: { initial: Contact | null; onClose: (
           </select>
         </label>
         <label className="mt-3 block text-sm font-medium">Phone (with country code)
-          <input className={`${input} font-mono`} inputMode="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
-          {touched && !phoneOk && <span className="text-xs text-critical">Enter a valid number, e.g. +91 98765 43210.</span>}
+          <input aria-label="Phone (with country code)" aria-invalid={touched && !phoneOk} aria-describedby={touched && !phoneOk ? 'contact-phone-error' : undefined} className={`${input} font-mono`} inputMode="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
+          {touched && !phoneOk && <span id="contact-phone-error" role="alert" className="text-xs text-critical">Enter a valid number, e.g. +91 98765 43210.</span>}
         </label>
         <div className="mt-4 flex gap-2">
           <Toggle on={f.call} onClick={() => setF({ ...f, call: !f.call })} icon={<Phone className="size-3.5" />} label="Call" />
