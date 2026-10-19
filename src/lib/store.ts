@@ -22,6 +22,8 @@ export interface AppState {
   profile: Profile
   userId: string | null
   userEmail: string | null
+  accountStatus: 'signed-out' | 'loading' | 'ready' | 'error'
+  assistantLanguage: 'en' | 'hi' | 'pa' | 'ur'
   /** Active live-location incident in the cloud, if signed in. */
   incident: { id: string; token: string } | null
 }
@@ -52,6 +54,8 @@ const initial: AppState = {
   profile: { name: '', age: null, bloodType: '', conditions: [], allergies: [], medications: [] },
   userId: null,
   userEmail: null,
+  accountStatus: 'signed-out',
+  assistantLanguage: 'en',
   incident: null,
 }
 
@@ -95,7 +99,7 @@ export function cancelAlarm(note: string) {
 
 /* ---- settings persistence (device-local until accounts land, see PLAN.md) ---- */
 
-type Persisted = Pick<AppState, 'contacts' | 'countryCode' | 'countdownSeconds' | 'thresholds' | 'demoMode' | 'profile'>
+type Persisted = Pick<AppState, 'contacts' | 'countryCode' | 'countdownSeconds' | 'thresholds' | 'demoMode' | 'profile' | 'assistantLanguage'>
 
 let unsubscribeSettings: { unsubscribe: () => void } | null = null
 export function loadSettings() {
@@ -109,7 +113,8 @@ export function loadSettings() {
   } catch { /* inaccessible or corrupt browser storage */ }
   let previous = ''
   unsubscribeSettings = appStore.subscribe((s) => {
-    const p: Persisted = { contacts: s.contacts, countryCode: s.countryCode, countdownSeconds: s.countdownSeconds, thresholds: s.thresholds, demoMode: s.demoMode, profile: s.profile }
+    if (s.userId) return
+    const p: Persisted = { contacts: s.contacts, countryCode: s.countryCode, countdownSeconds: s.countdownSeconds, thresholds: s.thresholds, demoMode: s.demoMode, profile: s.profile, assistantLanguage: s.assistantLanguage }
     const next = JSON.stringify(p)
     if (next === previous) return
     try { localStorage.setItem(SETTINGS_KEY, next); previous = next } catch { /* Monitoring must work without storage. */ }

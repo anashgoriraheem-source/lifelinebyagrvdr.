@@ -31,7 +31,7 @@ export function Assistant() {
   ])
   const [input, setInput] = useState('')
   const [voiceOn, setVoiceOn] = useState(false)
-  const [language, setLanguage] = useState<AssistantLanguage>('en')
+  const language = useApp((s) => s.assistantLanguage)
   const [active, setActive] = useState<{ guide: Guide; step: number } | null>(null)
   const locale = ASSISTANT_LANGUAGES.find(l => l.code === language) ?? ASSISTANT_LANGUAGES[0]
   const speech = useSpeech(locale.voice)
@@ -119,7 +119,7 @@ export function Assistant() {
           </header>
           <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2">
             <label htmlFor="assistant-language" className="text-xs text-muted-foreground">Input language</label>
-            <select id="assistant-language" value={language} onChange={(e) => { speech.stopSpeaking(); speech.stopListening(); setLanguage(e.target.value as AssistantLanguage) }} className="min-h-11 rounded-md border border-border px-2 text-sm">
+            <select id="assistant-language" value={language} onChange={(e) => { speech.stopSpeaking(); speech.stopListening(); set({ assistantLanguage: e.target.value as AssistantLanguage }) }} className="min-h-11 rounded-md border border-border px-2 text-sm">
               {ASSISTANT_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
             </select>
             <span className="text-xs text-muted-foreground">Guidance in English</span>

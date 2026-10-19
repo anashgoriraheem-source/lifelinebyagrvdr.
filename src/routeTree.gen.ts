@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as MonitorRouteImport } from './routes/monitor'
 import { Route as SaathRouteImport } from './routes/saath'
@@ -17,6 +18,11 @@ import { Route as SaathRouteImport } from './routes/saath'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactsRoute = ContactsRouteImport.update({
@@ -37,12 +43,14 @@ const SaathRoute = SaathRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/contacts' | '/monitor' | '/saath'
+  fullPaths: '/' | '/account' | '/contacts' | '/monitor' | '/saath'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contacts' | '/monitor' | '/saath'
-  id: '__root__' | '/' | '/contacts' | '/monitor' | '/saath'
+  to: '/' | '/account' | '/contacts' | '/monitor' | '/saath'
+  id: '__root__' | '/' | '/account' | '/contacts' | '/monitor' | '/saath'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   ContactsRoute: typeof ContactsRoute
   MonitorRoute: typeof MonitorRoute
   SaathRoute: typeof SaathRoute
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contacts': {
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   ContactsRoute: ContactsRoute,
   MonitorRoute: MonitorRoute,
   SaathRoute: SaathRoute,

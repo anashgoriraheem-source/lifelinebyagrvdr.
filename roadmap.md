@@ -1,4 +1,11 @@
-# Lifeline redesign
+# Lifeline production priorities
+- [ ] Add configured sign-in, account recovery, private profile and Cloud contact storage.
+- [ ] Add privacy export/deletion and explicit local-data import.
+- [ ] Make emergency location/medical sharing opt-in, add manual address, isolate demo handoffs.
+- [ ] Persist assistant input language and verify priority flows with tests and browser checks.
+- [ ] Document pending hardware, messaging, community moderation, offline caching and live tracking work.
+
+## Completed redesign
 - [x] Audit current routes, uploaded source, safety claims and visual direction.
 - [x] Establish shared luxury tokens and accessible controls.
 - [x] Redesign home, monitor, contacts, emergency overlay and assistant.

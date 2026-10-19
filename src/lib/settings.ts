@@ -1,6 +1,7 @@
 import { z } from 'zod'
 const threshold = z.object({ below: z.number().finite().nullable(), above: z.number().finite().nullable(), above2: z.number().finite().nullable().optional() })
 export const persistedSettingsSchema = z.object({
+  assistantLanguage: z.enum(['en','hi','pa','ur']).optional(),
   demoMode: z.boolean().optional(),
   contacts: z.array(z.object({id:z.string(),name:z.string(),relationship:z.string(),phone:z.string(),call:z.boolean(),sms:z.boolean()})).optional(),
   countryCode: z.enum(['IN','US','GB','EU','AU']).optional(),
