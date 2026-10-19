@@ -6,6 +6,7 @@ import { Nav } from '@/components/Nav'
 import { AlarmOverlay } from '@/components/AlarmOverlay'
 import { Assistant } from '@/components/Assistant'
 import { VitalsEngine } from '@/components/VitalsEngine'
+import { AccountSync } from '@/components/AccountSync'
 
 const siteName = 'Lifeline — personal safety and first aid'
 const siteDescription =
@@ -47,6 +48,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="min-h-screen">
         <VitalsEngine />
+        <AccountSync />
         <Nav />
         {children}
         <Assistant />
