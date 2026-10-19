@@ -82,7 +82,7 @@ input:focus-visible,select:focus-visible { outline-offset: 2px; }
 .skip-link { position: fixed; top: 6px; left: 6px; z-index: 100; transform: translateY(-150%); background: var(--primary); color: var(--primary-foreground); padding: 12px; }
 .skip-link:focus { transform: none; }
 @media(max-width:640px) {
-  .app-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index: 35; display: grid; grid-template-columns: repeat(4,1fr); }
+  .app-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index: 35; display: grid; grid-template-columns: repeat(5,1fr); }
   .app-nav-link { justify-content: center; flex-direction: column; gap: 3px; font-size: 11px; padding: 8px 3px; min-height: 64px; }
   main { padding-bottom: 160px; }
   body > button { bottom: 84px; }

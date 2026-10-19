@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
+import { saveSafetyContacts } from '@/lib/account.functions'
 import { useState } from 'react'
 import { ArrowDown, ArrowUp, Ambulance, Flame, MessageSquare, Pencil, Phone, Plus, RotateCcw, Shield, Siren, Trash2, X } from 'lucide-react'
 import { useApp } from '@/hooks/useApp'
@@ -25,6 +27,11 @@ function Contacts() {
   const fix = useApp((s) => s.location.fix)
   const n = useApp(emergencyNumbers)
   const [editing, setEditing] = useState<Contact | 'new' | null>(null)
+  const userId = useApp(s => s.userId)
+  const accountStatus = useApp(s => s.accountStatus)
+  const saveCloud = useServerFn(saveSafetyContacts)
+  const [saving, setSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState('')
 
   const move = (i: number, d: -1 | 1) =>
     set((s) => {
@@ -77,9 +84,9 @@ function Contacts() {
         <div className="flex items-center gap-3">
           <div className="mr-auto">
             <h2 className="font-display text-xl font-bold">Personal contacts</h2>
-            <p className="text-sm text-muted-foreground">First in the list is your primary contact. Saved locally on this device.</p>
+            <p className="text-sm text-muted-foreground">First in the list is your primary contact. {userId ? 'Changes stay unsaved until you save to your account.' : 'Saved locally on this device.'}</p>
           </div>
-          <Button onClick={() => setEditing('new')} className="flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-sm font-bold text-foreground">
+          <Button disabled={!!userId && accountStatus !== 'ready'} onClick={() => setEditing('new')} className="flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-sm font-bold text-foreground">
             <Plus className="size-4" /> Add
           </Button>
         </div>
@@ -107,6 +114,8 @@ function Contacts() {
             </li>
           ))}
         </ol>
+        {userId ? <Button className="mt-4" disabled={saving || accountStatus !== 'ready'} onClick={async () => { setSaving(true); setSaveStatus(''); try { await saveCloud({ data: contacts.map(c => ({ ...c, phone: c.phone.replace(/[^\d+]/g, '') })) }); setSaveStatus('Contacts saved to your private account.') } catch (e) { setSaveStatus(e instanceof Error ? e.message : 'Save failed. Try again.') } finally { setSaving(false) } }}>{saving ? 'Saving…' : 'Save contacts to account'}</Button> : <Link to="/account" className="mt-4 inline-block text-primary underline">Sign in to save contacts privately across devices</Link>}
+        {saveStatus && <p role="status" className="mt-2 text-sm">{saveStatus}</p>}
         <div className="mt-5 flex flex-wrap items-center gap-3 rounded-lg bg-accent p-4 text-sm text-primary">
           <p className="mr-auto">Opens a labelled test in your messaging app. You must press Send; delivery is not confirmed here.</p>
           <a

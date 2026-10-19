@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Activity, HeartPulse, House, LifeBuoy, Users } from 'lucide-react'
+import { Activity, HeartPulse, House, LifeBuoy, Users, UserRound } from 'lucide-react'
 import { useApp } from '@/hooks/useApp'
 import { useNow } from '@/hooks/useNow'
 import { isStale } from '@/lib/detection'
@@ -21,6 +21,7 @@ export function Nav() {
         <Link to="/monitor" className="app-nav-link"><Activity className="size-4"/>Monitor</Link>
         <Link to="/contacts" className="app-nav-link"><Users className="size-4"/>Contacts</Link>
         <Link to="/saath" className="app-nav-link"><LifeBuoy className="size-4"/>Saath</Link>
+        <Link to="/account" className="app-nav-link"><UserRound className="size-4"/>Account</Link>
       </nav>
       <span role="status" className={`hidden items-center gap-2 text-xs sm:flex ${alarm !== 'idle' ? 'text-critical' : 'text-muted-foreground'}`}><span className={`size-1.5 rounded-full ${demo ? 'bg-warning' : device === 'connected' && fresh ? 'bg-success' : 'bg-muted-foreground'}`}/>{status}</span>
     </div>
