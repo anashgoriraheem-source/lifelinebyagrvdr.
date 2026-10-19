@@ -1,5 +1,7 @@
 {
   "source": "code-archive",
+  "latest_archive": "aapda-setu-saath-multilingual-trained_2-2.zip",
+  "current_priority": "Private accounts, profile/contact synchronization, consent-based emergency messages and safe simulation; retain compatible multilingual directory",
   "capabilities": [
     {
       "capability": "Existing application code and real Bluetooth pairing",
