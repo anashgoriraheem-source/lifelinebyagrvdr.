@@ -39,6 +39,10 @@ export interface EmergencyNumbers {
   fire: string
   /** Number that accepts emergency SMS, where the service supports it. */
   smsNumber: string
+  /** True only where emergency SMS is officially supported nationwide. Unverified regions must not offer it. */
+  smsVerified?: boolean
+  /** Why emergency SMS is (or may not be) available in this region. */
+  smsNote?: string
 }
 
 export interface LogEntry {
@@ -55,7 +59,8 @@ export type AlarmReason =
   | { type: 'sos'; label: string; reading: string }
 
 export interface AlarmState {
-  phase: 'idle' | 'countdown' | 'dispatched'
+  /** 'active' means the action screen is open. Nobody is contacted automatically in any phase. */
+  phase: 'idle' | 'countdown' | 'active'
   reason: AlarmReason | null
   startedAt: number | null
   demo: boolean

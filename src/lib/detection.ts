@@ -24,7 +24,8 @@ function beyond(v: number, t: Threshold, margin = 0) {
 }
 
 export function classify(key: VitalKey, r: Reading | undefined, t: Threshold, prev: VitalStatus = 'normal'): VitalStatus {
-  if (!r || r.quality === 'stale') return 'unknown'
+  // Uncertain or stale readings are never treated as reliable enough to alarm on.
+  if (!r || r.quality !== 'good') return 'unknown'
   const crit =
     beyond(r.value, t) || (key === 'bp' && t.above2 != null && r.value2 != null && r.value2 > t.above2)
   if (crit) return 'critical'
