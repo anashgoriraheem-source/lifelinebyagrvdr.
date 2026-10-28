@@ -11,16 +11,23 @@ export const mapsLink = (f: LocationFix) => `https://maps.google.com/?q=${f.lat.
 
 export const clockTime = (t: number) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
+/** A location older than this must not be presented as current in a message. */
+export const STALE_FIX_MS = 120_000
+
 export function buildSosMessage(reason: AlarmReason | null, fix: LocationFix | null, opts: { test?: boolean } = {}) {
   const p = appStore.state.profile
   const inc = appStore.state.incident
   const track = inc && typeof window !== 'undefined' ? `${window.location.origin}/track/${inc.token}` : null
+  const fixAge = fix ? Date.now() - fix.at : 0
+  const locationLine = fix
+    ? fixAge > STALE_FIX_MS
+      ? `Location: ${mapsLink(fix)} (OUT OF DATE — measured ${Math.max(1, Math.round(fixAge / 60_000))} min ago, ±${Math.round(fix.accuracy)} m; confirm your location by phone)`
+      : `Location: ${mapsLink(fix)} (±${Math.round(fix.accuracy)} m, ${clockTime(fix.at)})`
+    : 'Location: unavailable — please call.'
   const lines = [
     `${opts.test ? '[TEST — no action needed] ' : ''}EMERGENCY: ${p.name} (${p.age}, blood ${p.bloodType}) needs help.`,
     reason ? `Reason: ${reason.label} — ${reason.reading} at ${clockTime(Date.now())}.` : 'Reason: SOS pressed.',
-    fix
-      ? `Location: ${mapsLink(fix)} (±${Math.round(fix.accuracy)} m, ${clockTime(fix.at)})`
-      : 'Location: unavailable — please call.',
+    locationLine,
     `Conditions: ${p.conditions.join(', ') || 'none listed'}. Allergies: ${p.allergies.join(', ') || 'none listed'}. Meds: ${p.medications.join(', ') || 'none listed'}.`,
     'Sent via Lifeline.',
   ]
@@ -38,7 +45,20 @@ export function smsHref(phones: string[], body: string) {
 
 export const telHref = (phone: string) => `tel:${digits(phone)}`
 
-export function isValidPhone(phone: string) {
-  const d = digits(phone)
-  return /^\+?\d{3,15}$/.test(d)
+/** Dial codes and expected national digit counts for countries we list. */
+const COUNTRY_DIAL: Record<string, { dial: string; national: number[] }> = {
+  IN: { dial: '91', national: [10] },
+  US: { dial: '1', national: [10] },
+  GB: { dial: '44', national: [10] },
+  AU: { dial: '61', national: [9] },
+}
+
+/** Country-aware phone validation. Unknown countries fall back to a generic 3–15 digit check. */
+export function isValidPhone(phone: string, countryCode?: string) {
+  const raw = digits(phone).replace(/^\+/, '')
+  if (!/^\d{3,15}$/.test(raw)) return false
+  const c = countryCode ? COUNTRY_DIAL[countryCode] : undefined
+  if (!c) return true
+  if (raw.startsWith(c.dial)) return c.national.includes(raw.length - c.dial.length)
+  return c.national.includes(raw.length)
 }
