@@ -60,9 +60,9 @@ export function Assistant() {
     [push, voiceOn, language],
   )
 
-  // Emergency mode: once help is being called, switch to calm first-aid guidance, spoken aloud.
+  // Emergency mode: once the alarm is active, switch to calm first-aid guidance, spoken aloud.
   useEffect(() => {
-    if (alarmPhase !== 'dispatched' || !alarmStart) return
+    if (alarmPhase !== 'active' || !alarmStart) return
     setVoiceOn(true)
     push(respond('what should I do', appStore.state), true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,7 +70,7 @@ export function Assistant() {
 
   const runAction = (a: Action) => {
     if (a.kind === 'call') { if (appStore.state.alarm.demo) return; window.location.href = telHref(a.number) }
-    else if (a.kind === 'start-sos') raiseAlarm({ type: 'sos', label: 'SOS from assistant', reading: 'requested by voice or chat' }, { demo: false, immediate: true })
+    else if (a.kind === 'start-sos') raiseAlarm({ type: 'sos', label: 'SOS from assistant', reading: 'requested by voice or chat' }, { demo: appStore.state.demoMode, immediate: true })
     else if (a.kind === 'open-guide') {
       const g = guideById(a.id)
       if (!g) return

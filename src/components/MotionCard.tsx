@@ -34,6 +34,9 @@ export function MotionCard() {
       <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
         Detects free-fall → impact → 10 s of stillness, and violent jolts. Works while this page is open on your phone.
       </p>
+      <p className="mt-2 rounded-md bg-warning-soft px-2.5 py-1.5 text-xs leading-snug text-warning">
+        Experimental and unvalidated — not a certified fall detector. Alarms need expert review before being trusted.
+      </p>
       <div className="mt-4 flex gap-2">
         {motion.permission !== 'granted' && (
           <Button onClick={motion.enable} disabled={motion.permission === 'unsupported'} className="rounded-full bg-secondary px-3.5 py-2 text-xs font-bold text-foreground disabled:opacity-40">
