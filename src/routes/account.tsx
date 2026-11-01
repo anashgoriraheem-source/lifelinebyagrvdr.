@@ -91,7 +91,7 @@ function Account() {
       <form className="border-b border-border py-6" onSubmit={e => { e.preventDefault(); void run(async () => { if (userId) { await save({ data: profile }); setFeedback('Private profile saved to your account.') } else { setFeedback('Profile saved in this browser only. Sign in to keep it private across devices.') } }) }}>
         <h2 className="text-xl font-bold">Personal safety profile</h2>
         <p className="mt-2 text-sm text-muted-foreground">{userId ? 'Only you can access this profile in your private account. Including it in an emergency message requires a separate choice.' : 'Saved in this browser only — nothing is backed up or synced until you sign in. Including it in an emergency message requires a separate choice.'}</p>
-        <fieldset disabled={busy || (userId && status !== 'ready')} className="mt-4 grid gap-4 sm:grid-cols-2">
+        <fieldset disabled={busy || (!!userId && status !== 'ready')} className="mt-4 grid gap-4 sm:grid-cols-2">
           <label>Name<input className={input} maxLength={120} value={profile.name} onChange={e => set({ profile: { ...profile, name: e.target.value } })}/></label>
           <label>Age<input className={input} type="number" min={0} max={130} value={profile.age ?? ''} onChange={e => set({ profile: { ...profile, age: e.target.value ? Number(e.target.value) : null } })}/></label>
           <label>Blood type<select className={input} value={profile.bloodType} onChange={e => set({ profile: { ...profile, bloodType: e.target.value } })}>{['','A+','A-','B+','B-','AB+','AB-','O+','O-'].map(v => <option key={v} value={v}>{v || 'Not provided'}</option>)}</select></label>
