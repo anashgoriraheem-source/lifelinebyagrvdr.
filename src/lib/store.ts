@@ -77,15 +77,16 @@ export function raiseAlarm(reason: AlarmReason, opts: { demo: boolean; immediate
   if (s.alarm.phase !== 'idle') return
   const immediate = opts.immediate || s.countdownSeconds === 0
   set({
-    alarm: { phase: immediate ? 'dispatched' : 'countdown', reason, startedAt: Date.now(), demo: opts.demo },
+    alarm: { phase: immediate ? 'active' : 'countdown', reason, startedAt: Date.now(), demo: opts.demo },
     // Never cover the "I'm OK" button during the countdown.
     assistantOpen: immediate,
   })
   addLog(reason.type === 'sos' ? 'sos' : 'alarm', `${reason.label} · ${reason.reading}${opts.demo ? ' (demo)' : ''}`)
 }
 
-export function dispatchAlarm() {
-  set((s) => ({ alarm: { ...s.alarm, phase: 'dispatched' }, assistantOpen: true }))
+/** Opens the action screen where the user chooses calls and messages. Nothing is sent automatically. */
+export function openAlarmActions() {
+  set((s) => ({ alarm: { ...s.alarm, phase: 'active' }, assistantOpen: true }))
 }
 
 export function cancelAlarm(note: string) {

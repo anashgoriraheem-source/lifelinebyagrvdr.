@@ -75,3 +75,26 @@ export function guideFor(key: VitalKey, r: Reading, t: Threshold) {
   if (key === 'hr') return low ? 'fainting' : 'heart-racing'
   return 'breathing'
 }
+
+/**
+ * Guardrails for user-editable thresholds: rejects impossible, contradictory
+ * or out-of-physiological-range limits before they are saved.
+ */
+const THRESHOLD_BOUNDS: Record<VitalKey, { below?: [number, number]; above?: [number, number]; above2?: [number, number] }> = {
+  bp: { below: [40, 110], above: [70, 260], above2: [30, 160] },
+  glucose: { below: [20, 90], above: [70, 500] },
+  hr: { below: [20, 80], above: [90, 240] },
+  spo2: { below: [60, 98] },
+}
+
+export function thresholdError(key: VitalKey, t: Threshold): string | null {
+  const b = THRESHOLD_BOUNDS[key]
+  const out = (v: number | null, r?: [number, number]) => v != null && r != null && (v < r[0] || v > r[1])
+  if (out(t.below, b.below)) return `Lower limit must be between ${b.below![0]} and ${b.below![1]} ${VITAL_META[key].unit}`
+  if (out(t.above, b.above)) return `Upper limit must be between ${b.above![0]} and ${b.above![1]} ${VITAL_META[key].unit}`
+  if (out(t.above2 ?? null, b.above2)) return `Diastolic limit must be between ${b.above2![0]} and ${b.above2![1]} ${VITAL_META[key].unit}`
+  if (t.below != null && t.above != null && t.below >= t.above) return 'Lower limit must be below the upper limit'
+  if (key === 'bp' && t.above2 != null && t.above != null && t.above2 >= t.above)
+    return 'Diastolic (lower number) limit must be below the systolic limit'
+  return null
+}
