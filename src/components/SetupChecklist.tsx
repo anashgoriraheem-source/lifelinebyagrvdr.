@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { Bluetooth, ChevronRight, MapPin, UserRound, Users } from 'lucide-react'
 import { useApp } from '@/hooks/useApp'
-import { isStale } from '@/lib/detection'
-import { VITAL_META } from '@/lib/detection'
+import { useNow } from '@/hooks/useNow'
+import { VITAL_META, isStale } from '@/lib/detection'
 
 type Status = 'ready' | 'todo' | 'untested'
 
@@ -19,40 +19,41 @@ export function SetupChecklist() {
   const location = useApp((s) => s.location)
   const profile = useApp((s) => s.profile)
   const vitals = useApp((s) => s.vitals)
-  const now = useNowSafe()
   const userId = useApp((s) => s.userId)
+  const now = useNow()
 
-  const receiving = device.status === 'connected' && (Object.keys(VITAL_META) as (keyof typeof VITAL_META)[]).some((k) => vitals[k] && !isStale(k, vitals[k], now))
-  const items = [
+  const vitalKeys = Object.keys(VITAL_META) as (keyof typeof VITAL_META)[]
+  const receiving = device.status === 'connected' && vitalKeys.some((k) => vitals[k] && !isStale(k, vitals[k], now))
+  const items: { icon: typeof Users; title: string; value: string; status: Status; to: '/contacts' | '/monitor' | '/account' }[] = [
     {
       icon: Users,
       title: 'Emergency contacts',
       value: contacts.length ? `${contacts.length} saved${userId ? ' in your account' : ' in this browser only'}` : 'None saved yet',
       status: contacts.length ? 'ready' : 'todo',
-      to: '/contacts' as const,
+      to: '/contacts',
     },
     {
       icon: Bluetooth,
       title: 'Supported device',
       value: device.status === 'connected' ? `${device.name ?? 'Device'} connected` : 'Not connected — Chrome or Edge, Android or desktop',
       status: receiving ? 'ready' : device.status === 'connected' ? 'untested' : 'todo',
-      to: '/monitor' as const,
+      to: '/monitor',
     },
     {
       icon: MapPin,
       title: 'Location permission',
       value: location.status === 'tracking' ? 'Allowed and tracking' : location.status === 'denied' ? 'Blocked in the browser' : location.status === 'requesting' ? 'Asking…' : 'Not turned on yet',
       status: location.status === 'tracking' ? 'ready' : 'todo',
-      to: '/monitor' as const,
+      to: '/monitor',
     },
     {
       icon: UserRound,
       title: 'Medical profile',
       value: profile.name && profile.age != null ? `${profile.name} · age ${profile.age}` : 'Name and age missing',
       status: profile.name && profile.age != null ? 'ready' : 'todo',
-      to: '/account' as const,
+      to: '/account',
     },
-  ] as { icon: typeof Users; title: string; value: string; status: Status; to: '/contacts' | '/monitor' | '/account' }[]
+  ]
 
   return (
     <section className="mt-8" aria-label="Emergency setup checklist">
@@ -83,10 +84,3 @@ export function SetupChecklist() {
     </section>
   )
 }
-
-function useNowSafe() {
-  const now = useNow()
-  return now
-}
-
-import { useNow } from '@/hooks/useNow'

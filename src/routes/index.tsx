@@ -9,6 +9,7 @@ import { set } from '@/lib/store'
 import { isStale } from '@/lib/detection'
 import type { VitalKey } from '@/lib/types'
 import healthDevices from '@/assets/health-devices.jpg'
+import { SetupChecklist } from '@/components/SetupChecklist'
 
 export const Route = createFileRoute('/')({
   ssr: false,
@@ -50,9 +51,10 @@ function Home() {
     <section className="mt-8 grid divide-y divide-border border-y border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
       {[{icon:Users,title:'Emergency contacts',value:contacts.length ? `${contacts.length} saved on this device` : 'No contacts saved',to:'/contacts' as const},{icon:Bluetooth,title:'Wearable connection',value:device.status==='connected'?device.name ?? 'Connected device':device.status==='error'?'Connection error':'Not connected',to:'/monitor' as const},{icon:MapPin,title:'Location sharing',value:location.status==='tracking'&&location.fix?'Location available · not sent':'No location shared',to:'/monitor' as const}].map(x=><Link key={x.title} to={x.to} className="flex items-center gap-3 py-5 sm:px-5 sm:first:pl-0"><x.icon className="size-5 shrink-0 text-primary"/><div className="min-w-0 flex-1"><h3 className="text-sm font-medium">{x.title}</h3><p className="mt-1 truncate text-xs text-muted-foreground">{x.value}</p></div><ChevronRight className="size-4 text-muted-foreground"/></Link>)}
     </section>
+    <SetupChecklist />
     <section className="mt-8 grid gap-8 md:grid-cols-2">
       <div><h2 className="font-display text-lg font-semibold">Recent activity</h2><ul className="mt-3 divide-y divide-border">{log.slice(0,3).map(l=><li key={l.id} className="flex gap-3 py-3 text-sm"><Activity className="mt-0.5 size-4 shrink-0 text-muted-foreground"/><span>{l.text}</span></li>)}</ul>{log.length===0&&<p className="mt-4 text-sm text-muted-foreground">No activity yet.</p>}</div>
-      <div><h2 className="font-display text-lg font-semibold">Support when it matters</h2><Button variant="ghost" className="mt-3 w-full justify-start px-0" onClick={()=>set({assistantOpen:true})}><HeartPulse className="text-primary"/> First-aid assistant <ArrowRight className="ml-auto"/></Button><Button asChild variant="ghost" className="w-full justify-start px-0"><Link to="/saath"><LifeBuoy className="text-primary"/> Saath helpline directory <ArrowRight className="ml-auto"/></Link></Button><p className="mt-3 text-xs leading-relaxed text-muted-foreground">Lifeline is not a medical device or a replacement for professional care. In immediate danger, call your local emergency number.</p></div>
+      <div><h2 className="font-display text-lg font-semibold">Support when it matters</h2><Button variant="ghost" className="mt-3 w-full justify-start px-0" onClick={()=>set({assistantOpen:true})}><HeartPulse className="text-primary"/> First-aid assistant <ArrowRight className="ml-auto"/></Button><Button asChild variant="ghost" className="w-full justify-start px-0"><Link to="/saath"><LifeBuoy className="text-primary"/> Saath helpline directory <ArrowRight className="ml-auto"/></Link></Button><p className="mt-3 text-xs leading-relaxed text-muted-foreground">Lifeline is an emergency-support prototype, not a medical device or a replacement for professional care. Readings and alerts depend on your device and browser; calls and messages are only placed by you. In immediate danger, call your local emergency number.</p></div>
     </section>
   </main>
 }
