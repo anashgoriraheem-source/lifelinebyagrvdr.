@@ -2,8 +2,9 @@ import { Button } from '@/components/ui/button'
 import { useEffect, useRef, useState } from 'react'
 import { AlertTriangle, Ambulance, Check, Copy, MapPin, MessageSquare, Phone, Share2, Shield, Volume2, VolumeX } from 'lucide-react'
 import { useApp } from '@/hooks/useApp'
-import { cancelAlarm, dispatchAlarm, emergencyNumbers } from '@/lib/store'
-import { startTracking } from '@/lib/location'
+import { useNow } from '@/hooks/useNow'
+import { addLog, cancelAlarm, emergencyNumbers, openAlarmActions } from '@/lib/store'
+import { startTracking, stopTracking } from '@/lib/location'
 import { startSiren, stopSiren } from '@/lib/siren'
 import { buildSosMessage, clockTime, mapsLink, smsHref, telHref } from '@/lib/sos'
 import { appStore } from '@/lib/store'
@@ -12,7 +13,7 @@ export function AlarmOverlay() {
   const alarm = useApp((s) => s.alarm)
   const countdown = useApp((s) => s.countdownSeconds)
   if (alarm.phase === 'idle') return null
-  return alarm.phase === 'countdown' ? <Countdown total={countdown} /> : <Dispatched />
+  return alarm.phase === 'countdown' ? <Countdown total={countdown} /> : <AlarmActions />
 }
 
 function Countdown({ total }: { total: number }) {
@@ -26,7 +27,7 @@ function Countdown({ total }: { total: number }) {
     const id = setInterval(() => {
       const l = Math.max(0, total - Math.floor((Date.now() - started) / 1000))
       setLeft(l)
-      if (l === 0) dispatchAlarm()
+      if (l === 0) openAlarmActions()
     }, 200)
     return () => {
       clearInterval(id)
@@ -47,14 +48,14 @@ function Countdown({ total }: { total: number }) {
         <div className="relative grid size-52 place-items-center rounded-full border-8 border-border/30">
           <span className="font-display text-8xl font-extrabold tabular">{left}</span>
         </div>
-        <p className="mt-4 max-w-xs text-center text-destructive-foreground">
-          Call and message actions open in {left} s. Nobody is contacted automatically.
+        <p className="mt-4 max-w-sm text-center text-destructive-foreground">
+          When this reaches 0, buttons appear for you to call and to open message drafts. Nothing is dialled or sent automatically — you press every action.
         </p>
       </div>
       <div className="flex w-full max-w-sm flex-col gap-3">
         <HoldToCancel />
-        <Button onClick={dispatchAlarm} className="rounded-lg border-2 border-border/60 py-4 text-lg font-bold transition hover:bg-card/10">
-          Get help now
+        <Button onClick={openAlarmActions} className="rounded-lg border-2 border-border/60 py-4 text-lg font-bold transition hover:bg-card/10">
+          Show my emergency actions now
         </Button>
       </div>
     </div>
@@ -71,7 +72,7 @@ function HoldToCancel() {
     const step = () => {
       const v = Math.min(1, (performance.now() - t0) / 1500)
       setP(v)
-      if (v >= 1) { raf.current = null; cancelAlarm('cancelled by wearer'); return }
+      if (v >= 1) { raf.current = null; stopTracking(); addLog('location', 'Location tracking stopped — alarm cancelled'); cancelAlarm('cancelled by wearer'); return }
       raf.current = requestAnimationFrame(step)
     }
     raf.current = requestAnimationFrame(step)
@@ -101,16 +102,17 @@ function HoldToCancel() {
 function DemoStrip() {
   return (
     <div className="w-full max-w-xl rounded-lg bg-warning-soft px-4 py-2 text-center text-sm font-bold text-warning">
-      DEMO MODE · no real alerts · nobody will be contacted
+      DEMO MODE · simulated alert · call and message buttons are disabled · nobody will be contacted
     </div>
   )
 }
 
-function Dispatched() {
+function AlarmActions() {
   const alarm = useApp((s) => s.alarm)
   const loc = useApp((s) => s.location)
   const contacts = useApp((s) => s.contacts)
   const n = useApp(emergencyNumbers)
+  const now = useNow()
   const [done, setDone] = useState<Record<string, boolean>>({})
   const [siren, setSiren] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -138,16 +140,32 @@ function Dispatched() {
     }
   }
 
-  const resolve = () => {
+  /** Resolving stops GPS tracking unless the wearer explicitly keeps it on. */
+  const resolve = (keepTracking: boolean) => {
     const okMsg = `${appStore.state.profile.name} is safe now — the Lifeline alert at ${clockTime(alarm.startedAt ?? Date.now())} is resolved. Thank you.`
-    if (!alarm.demo && Object.keys(done).length && smsContacts.length && confirm('Send an "I\'m OK" message to your contacts?')) {
-      window.location.href = smsHref(smsContacts.map((c) => c.phone), okMsg)
+    let openDraft = false
+    if (!alarm.demo && smsContacts.length) {
+      openDraft = confirm('Open a draft "I\'m OK" message to your contacts? You must press Send in your messaging app — nothing is delivered from here.')
+    }
+    if (!keepTracking) {
+      stopTracking()
+      addLog('location', 'Location tracking stopped — alarm resolved')
     }
     cancelAlarm('marked resolved')
+    if (openDraft) window.location.href = smsHref(smsContacts.map((c) => c.phone), okMsg)
   }
 
+  const fixAge = loc.fix ? Math.round((now - loc.fix.at) / 1000) : null
+  const locState = !loc.fix
+    ? null
+    : fixAge != null && fixAge > 120
+      ? { label: `Out of date · last seen ${Math.round(fixAge / 60)} min ago`, tone: 'text-warning' }
+      : fixAge != null && fixAge > 30
+        ? { label: `Updated ${fixAge}s ago · may be out of date`, tone: 'text-muted-foreground' }
+        : { label: `Live · ±${Math.round(loc.fix.accuracy)} m · ${clockTime(loc.fix.at)}`, tone: 'text-muted-foreground' }
+
   return (
-    <div role="alertdialog" aria-modal="true" aria-label="Emergency response actions" className="fixed inset-0 z-40 overflow-y-auto bg-secondary text-foreground">
+    <div role="alertdialog" aria-modal="true" aria-label="Emergency actions — nothing has been sent yet" className="fixed inset-0 z-40 overflow-y-auto bg-secondary text-foreground">
       <div className="bg-destructive px-5 pb-6 pt-8">
         <div className="mx-auto max-w-2xl">
           {alarm.demo && <DemoStrip />}
@@ -155,10 +173,10 @@ function Dispatched() {
             {alarm.reason?.label} · {clockTime(alarm.startedAt ?? Date.now())}
           </p>
           <h2 className="mt-1 font-display text-3xl font-extrabold sm:text-4xl">
-            {alarm.demo ? 'Demo alert — this is what happens next' : 'Get help now'}
+            {alarm.demo ? 'Demo alert — this is what happens next' : 'Alarm active — action needed'}
           </h2>
           <p className="mt-1 text-destructive-foreground">
-            {alarm.demo ? 'In a real alert these buttons call and message your contacts.' : 'Tap to call. Messages open in your phone with your location attached — press Send.'}
+            Nobody has been contacted yet. Tapping a button opens your phone's dialler or a message draft — you place every call and press Send yourself.
           </p>
           <a
             href={alarm.demo ? undefined : telHref(n.general)}
@@ -175,9 +193,9 @@ function Dispatched() {
         {/* Location */}
         <section className="rounded-lg bg-card/5 p-4 ring-1 ring-border/10">
           <div className="flex items-center gap-2 text-sm font-semibold">
-            <MapPin className="size-4 text-critical" /> Live location
-            <span className="ml-auto text-xs font-medium text-muted-foreground">
-              {loc.status === 'tracking' && loc.fix ? `±${Math.round(loc.fix.accuracy)} m · ${clockTime(loc.fix.at)}` : loc.status === 'denied' ? 'Permission denied' : 'Locating…'}
+            <MapPin className="size-4 text-critical" /> Your location
+            <span className={`ml-auto text-xs font-medium ${locState?.tone ?? ''}`}>
+              {locState?.label ?? (loc.status === 'denied' ? 'Permission denied' : loc.status === 'unavailable' ? 'Not available on this device' : loc.error ?? 'Locating…')}
             </span>
           </div>
           {loc.fix ? (
@@ -186,7 +204,7 @@ function Dispatched() {
             </a>
           ) : (
             <p className="mt-2 text-sm text-muted-foreground">
-              {loc.status === 'denied' ? 'Enable location for this site so responders can find you. Say your address when you call.' : 'Getting a GPS fix. Messages sent now will say location is unavailable.'}
+              {loc.status === 'denied' ? 'Enable location for this site so the people you contact can find you. Say your address when you call.' : 'Getting a GPS fix. Messages opened now will say location is unavailable.'}
             </p>
           )}
         </section>
@@ -195,18 +213,24 @@ function Dispatched() {
         <section className="grid grid-cols-2 gap-3">
           <ServiceButton icon={<Shield className="size-5" />} label="Police" number={n.police} demo={alarm.demo} onUse={() => mark('police')} done={done.police} />
           <ServiceButton icon={<Ambulance className="size-5" />} label="Ambulance" number={n.ambulance} demo={alarm.demo} onUse={() => mark('ambulance')} done={done.ambulance} />
-          <a
-            href={alarm.demo ? undefined : smsHref([n.smsNumber], msg)}
-            onClick={() => mark('sms-112')}
-            className={`col-span-2 flex items-center gap-3 rounded-lg bg-destructive/15 p-4 ring-1 ring-destructive/30 ${alarm.demo ? 'pointer-events-none opacity-50' : 'hover:bg-destructive/25'}`}
-          >
-            <MessageSquare className="size-5 text-critical" />
-            <span className="flex-1">
-              <span className="block font-semibold">Prepare emergency text ({n.smsNumber})</span>
-              <span className="block text-xs text-muted-foreground">Emergency SMS where your region supports it. If unsure, call.</span>
-            </span>
-            {done['sms-112'] && <span className="text-xs text-muted-foreground">Opened</span>}
-          </a>
+          {n.smsVerified ? (
+            <a
+              href={alarm.demo ? undefined : smsHref([n.smsNumber], msg)}
+              onClick={() => mark('sms-112')}
+              className={`col-span-2 flex items-center gap-3 rounded-lg bg-destructive/15 p-4 ring-1 ring-destructive/30 ${alarm.demo ? 'pointer-events-none opacity-50' : 'hover:bg-destructive/25'}`}
+            >
+              <MessageSquare className="size-5 text-critical" />
+              <span className="flex-1">
+                <span className="block font-semibold">Open emergency text draft ({n.smsNumber})</span>
+                <span className="block text-xs text-muted-foreground">{n.smsNote} If unsure, call.</span>
+              </span>
+              {done['sms-112'] && <span className="text-xs text-muted-foreground">Draft opened</span>}
+            </a>
+          ) : (
+            <p className="col-span-2 rounded-lg bg-card/5 p-4 text-xs leading-relaxed text-muted-foreground ring-1 ring-border/10">
+              Emergency SMS in {n.country}: {n.smsNote} Calling is the recommended option.
+            </p>
+          )}
         </section>
 
         {/* Contacts */}
@@ -217,9 +241,10 @@ function Dispatched() {
               <a
                 href={alarm.demo ? undefined : smsHref(smsContacts.map((c) => c.phone), msg)}
                 onClick={() => mark('sms-all')}
+                title="Opens a draft message in your messaging app — you must press Send"
                 className={`rounded-full bg-card px-3 py-1.5 text-sm font-bold text-foreground ${alarm.demo ? 'pointer-events-none opacity-50' : ''}`}
               >
-                Message all
+                Open draft for all
               </a>
             )}
           </div>
@@ -232,7 +257,7 @@ function Dispatched() {
                   <span className="block text-xs text-muted-foreground">{c.relationship} · {c.phone}</span>
                 </span>
                 {c.sms && (
-                  <a aria-label={`Text ${c.name}`} href={alarm.demo ? undefined : smsHref([c.phone], msg)} onClick={() => mark(`s-${c.id}`)} className={`grid size-10 place-items-center rounded-full ${done[`s-${c.id}`] ? 'bg-accent' : 'bg-card/10'} ${alarm.demo ? 'pointer-events-none opacity-50' : ''}`}>
+                  <a aria-label={`Open draft message to ${c.name}`} href={alarm.demo ? undefined : smsHref([c.phone], msg)} onClick={() => mark(`s-${c.id}`)} className={`grid size-10 place-items-center rounded-full ${done[`s-${c.id}`] ? 'bg-accent' : 'bg-card/10'} ${alarm.demo ? 'pointer-events-none opacity-50' : ''}`}>
                     <MessageSquare className="size-4" />
                   </a>
                 )}
@@ -249,21 +274,27 @@ function Dispatched() {
         {/* Message preview */}
         <section className="rounded-lg bg-card/5 p-4 ring-1 ring-border/10">
           <div className="flex items-center gap-2">
-            <h3 className="mr-auto font-semibold">Message to send</h3>
+            <h3 className="mr-auto font-semibold">Message draft to send</h3>
             <Button onClick={share} className="flex items-center gap-1.5 rounded-full bg-card/10 px-3 py-1.5 text-sm hover:bg-card/20">
-              {copied ? <Copy className="size-4" /> : <Share2 className="size-4" />} {copied ? 'Copied' : 'Share'}
+              {copied ? <Copy className="size-4" /> : <Share2 className="size-4" />} {copied ? 'Copied' : 'Share or copy'}
             </Button>
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">This is a draft only. Lifeline cannot confirm delivery — you send it yourself.</p>
           <pre className="mt-3 whitespace-pre-wrap break-words font-mono text-xs leading-relaxed text-muted-foreground">{msg}</pre>
         </section>
 
-        <div className="flex flex-wrap gap-3 pb-[48dvh] sm:pb-28">
+        <div className="flex flex-col gap-3 pb-[48dvh] sm:pb-28">
           <Button onClick={() => setSiren((v) => !v)} className="flex items-center gap-2 rounded-lg bg-card/10 px-4 py-3 font-semibold hover:bg-card/20">
             {siren ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />} {siren ? 'Stop siren' : 'Sound siren'}
           </Button>
-          <Button onClick={resolve} className="flex-1 rounded-lg bg-success px-4 py-3 font-bold text-success hover:bg-success">
-            I'm safe — mark resolved
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button onClick={() => resolve(false)} className="flex-1 rounded-lg bg-success px-4 py-3 font-bold text-success hover:bg-success">
+              <Check className="mr-1 inline size-4" /> I'm safe — resolve & stop location
+            </Button>
+            <Button onClick={() => resolve(true)} variant="outline" className="rounded-lg px-4 py-3 font-semibold">
+              I'm safe — keep location on
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -286,4 +317,3 @@ function ServiceButton(props: { icon: React.ReactNode; label: string; number: st
     </a>
   )
 }
-

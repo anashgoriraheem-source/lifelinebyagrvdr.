@@ -23,7 +23,7 @@ export interface Reply {
   actions?: Action[]
 }
 
-export const QUICK_CHIPS = ["What's my status?", 'Explain this alert', 'What should I do?', 'Summarise today', 'Where am I?', 'Help me connect my watch']
+export const QUICK_CHIPS = ["What's my status?", 'Explain this alert', 'What should I do?', 'Last 24 hours', 'Where am I?', 'Help me connect my watch']
 
 const has = (q: string, ...words: string[]) => words.some((w) => q.includes(w))
 
@@ -104,7 +104,7 @@ export function respond(input: string, s: AppState): Reply {
     }
   }
 
-  if (has(q, 'summar', 'today', 'this week')) {
+  if (has(q, 'summar', 'today', 'last 24', '24 hours', 'this week')) {
     const day = Date.now() - 86_400_000
     const today = s.log.filter((l) => l.at > day)
     const alarms = today.filter((l) => l.kind === 'alarm' || l.kind === 'sos').length
@@ -118,7 +118,7 @@ export function respond(input: string, s: AppState): Reply {
 
   if (has(q, 'connect', 'watch', 'bluetooth', 'pair', 'device', 'band')) {
     return {
-      text: 'Lifeline connects to devices using standard Bluetooth health profiles: heart-rate straps, watches in heart-rate broadcast mode, pulse oximeters, BP cuffs and glucometers. Use Chrome or Edge on Android or desktop; iPhone Safari does not support Web Bluetooth ; no iOS native app is connected here. On Garmin, turn on "Broadcast Heart Rate". On Polar and Coros, enable HR sharing. Apple Watch, Galaxy Watch and Fitbit need their cloud or native connection. Open Monitor and select Connect wearable. Only measurements exposed by that device can be read.',
+      text: 'Lifeline reads standard Bluetooth health profiles: heart-rate straps, watches in heart-rate broadcast mode, pulse oximeters, BP cuffs and glucometers. Use Chrome or Edge on Android or desktop; iPhone Safari does not support Web Bluetooth, and there is no iOS native app. On Garmin, turn on "Broadcast Heart Rate". On Polar and Coros, enable HR sharing. Apple Watch, Galaxy Watch and Fitbit need their cloud or native connection. Open Monitor and select Connect wearable. Compatibility with specific watch models has not been tested — only measurements your device actually exposes can be read.',
     }
   }
 
@@ -132,7 +132,7 @@ export function respond(input: string, s: AppState): Reply {
   }
 
   return {
-    text: `I can guide you through first aid for: ${GUIDES.slice(0, 8).map((x) => x.title.split(' · ')[0].toLowerCase()).join(', ')} and more. I'm not a doctor and can't diagnose. If something feels seriously wrong, call ${n.general}.`,
+    text: `I didn't understand that. I can guide you through first aid for: ${GUIDES.slice(0, 8).map((x) => x.title.split(' · ')[0].toLowerCase()).join(', ')} and more. I'm not a doctor and can't diagnose. If something feels seriously wrong, call ${n.general}.`,
     actions: callAll,
   }
 }
