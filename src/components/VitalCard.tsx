@@ -28,7 +28,7 @@ export function VitalCard({ k, delay = 0 }: { k: VitalKey; delay?: number }) {
   const st = STATUS[status]
   const ago = r ? Math.max(0, Math.round((now - r.measuredAt) / 1000)) : null
   const intermittent = k === 'bp' || k === 'glucose'
-  const source = demo ? 'Demo' : !r ? 'Not provided' : stale ? 'Signal lost' : intermittent ? 'Last measured' : 'Live'
+  const source = demo ? 'Demo' : !r ? 'Not provided' : stale ? 'Signal lost' : r.quality === 'uncertain' ? 'Uncertain' : intermittent ? 'Last measured' : 'Live'
 
   return (
     <article
@@ -48,7 +48,7 @@ export function VitalCard({ k, delay = 0 }: { k: VitalKey; delay?: number }) {
         <Sparkline data={hist} color={st.line} />
       </div>
       <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
-        <span className={`rounded-md px-1.5 py-0.5 font-semibold ${demo ? 'bg-warning-soft text-warning' : source === 'Live' ? 'bg-success-soft text-success' : 'bg-muted text-muted-foreground'}`}>{source}</span>
+        <span className={`rounded-md px-1.5 py-0.5 font-semibold ${demo ? 'bg-warning-soft text-warning' : source === 'Live' ? 'bg-success-soft text-success' : source === 'Uncertain' ? 'bg-warning-soft text-warning' : 'bg-muted text-muted-foreground'}`}>{source}</span>
         <span className="truncate">{r ? `${r.source} · ${(ago ?? 0) < 2 ? 'just now' : `${ago}s ago`}` : 'No connected device provides this'}</span>
       </div>
     </article>

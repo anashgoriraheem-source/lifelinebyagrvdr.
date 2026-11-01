@@ -7,7 +7,7 @@ import { ArrowDown, ArrowUp, Ambulance, Flame, MessageSquare, Pencil, Phone, Plu
 import { useApp } from '@/hooks/useApp'
 import { DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY, RELATIONSHIPS } from '@/lib/fixtures'
 import { emergencyNumbers, set } from '@/lib/store'
-import { VITAL_META } from '@/lib/detection'
+import { VITAL_META, thresholdError } from '@/lib/detection'
 import { buildSosMessage, isValidPhone, smsHref, telHref } from '@/lib/sos'
 import type { Contact, VitalKey } from '@/lib/types'
 
@@ -32,6 +32,16 @@ function Contacts() {
   const saveCloud = useServerFn(saveSafetyContacts)
   const [saving, setSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState('')
+  const [tErr, setTErr] = useState<Partial<Record<VitalKey, string | null>>>({})
+
+  /** Reject impossible or contradictory limits; keep the previous value when rejected. */
+  const editThreshold = (k: VitalKey, f: 'below' | 'above' | 'above2', raw: string) =>
+    set((s) => {
+      const t = { ...s.thresholds[k], [f]: raw === '' ? null : Number(raw) }
+      const err = thresholdError(k, t)
+      setTErr((e) => ({ ...e, [k]: err }))
+      return err ? {} : { thresholds: { ...s.thresholds, [k]: t } }
+    })
 
   const move = (i: number, d: -1 | 1) =>
     set((s) => {
@@ -75,8 +85,9 @@ function Contacts() {
           ))}
         </div>
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-          Lifeline never auto-dials emergency services. During an alert you get a one-tap call button and an SMS to {n.smsNumber} pre-filled with your location and medical details, where your region accepts emergency SMS.
+          Lifeline never auto-dials or auto-sends to emergency services. During an alert you get one-tap call buttons{n.smsVerified ? ` and an SMS draft to ${n.smsNumber} pre-filled with your location and medical details` : ''}. You place every call and press Send yourself.
         </p>
+        {!n.smsVerified && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">Emergency SMS in {n.country}: {n.smsNote} Calling is the recommended option.</p>}
       </section>
 
       {/* Personal contacts */}
@@ -84,7 +95,7 @@ function Contacts() {
         <div className="flex items-center gap-3">
           <div className="mr-auto">
             <h2 className="font-display text-xl font-bold">Personal contacts</h2>
-            <p className="text-sm text-muted-foreground">First in the list is your primary contact. {userId ? 'Changes stay unsaved until you save to your account.' : 'Saved locally on this device.'}</p>
+            <p className="text-sm text-muted-foreground">Order only organizes this list — there is no automatic escalation. {userId ? 'Changes stay unsaved until you save to your account.' : 'Saved locally on this device.'}</p>
           </div>
           <Button disabled={!!userId && accountStatus !== 'ready'} onClick={() => setEditing('new')} className="flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-sm font-bold text-foreground">
             <Plus className="size-4" /> Add
@@ -145,11 +156,11 @@ function Contacts() {
             <RotateCcw className="size-3.5" /> Reset to defaults
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground">Talk to your doctor before changing these.</p>
+        <p className="text-sm text-muted-foreground">These limits decide when an alarm fires — they are not medical advice. Talk to your doctor before changing them. Saved in this browser{userId ? ' and your account' : ''}.</p>
         <table className="mt-4 w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase tracking-normal text-muted-foreground">
-              <th className="pb-2 font-semibold">Vital</th><th className="pb-2 font-semibold">Below</th><th className="pb-2 font-semibold">Above</th>
+              <th className="pb-2 font-semibold">Vital</th><th className="pb-2 font-semibold">Alarm under</th><th className="pb-2 font-semibold">Alarm over</th><th className="pb-2 font-semibold">Second value</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -162,19 +173,34 @@ function Contacts() {
                       type="number"
                       value={thresholds[k][f] ?? ''}
                       placeholder="—"
-                      onChange={(e) => set((s) => ({ thresholds: { ...s.thresholds, [k]: { ...s.thresholds[k], [f]: e.target.value === '' ? null : Number(e.target.value) } } }))}
+                      aria-label={`${VITAL_META[k].label} ${f === 'below' ? 'lower' : 'upper'} limit`}
+                      onChange={(e) => editThreshold(k, f, e.target.value)}
                       className="w-full max-w-20 rounded-lg border border-border px-2 py-1 font-mono"
                     />
-                    {k === 'bp' && f === 'above' && <span className="ml-1 text-xs text-muted-foreground">sys · dia &gt; {thresholds.bp.above2}</span>}
                   </td>
                 ))}
+                <td className="py-2.5 pr-2">
+                  {k === 'bp' ? (
+                    <input
+                      type="number"
+                      value={thresholds.bp.above2 ?? ''}
+                      placeholder="—"
+                      aria-label="Blood pressure diastolic upper limit"
+                      onChange={(e) => editThreshold('bp', 'above2', e.target.value)}
+                      className="w-full max-w-20 rounded-lg border border-border px-2 py-1 font-mono"
+                    />
+                  ) : <span className="text-xs text-muted-foreground">—</span>}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+        {Object.values(tErr).some(Boolean) && (
+          <p role="alert" className="mt-2 text-xs font-semibold text-critical">{Object.values(tErr).find(Boolean)} — change rejected, the previous limit is kept.</p>
+        )}
       </section>
 
-      {editing && <ContactForm initial={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
+      {editing && <ContactForm initial={editing === 'new' ? null : editing} country={country} onClose={() => setEditing(null)} />}
     </main>
   )
 }
@@ -191,10 +217,10 @@ function IconBtn({ children, label, ...rest }: { children: React.ReactNode; labe
   return <Button variant="ghost" size="icon" type="button" aria-label={label} title={label} {...rest} className="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-card hover:text-foreground disabled:opacity-30">{children}</Button>
 }
 
-function ContactForm({ initial, onClose }: { initial: Contact | null; onClose: () => void }) {
+function ContactForm({ initial, country, onClose }: { initial: Contact | null; country: string; onClose: () => void }) {
   const [f, setF] = useState<Contact>(initial ?? { id: `c${Date.now()}`, name: '', relationship: 'Daughter', phone: '+91 ', call: true, sms: true })
   const [touched, setTouched] = useState(false)
-  const phoneOk = isValidPhone(f.phone)
+  const phoneOk = isValidPhone(f.phone, country)
   const nameOk = f.name.trim().length > 1
   const save = (e: React.FormEvent) => {
     e.preventDefault()

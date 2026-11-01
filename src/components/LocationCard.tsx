@@ -12,6 +12,14 @@ export function LocationCard() {
   const [copied, setCopied] = useState(false)
   const f = loc.fix
   const tracking = loc.status === 'tracking' || loc.status === 'requesting'
+  const age = f ? Math.round((now - f.at) / 1000) : null
+  const fixLabel = f
+    ? age != null && age > 120
+      ? `Out of date · last seen ${Math.round(age / 60)} min ago`
+      : age != null && age > 30
+        ? `Last update ${age}s ago · may be out of date`
+        : `±${Math.round(f.accuracy)} m · live`
+    : null
   const d = f ? Math.max(0.0015, (f.accuracy / 111_000) * 3) : 0
   const bbox = f ? `${f.lng - d * 1.6},${f.lat - d},${f.lng + d * 1.6},${f.lat + d}` : ''
 
@@ -31,7 +39,8 @@ export function LocationCard() {
         <div className="mr-auto">
           <h3 className="text-sm font-semibold text-muted-foreground">Live location</h3>
           <p className="text-[11px] text-muted-foreground">
-            {loc.status === 'tracking' && f ? `±${Math.round(f.accuracy)} m · updated ${Math.max(0, Math.round((now - f.at) / 1000))}s ago`
+            {loc.status === 'tracking' && f && fixLabel
+              ? fixLabel
               : loc.status === 'requesting' ? 'Waiting for permission and GPS…'
               : loc.status === 'denied' ? 'Permission denied — enable location for this site'
               : loc.status === 'unavailable' ? 'Not supported on this device'
