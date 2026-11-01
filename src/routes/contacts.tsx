@@ -1,3 +1,4 @@
+import { AlertHistory } from '@/components/AlertHistory'
 import { Button } from '@/components/ui/button'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
@@ -137,6 +138,8 @@ function Contacts() {
           </a>
         </div>
       </section>
+
+      <AlertHistory />
 
       {/* Countdown */}
       <section className={`${card} mt-5`}>

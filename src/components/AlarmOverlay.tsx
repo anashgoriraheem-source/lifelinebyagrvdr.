@@ -8,6 +8,7 @@ import { startTracking, stopTracking } from '@/lib/location'
 import { startSiren, stopSiren } from '@/lib/siren'
 import { buildSosMessage, clockTime, mapsLink, smsHref, telHref } from '@/lib/sos'
 import { appStore } from '@/lib/store'
+import type { AlertRecordState } from '@/lib/alertPlan'
 
 export function AlarmOverlay() {
   const alarm = useApp((s) => s.alarm)
@@ -107,8 +108,16 @@ function DemoStrip() {
   )
 }
 
+const ALERT_RECORD_TEXT: Record<Exclude<AlertRecordState, 'idle'>, string> = {
+  saving: 'Recording this alarm in your account (test mode)…',
+  saved: 'Recorded in your account in test mode. Nothing has been sent.',
+  error: 'Could not record this alarm in your account. Nothing has been sent.',
+  'signed-out': 'Sign in to keep a record of alarms. Nothing has been sent.',
+}
+
 function AlarmActions() {
   const alarm = useApp((s) => s.alarm)
+  const alertRecord = useApp((s) => s.alertRecord)
   const loc = useApp((s) => s.location)
   const contacts = useApp((s) => s.contacts)
   const n = useApp(emergencyNumbers)
@@ -178,6 +187,9 @@ function AlarmActions() {
           <p className="mt-1 text-destructive-foreground">
             Nobody has been contacted yet. Tapping a button opens your phone's dialler or a message draft — you place every call and press Send yourself.
           </p>
+          {alertRecord !== 'idle' && (
+            <p role="status" className="mt-2 text-sm font-semibold text-destructive-foreground">{ALERT_RECORD_TEXT[alertRecord]}</p>
+          )}
           <a
             href={alarm.demo ? undefined : telHref(n.general)}
             onClick={() => mark('call-general')}

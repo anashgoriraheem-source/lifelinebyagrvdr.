@@ -1,6 +1,7 @@
 import { Store } from '@tanstack/react-store'
 import { DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY } from './fixtures'
 import { persistedSettingsSchema } from './settings'
+import type { AlertRecordState } from './alertPlan'
 import type {
   AlarmReason, AlarmState, Profile, Contact, LocationFix, LocationStatus, LogEntry, Reading, Threshold, VitalKey,
 } from './types'
@@ -26,6 +27,8 @@ export interface AppState {
   assistantLanguage: 'en' | 'hi' | 'pa' | 'ur'
   /** Active live-location incident in the cloud, if signed in. */
   incident: { id: string; token: string } | null
+  /** Whether the current alarm was written to the account's test-mode alert history. */
+  alertRecord: AlertRecordState
 }
 
 export interface DeviceState {
@@ -57,6 +60,7 @@ const initial: AppState = {
   accountStatus: 'signed-out',
   assistantLanguage: 'en',
   incident: null,
+  alertRecord: 'idle',
 }
 
 export const appStore = new Store<AppState>(initial)
