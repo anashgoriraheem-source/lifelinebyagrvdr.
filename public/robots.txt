@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://lifelinebyagrvdr.lovable.app/sitemap.xml
