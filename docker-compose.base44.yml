@@ -1,0 +1,173 @@
+# Base44 sandbox environment: the Vite/TanStack Start app runs from the mounted
+# source with hot reload, backed by a local Supabase stand-in
+# (Postgres + GoTrue auth + PostgREST) so sign-in and account sync work offline.
+#
+#   web      Vite dev server            -> host 3000 (the preview entry point)
+#   gateway  Supabase HTTP entry point  -> host 8000 (/auth/v1, /rest/v1)
+#   auth     GoTrue                     -> internal 9999
+#   rest     PostgREST                  -> internal 3000
+#   db       Postgres 16                -> internal 5432
+#   migrate  applies supabase/migrations once, then exits
+#
+# Local credentials live in .env.base44-defaults (development-only values).
+services:
+  db:
+    image: postgres:16
+    restart: on-failure
+    env_file:
+      - ./.env.base44-defaults
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./supabase/local/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  auth:
+    image: supabase/gotrue:v2.177.0
+    restart: on-failure
+    env_file:
+      - ./.env.base44-defaults
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      PORT: "9999"
+      GOTRUE_DB_DRIVER: postgres
+      # GoTrue reads this one without the GOTRUE_ prefix.
+      API_EXTERNAL_URL: https://8000-${BASE44_PUBLIC_HOST_SUFFIX}/auth/v1
+      GOTRUE_DB_NAMESPACE: auth
+      GOTRUE_SITE_URL: https://3000-${BASE44_PUBLIC_HOST_SUFFIX}
+      GOTRUE_URI_ALLOW_LIST: https://3000-${BASE44_PUBLIC_HOST_SUFFIX}/**
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_SMTP_ADMIN_EMAIL: no-reply@lifeline.local
+      GOTRUE_JWT_EXP: "3600"
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_LOG_LEVEL: info
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9999/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  rest:
+    # The published PostgREST image is a shell-less scratch image, so the server
+    # binary runs on a normal base image that provides a healthcheck probe.
+    build:
+      dockerfile_inline: |
+        FROM node:22
+        COPY --from=postgrest/postgrest:v12.2.12 /bin/postgrest /bin/postgrest
+    image: lifeline-postgrest:local
+    entrypoint: ["/bin/postgrest"]
+    restart: on-failure
+    env_file:
+      - ./.env.base44-defaults
+    environment:
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      # GoTrue's auth.uid() reads the legacy per-claim settings.
+      PGRST_DB_USE_LEGACY_GUCS: "true"
+      PGRST_SERVER_PORT: "3000"
+      PGRST_LOG_LEVEL: info
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:3000/ || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  gateway:
+    image: nginx:alpine
+    restart: on-failure
+    ports:
+      - "8000:80"
+    volumes:
+      - ./supabase/local/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      auth:
+        condition: service_healthy
+      rest:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    image: postgres:16
+    env_file:
+      - ./.env.base44-defaults
+    volumes:
+      - ./supabase/migrations:/migrations:ro
+    command:
+      - sh
+      - -ec
+      - |
+        for f in /migrations/*.sql; do
+          echo "applying $$f"
+          psql "$$DATABASE_URL" -v ON_ERROR_STOP=1 -q -f "$$f"
+        done
+        psql "$$DATABASE_URL" -q -c "notify pgrst, 'reload schema';"
+        echo "migrations complete"
+    depends_on:
+      db:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+
+  web:
+    image: node:22
+    restart: on-failure
+    working_dir: /workspace
+    labels:
+      base44.project: Lifeline
+      base44.kind: web
+      base44.port: "3000"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/workspace
+    env_file:
+      - ./.env.base44-defaults
+      - /run/base44/app.env
+    environment:
+      # Browser-facing Supabase URL; the server rewrites it to SUPABASE_URL.
+      VITE_SUPABASE_URL: https://8000-${BASE44_PUBLIC_HOST_SUFFIX}
+      BASE44_PREVIEW_MODE: ${BASE44_PREVIEW_MODE:-}
+      BASE44_PUBLIC_HOST_SUFFIX: ${BASE44_PUBLIC_HOST_SUFFIX:-}
+      BASE44_SANDBOX_HOST_DOMAIN: ${BASE44_SANDBOX_HOST_DOMAIN:-}
+      __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS: ${__VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS:-}
+      CHOKIDAR_USEPOLLING: "true"
+    command:
+      - sh
+      - -ec
+      - |
+        npm ci --no-audit --no-fund --prefer-offline
+        exec npm run dev
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 60s
+
+volumes:
+  db-data:

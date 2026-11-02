@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { appStore, loadSettings, raiseAlarm, set } from '@/lib/store'
+import { appStore, loadSettings, noteReadingDay, raiseAlarm, set } from '@/lib/store'
 import { DEMO_DEVICE, SCENARIO_TARGETS } from '@/lib/fixtures'
 import { VITAL_META, classify, createSustainTracker, formatReading } from '@/lib/detection'
 import type { Reading, VitalKey, VitalStatus } from '@/lib/types'
@@ -33,6 +33,7 @@ export function VitalsEngine() {
           if (!r || now - r.receivedAt > 30_000) continue
           live[k] = statuses[k] = classify(k, r, s.thresholds[k], statuses[k])
         }
+        noteReadingDay(Object.keys(live) as VitalKey[], now)
         if (s.alarm.phase !== 'idle') {
           sustained = createSustainTracker()
           return
@@ -70,6 +71,7 @@ export function VitalsEngine() {
       const history = { ...s.history }
       for (const k of Object.keys(history) as VitalKey[]) { const reading = v[k]; if (reading) history[k] = [...history[k], reading.value].slice(-RING) }
       set({ vitals: v, history })
+      noteReadingDay((Object.keys(v) as VitalKey[]).filter((k) => v[k]), now)
 
       for (const k of Object.keys(VITAL_META) as VitalKey[]) statuses[k] = classify(k, v[k], s.thresholds[k], statuses[k])
       // While an alarm is active (or just cancelled) the sustain window restarts from zero.
