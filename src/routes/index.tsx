@@ -11,6 +11,7 @@ import { isStale } from '@/lib/detection'
 import type { VitalKey } from '@/lib/types'
 import healthDevices from '@/assets/health-devices.jpg'
 import { SetupChecklist } from '@/components/SetupChecklist'
+import { LanguageOnboarding } from '@/components/LanguageOnboarding'
 
 export const Route = createFileRoute('/')({
   ssr: false,
@@ -46,6 +47,7 @@ function Home() {
       <div className="relative hidden min-h-72 overflow-hidden border-l border-border lg:block"><img src={healthDevices} alt="Illustrative Bluetooth pulse oximeter and fitness band with unlit displays" width={1536} height={768} className="device-visual"/><span className="absolute bottom-4 left-4 text-xs text-muted-foreground">Compatible health devices · illustrative image</span></div>
     </section>
     <section className="mt-7"><div className="mb-4 flex items-center justify-between"><h2 className="font-display text-lg font-semibold">Your vitals</h2><span className="flex items-center gap-2 text-xs text-muted-foreground"><span className={`size-1.5 rounded-full ${demo?'bg-warning':receiving?'bg-success':'bg-muted-foreground'}`}/>{demo?'Simulated data':receiving?'Device data':'No live data'}</span></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{keys.map(k=><VitalCard key={k} k={k}/>)}</div></section>
+    <LanguageOnboarding />
     <DashboardOverview />
     <SetupChecklist />
     <section className="mt-8">

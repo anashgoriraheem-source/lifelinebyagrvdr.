@@ -29,6 +29,17 @@ export interface Contact {
   phone: string
   call: boolean
   sms: boolean
+  /** Email address for alert notifications. Never shown to anyone else. */
+  email?: string
+  emailAlerts?: boolean
+  /**
+   * When the person explicitly confirmed these details are correct. This is a
+   * self-confirmation, not provider verification: Lifeline has no OTP provider
+   * configured yet.
+   */
+  confirmedAt?: number | null
+  /** Test destination: never receives a live provider message. */
+  testDestination?: boolean
 }
 
 export interface EmergencyNumbers {

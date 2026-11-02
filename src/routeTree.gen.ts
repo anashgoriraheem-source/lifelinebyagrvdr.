@@ -11,9 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as MonitorRouteImport } from './routes/monitor'
 import { Route as SaathRouteImport } from './routes/saath'
+import { Route as TranslateRouteImport } from './routes/translate'
+import { Route as AckTokenRouteImport } from './routes/ack/$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,6 +26,11 @@ const IndexRoute = IndexRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssistantRoute = AssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactsRoute = ContactsRouteImport.update({
@@ -40,43 +48,90 @@ const SaathRoute = SaathRouteImport.update({
   path: '/saath',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TranslateRoute = TranslateRouteImport.update({
+  id: '/translate',
+  path: '/translate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AckTokenRoute = AckTokenRouteImport.update({
+  id: '/ack/$token',
+  path: '/ack/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/assistant': typeof AssistantRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
+  '/translate': typeof TranslateRoute
+  '/ack/$token': typeof AckTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/assistant': typeof AssistantRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
+  '/translate': typeof TranslateRoute
+  '/ack/$token': typeof AckTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/assistant': typeof AssistantRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
+  '/translate': typeof TranslateRoute
+  '/ack/$token': typeof AckTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/account' | '/contacts' | '/monitor' | '/saath'
+  fullPaths:
+    | '/'
+    | '/account'
+    | '/assistant'
+    | '/contacts'
+    | '/monitor'
+    | '/saath'
+    | '/translate'
+    | '/ack/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/contacts' | '/monitor' | '/saath'
-  id: '__root__' | '/' | '/account' | '/contacts' | '/monitor' | '/saath'
+  to:
+    | '/'
+    | '/account'
+    | '/assistant'
+    | '/contacts'
+    | '/monitor'
+    | '/saath'
+    | '/translate'
+    | '/ack/$token'
+  id:
+    | '__root__'
+    | '/'
+    | '/account'
+    | '/assistant'
+    | '/contacts'
+    | '/monitor'
+    | '/saath'
+    | '/translate'
+    | '/ack/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
+  AssistantRoute: typeof AssistantRoute
   ContactsRoute: typeof ContactsRoute
   MonitorRoute: typeof MonitorRoute
   SaathRoute: typeof SaathRoute
+  TranslateRoute: typeof TranslateRoute
+  AckTokenRoute: typeof AckTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -93,6 +148,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assistant': {
+      id: '/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contacts': {
@@ -116,15 +178,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SaathRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/translate': {
+      id: '/translate'
+      path: '/translate'
+      fullPath: '/translate'
+      preLoaderRoute: typeof TranslateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ack/$token': {
+      id: '/ack/$token'
+      path: '/ack/$token'
+      fullPath: '/ack/$token'
+      preLoaderRoute: typeof AckTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
+  AssistantRoute: AssistantRoute,
   ContactsRoute: ContactsRoute,
   MonitorRoute: MonitorRoute,
   SaathRoute: SaathRoute,
+  TranslateRoute: TranslateRoute,
+  AckTokenRoute: AckTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

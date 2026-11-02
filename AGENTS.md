@@ -51,3 +51,30 @@ and the publishable/service keys; all of them are supplied by compose.
 - Keep multilingual matching local and phrase-backed; unsupported input remains unchanged and medical guidance language is explicitly shown.
 - Validate persisted device-local settings with the shared schema and write only when settings change to avoid high-frequency storage work.
 - Decode standard Bluetooth packets strictly and reject absent or malformed values rather than supplying defaults.
+
+## Localization, voice and medical safety
+- `src/i18n/messages/en.ts` is the reference catalog; `src/i18n/messages/packs.ts`
+  holds partial machine-drafted packs (31 strings each at the time of writing).
+  Adding an English key increases the denominator, so the language picker and
+  the audit immediately report it as missing in every pack.
+- `src/i18n/coverage.ts` is the only source of truth for "is this language
+  complete". Never label a locale complete from `locales.ts` alone; run
+  `auditLocale()`/`describeLocale()`. `coverage.test.ts` fails if a required
+  surface string is absent from English.
+- `src/i18n/worldLanguages.ts` only labels translate-only languages. Actual
+  support comes from the provider: `translationLanguages` calls LibreTranslate
+  `/languages`; a model adapter returns `unverified` because it publishes no
+  catalogue. Do not turn the world list into a promise.
+- Interface direction comes from `locales.ts` and is applied to `<html dir>` by
+  `I18nProvider`; use logical CSS properties (`ms-`/`me-`) so RTL mirrors.
+- Voice support is reported per language from `speechSynthesis.getVoices()` in
+  `VoiceSupport.tsx`. A headless browser legitimately reports zero voices; that
+  is a device limitation to state, not a bug to hide.
+- Medication guidance (`src/lib/medications.ts`) is disabled by default. It
+  requires `MEDICATION_GUIDANCE_ENABLED=1` AND every entry marked
+  `clinically-reviewed`; the env flag alone is not enough. Emergency symptoms,
+  overdose and poisoning are evaluated before the gate and always win. The
+  app never states a dose, brand, prescription choice or substitution. Run
+  `medications.test.ts` after touching the reference or the factor checks.
+- Assistant knowledge is versioned in `src/data/health-sources.ts`
+  (`KNOWLEDGE_BASE`) and is never written by a model response.

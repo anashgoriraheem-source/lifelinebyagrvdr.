@@ -1,37 +1,126 @@
-import { useEffect } from 'react'
-import { useServerFn } from '@tanstack/react-start'
-import { useRouter } from '@tanstack/react-router'
-import { supabase } from '@/integrations/supabase/client'
-import { readSafetyAccount } from '@/lib/account.functions'
-import { appStore, set } from '@/lib/store'
+import { useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useRouter } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+import { readSafetyAccount, saveSafetyPreferences } from "@/lib/account.functions";
+import { appStore, set } from "@/lib/store";
+import { isLocaleCode } from "@/i18n/locales";
+
+const EMPTY_PROFILE = {
+  name: "",
+  age: null,
+  bloodType: "",
+  conditions: [],
+  allergies: [],
+  medications: [],
+};
 
 export function AccountSync() {
-  const read = useServerFn(readSafetyAccount)
-  const router = useRouter()
+  const read = useServerFn(readSafetyAccount);
+  const savePrefs = useServerFn(saveSafetyPreferences);
+  const router = useRouter();
+
   useEffect(() => {
-    let active = true
-    let generation = 0
+    let active = true;
+    let generation = 0;
     const sync = async () => {
-      const my = ++generation
-      const { data } = await supabase.auth.getUser()
-      if (!active || my !== generation) return
-      const user = data.user
-      if (appStore.state.userId === (user?.id ?? null)) return
-      set({ userId: user?.id ?? null, userEmail: user?.email ?? null, contacts: [], profile: { name: '', age: null, bloodType: '', conditions: [], allergies: [], medications: [] }, log: [], incident: null, accountStatus: user ? 'loading' : 'signed-out' })
-      if (!user) return
+      const my = ++generation;
+      const { data } = await supabase.auth.getUser();
+      if (!active || my !== generation) return;
+      const user = data.user;
+      if (appStore.state.userId === (user?.id ?? null)) return;
+      set({
+        userId: user?.id ?? null,
+        userEmail: user?.email ?? null,
+        contacts: [],
+        profile: EMPTY_PROFILE,
+        log: [],
+        incident: null,
+        accountStatus: user ? "loading" : "signed-out",
+        dispatch: null,
+        dispatchState: "idle",
+      });
+      if (!user) return;
       try {
-        const safety = await read()
-        if (!active || my !== generation || appStore.state.userId !== user.id) return
-        const p = safety.profile
-        set({ contacts: safety.contacts.map(c => ({ id: c.id, name: c.name, relationship: c.relationship, phone: c.phone, call: c.call, sms: c.sms })), profile: p ? { name: p.full_name, age: p.age, bloodType: p.blood_type, conditions: p.conditions, allergies: p.allergies, medications: p.medications } : { name: '', age: null, bloodType: '', conditions: [], allergies: [], medications: [] }, accountStatus: 'ready' })
-      } catch { if (active && my === generation) set({ accountStatus: 'error' }) }
-    }
-    void sync()
-    const { data } = supabase.auth.onAuthStateChange(event => {
-      if (!['SIGNED_IN', 'SIGNED_OUT', 'USER_UPDATED'].includes(event)) return
-      queueMicrotask(() => { void sync(); void router.invalidate() })
-    })
-    return () => { active = false; generation++; data.subscription.unsubscribe() }
-  }, [read, router])
-  return null
+        const safety = await read();
+        if (!active || my !== generation || appStore.state.userId !== user.id) return;
+        const p = safety.profile;
+        const prefs = safety.preferences;
+        set({
+          contacts: safety.contacts.map((c) => ({
+            id: c.id,
+            name: c.name,
+            relationship: c.relationship,
+            phone: c.phone,
+            call: c.call,
+            sms: c.sms,
+            email: c.email ?? "",
+            emailAlerts: Boolean(c.email_alerts),
+            confirmedAt: c.confirmed_at ? Date.parse(c.confirmed_at) : null,
+            testDestination: c.test_destination !== false,
+          })),
+          profile: p
+            ? {
+                name: p.full_name,
+                age: p.age,
+                bloodType: p.blood_type,
+                conditions: p.conditions,
+                allergies: p.allergies,
+                medications: p.medications,
+              }
+            : EMPTY_PROFILE,
+          language:
+            prefs && isLocaleCode(prefs.language) ? prefs.language : appStore.state.language,
+          dispatchConsent: Boolean(prefs?.dispatch_consent),
+          shareLocation: Boolean(prefs?.share_location),
+          accountStatus: "ready",
+        });
+      } catch {
+        if (active && my === generation) set({ accountStatus: "error" });
+      }
+    };
+    void sync();
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
+      queueMicrotask(() => {
+        void sync();
+        void router.invalidate();
+      });
+    });
+    return () => {
+      active = false;
+      generation++;
+      data.subscription.unsubscribe();
+    };
+  }, [read, router]);
+
+  // Persist language, dispatch consent and location sharing to the account.
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let previous = "";
+    const unsubscribe = appStore.subscribe((s) => {
+      if (!s.userId || s.accountStatus !== "ready") return;
+      const key = JSON.stringify([s.language, s.dispatchConsent, s.shareLocation]);
+      if (key === previous) return;
+      previous = key;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        void savePrefs({
+          data: {
+            language: s.language,
+            dispatchConsent: s.dispatchConsent,
+            shareLocation: s.shareLocation,
+          },
+        }).catch(() => {
+          // Keep the local choice; the next change retries the account write.
+        });
+      }, 800);
+    });
+    return () => {
+      clearTimeout(timer);
+      unsubscribe.unsubscribe();
+    };
+  }, [savePrefs]);
+
+  return null;
 }

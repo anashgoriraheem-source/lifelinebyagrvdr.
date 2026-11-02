@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { Download, LogOut, Save, ShieldCheck, Trash2, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LanguagePicker } from "@/components/LanguagePicker";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useApp } from "@/hooks/useApp";
@@ -114,7 +115,15 @@ function Account() {
     const exportedAt = new Date().toISOString();
     const payload = userId
       ? { exportedAt, timeline: log, account: await exportAccount() }
-      : { exportedAt, profile, contacts, timeline: log };
+      : {
+          exportedAt,
+          profile,
+          contacts,
+          timeline: log,
+          language: appStore.state.language,
+          dispatchConsent: appStore.state.dispatchConsent,
+          shareLocation: appStore.state.shareLocation,
+        };
     const url = URL.createObjectURL(
       new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }),
     );
@@ -137,6 +146,21 @@ function Account() {
       <p className="mt-2 text-muted-foreground">
         Optional, private medical details and trusted contacts.
       </p>
+      <section className="mt-6 rounded-xl border border-border bg-card p-4">
+        <h2 className="font-display text-lg font-bold">Language and consent</h2>
+        <LanguagePicker variant="full" className="mt-3" />
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          Changing the language previews it immediately. When you are signed in, it is saved to your
+          account; otherwise it is saved in this browser. Interface translations are independent of
+          machine translation on the Translate page.
+        </p>
+        <Link
+          to="/contacts"
+          className="mt-3 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Manage automatic contact consent and channels →
+        </Link>
+      </section>
       {(!userId || recovery) && (
         <section className="mt-8 max-w-md border-t border-border py-6">
           <h2 className="text-xl font-bold">
