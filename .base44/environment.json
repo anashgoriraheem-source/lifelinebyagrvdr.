@@ -2,5 +2,16 @@
   "previewPort": 3000,
   "healthPath": "/",
   "startCommand": "docker compose -f docker-compose.base44.yml up -d --build",
-  "secrets": []
+  "secrets": [
+    {
+      "name": "TRANSLATE_API_URL",
+      "description": "Base URL of a LibreTranslate-compatible service (for example https://libretranslate.com). Without it the Translate page reports that no provider is configured.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "TRANSLATE_API_KEY",
+      "description": "API key for the translation provider above, when it requires one. Kept server-side; never exposed to the browser.",
+      "requiredAtBoot": false
+    }
+  ]
 }

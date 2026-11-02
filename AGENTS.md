@@ -54,9 +54,13 @@ and the publishable/service keys; all of them are supplied by compose.
 
 ## Localization, voice and medical safety
 - `src/i18n/messages/en.ts` is the reference catalog; `src/i18n/messages/packs.ts`
-  holds partial machine-drafted packs (31 strings each at the time of writing).
-  Adding an English key increases the denominator, so the language picker and
-  the audit immediately report it as missing in every pack.
+  holds the Hindi pack. It is complete for the catalogued surfaces but
+  machine-drafted: no fluent speaker or clinician has reviewed it, and the
+  picker says so. Adding an English key increases the denominator, so the
+  language picker and the audit immediately report it as missing in every pack.
+- Surfaces outside the catalog (home copy, contacts, account, the monitor
+  readings detail and the emergency overlay) are still English-only. Never
+  describe the app as fully localized in Hindi; run `auditLocale("hi")`.
 - `src/i18n/coverage.ts` is the only source of truth for "is this language
   complete". Never label a locale complete from `locales.ts` alone; run
   `auditLocale()`/`describeLocale()`. `coverage.test.ts` fails if a required
@@ -78,3 +82,24 @@ and the publishable/service keys; all of them are supplied by compose.
   `medications.test.ts` after touching the reference or the factor checks.
 - Assistant knowledge is versioned in `src/data/health-sources.ts`
   (`KNOWLEDGE_BASE`) and is never written by a model response.
+- Translation provider: `TRANSLATE_API_URL` (+ optional `TRANSLATE_API_KEY`)
+  configures a LibreTranslate-compatible service; without it
+  `translationConfigured()` is false and `/translate` shows the explicit
+  unavailable state. No provider is configured in this sandbox, so translation
+  is NOT working — never describe it as live, and never mock a translation.
+
+## Home hero and guided pairing
+- `src/components/RisingTileHero.tsx` is the full-width home hero. `three` is a
+  runtime dependency imported lazily inside the effect, so the home route must
+  still render when WebGL is unavailable: the canvas is then hidden and the
+  static `.rising-grid` floor in `styles.css` stays visible. Reduced motion
+  stops the automatic tile cycle. Verify by loading `/` and confirming the
+  `#rt-title`, the `/monitor` call to action and the status line render.
+- `src/components/DevicePairing.tsx` owns the guided Bluetooth flow on
+  `/monitor`. It reads `useApp(s => s.device.status)`, translates device and
+  browser errors into plain-language next steps, announces state through a
+  `role="status"` region, and keeps "Continue without a device". SOS and
+  first-aid stay outside it. Web Bluetooth cannot run in the headless preview
+  browser: pairing, cancellation, denied permission and connection loss are
+  manually verified only.
+

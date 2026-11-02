@@ -18,6 +18,9 @@ export interface WorldLanguage {
 
 export const WORLD_LANGUAGES: WorldLanguage[] = [
   { code: "ar", tag: "ar", englishName: "Arabic", nativeName: "العربية", dir: "rtl" },
+  // Urdu is widely used in India but has no complete interface pack, so it is
+  // offered as a translation target only.
+  { code: "ur", tag: "ur", englishName: "Urdu", nativeName: "اردو", dir: "rtl" },
   { code: "fa", tag: "fa", englishName: "Persian", nativeName: "فارسی", dir: "rtl" },
   { code: "he", tag: "he", englishName: "Hebrew", nativeName: "עברית", dir: "rtl" },
   { code: "ps", tag: "ps", englishName: "Pashto", nativeName: "پښتو", dir: "rtl" },

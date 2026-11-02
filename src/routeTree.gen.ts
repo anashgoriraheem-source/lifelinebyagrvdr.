@@ -16,7 +16,6 @@ import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as MonitorRouteImport } from './routes/monitor'
 import { Route as SaathRouteImport } from './routes/saath'
 import { Route as TranslateRouteImport } from './routes/translate'
-import { Route as AckTokenRouteImport } from './routes/ack/$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -53,11 +52,6 @@ const TranslateRoute = TranslateRouteImport.update({
   path: '/translate',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AckTokenRoute = AckTokenRouteImport.update({
-  id: '/ack/$token',
-  path: '/ack/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,7 +61,6 @@ export interface FileRoutesByFullPath {
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
   '/translate': typeof TranslateRoute
-  '/ack/$token': typeof AckTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -77,7 +70,6 @@ export interface FileRoutesByTo {
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
   '/translate': typeof TranslateRoute
-  '/ack/$token': typeof AckTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -88,7 +80,6 @@ export interface FileRoutesById {
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
   '/translate': typeof TranslateRoute
-  '/ack/$token': typeof AckTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -100,7 +91,6 @@ export interface FileRouteTypes {
     | '/monitor'
     | '/saath'
     | '/translate'
-    | '/ack/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -110,7 +100,6 @@ export interface FileRouteTypes {
     | '/monitor'
     | '/saath'
     | '/translate'
-    | '/ack/$token'
   id:
     | '__root__'
     | '/'
@@ -120,7 +109,6 @@ export interface FileRouteTypes {
     | '/monitor'
     | '/saath'
     | '/translate'
-    | '/ack/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -131,7 +119,6 @@ export interface RootRouteChildren {
   MonitorRoute: typeof MonitorRoute
   SaathRoute: typeof SaathRoute
   TranslateRoute: typeof TranslateRoute
-  AckTokenRoute: typeof AckTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -185,13 +172,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TranslateRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ack/$token': {
-      id: '/ack/$token'
-      path: '/ack/$token'
-      fullPath: '/ack/$token'
-      preLoaderRoute: typeof AckTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -203,7 +183,6 @@ const rootRouteChildren: RootRouteChildren = {
   MonitorRoute: MonitorRoute,
   SaathRoute: SaathRoute,
   TranslateRoute: TranslateRoute,
-  AckTokenRoute: AckTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

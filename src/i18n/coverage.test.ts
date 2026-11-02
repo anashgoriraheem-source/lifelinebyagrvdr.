@@ -18,6 +18,13 @@ describe("locale pack validation", () => {
     }
   });
 
+  it("covers every required surface in Hindi too", () => {
+    for (const [surface, keys] of Object.entries(REQUIRED_SURFACES)) {
+      const missing = keys.filter((k) => !(k in packs.hi));
+      expect(missing, `${surface} is missing from the Hindi pack`).toEqual([]);
+    }
+  });
+
   it("reports missing keys instead of claiming a complete translation", () => {
     for (const audit of auditPacks()) {
       expect(audit.coverage).toBeGreaterThanOrEqual(0);
@@ -33,12 +40,14 @@ describe("locale pack validation", () => {
     }
   });
 
-  it("marks every non-English pack as partial and unreviewed", () => {
-    for (const audit of auditPacks().filter((a) => a.code !== "en")) {
-      expect(audit.complete).toBe(false);
-      expect(audit.safetyReviewed).toBe(false);
-      expect(audit.missingBySurface.length).toBeGreaterThan(0);
-    }
+  it("marks a complete pack as machine-drafted while its safety wording is unreviewed", () => {
+    const hindi = auditLocale("hi");
+    expect(hindi.complete).toBe(true);
+    expect(hindi.status).toBe("machine-draft");
+    expect(hindi.safetyReviewed).toBe(false);
+    expect(describeLocale(hindi).tone).toBe("machine");
+    expect(describeLocale(hindi).message).toMatch(/not reviewed/i);
+
     const english = auditLocale("en");
     expect(english.complete).toBe(true);
     expect(describeLocale(english).tone).toBe("complete");
@@ -47,9 +56,8 @@ describe("locale pack validation", () => {
   it("counts safety-critical strings as required, not optional", () => {
     const safety = auditLocale("hi").missingBySurface.find((s) => s.surface === "safety");
     expect(REQUIRED_SURFACES.safety.length).toBeGreaterThan(0);
-    // The audit follows the pack: any absent safety string is listed, not assumed present.
-    expect(safety?.missing).toEqual(
-      REQUIRED_SURFACES.safety.filter((key) => !(key in (packs.hi ?? {}))),
-    );
+    // Nothing missing means no safety surface is listed at all.
+    expect(safety).toBeUndefined();
+    expect(REQUIRED_SURFACES.safety.filter((key) => !(key in packs.hi))).toEqual([]);
   });
 });

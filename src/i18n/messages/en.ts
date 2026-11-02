@@ -28,7 +28,8 @@ export const en = {
   "lang.label": "App language",
   "lang.preview": "Preview language",
   "lang.status.complete": "Complete interface pack",
-  "lang.status.machine-draft": "Machine-drafted interface pack — not reviewed by a fluent speaker",
+  "lang.status.machine-draft":
+    "Machine-drafted interface pack — not reviewed by a fluent speaker. Translated here: navigation, the assistant, the translator and their safety notices. Contacts, account, monitor detail and the emergency overlay stay in English, and emergency/first-aid wording is always English until a qualified reviewer signs it off.",
   "lang.status.partial": "Partly translated — English shown for missing text",
   "lang.safetyUnreviewed":
     "Safety wording has not been reviewed in this language. English safety text is shown below and emergency calling stays available.",
@@ -184,6 +185,74 @@ export const en = {
   "translate.detected": "Detected source language",
 
   "a11y.languageChanged": "Interface language changed to {language}.",
+
+  "hero.specsLabel": "What Lifeline shows",
+  "hero.eyebrow": "Lifeline · Aapda Setu",
+  "hero.tagline": "Personal safety companion",
+  "hero.statusIdle": "Standing by · nothing is sent automatically",
+  "hero.statusActive": "Tile {id} · standing by",
+  "hero.specReadings": "Readings",
+  "hero.specReadingsValue": "Only from your device",
+  "hero.specAlerts": "Alerts",
+  "hero.specAlertsValue": "Only with your confirmation",
+  "hero.specLanguages": "Languages",
+  "hero.specLanguagesValue": "English · हिन्दी",
+  "hero.titleLine1": "Help within reach",
+  "hero.titleLine2": "when seconds count.",
+  "hero.cta": "Set up a device",
+
+  "device.connect.title": "Connect a health device",
+  "device.connect.intro":
+    "Lifeline can show readings from some Bluetooth health devices. Nothing on this page is sent to anyone, and you can use every other feature without a device.",
+  "device.connect.stepsHeading": "Before you start",
+  "device.connect.step1":
+    "Use Chrome or Edge on Android, Windows, Mac or a Chromebook. iPhones and iPads cannot connect here.",
+  "device.connect.step2": "Keep the page secure — the address bar should show a padlock.",
+  "device.connect.step3":
+    "Switch the device on, charge it, and keep it within about one metre of this phone or computer.",
+  "device.connect.step4":
+    "If your device has a “share” or “broadcast” setting, switch it on so it can be found.",
+  "device.connect.ready": "This browser can connect. Ready when you are.",
+  "device.connect.unsupported":
+    "This browser cannot connect to health devices. Everything else on this page still works — you can add contacts and open first-aid guidance.",
+  "device.connect.insecure":
+    "Bluetooth needs a secure page. Open Lifeline again with https:// at the start of the address.",
+  "device.connect.action": "Open the device list",
+  "device.connect.actionHint":
+    "Your browser will open its own list of nearby devices. Choose your device there and allow Bluetooth if you are asked.",
+  "device.connect.statusIdle": "No device connected",
+  "device.connect.statusOpening": "Opening your browser’s device list",
+  "device.connect.statusConnecting": "Connecting to {name}. This can take a few seconds.",
+  "device.connect.statusConnected":
+    "Connected to {name}. Waiting for a reading — open the device’s own app or take a measurement if nothing appears.",
+  "device.connect.statusReceiving": "Receiving readings from {name}.",
+  "device.connect.statusLost": "The connection to {name} was lost.",
+  "device.connect.cancelled":
+    "No device was chosen, so nothing has changed. Try again whenever you are ready.",
+  "device.connect.denied":
+    "Permission was blocked. Allow Bluetooth for this site in your browser settings, then try again.",
+  "device.connect.rangeError":
+    "The device could not be reached. Move it closer, make sure it is switched on, and try again.",
+  "device.connect.incompatible":
+    "This device does not share heart rate, oxygen, blood pressure or glucose readings with Lifeline.",
+  "device.connect.failed":
+    "The connection did not work. Check that the device is switched on and nearby, then try again.",
+  "device.connect.disconnect": "Disconnect device",
+  "device.connect.without": "Continue without a device",
+  "device.connect.skipped":
+    "You can keep using Lifeline without a device. Your emergency contacts and the first-aid guidance stay available.",
+  "device.connect.showSteps": "Show the steps again",
+  "device.connect.firstAid": "Open first-aid guidance",
+  "device.connect.limitsTitle": "What a connection can and cannot do",
+  "device.connect.limitReadings":
+    "Not every device shares every reading. Only the measurements your device sends will appear.",
+  "device.connect.limitManual":
+    "Some blood pressure cuffs and glucose meters send a reading only after you take a measurement.",
+  "device.connect.limitBackground":
+    "Lifeline cannot reconnect by itself, measure in the background, or reach anyone after this page is closed.",
+  "device.connect.technicalTitle": "Technical details",
+  "device.connect.technicalBody":
+    "Lifeline asks the browser for these standard Bluetooth services: Heart Rate (0x180D), Pulse Oximeter (0x1822), Blood Pressure (0x1810) and Glucose (0x1808). No device list leaves your device.",
 } as const;
 
 export type MessageKey = keyof typeof en;
