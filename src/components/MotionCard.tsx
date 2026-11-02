@@ -19,7 +19,7 @@ export function MotionCard() {
     <article className="flex flex-col rounded-lg bg-card p-5 shadow-sm ring-1 ring-border">
       <div className="flex items-center gap-2">
         <span className="grid size-8 place-items-center rounded-lg bg-accent text-primary"><Move3d className="size-4" /></span>
-        <h3 className="mr-auto text-sm font-semibold text-muted-foreground">Fall & jolt sensor</h3>
+        <h2 className="mr-auto text-sm font-semibold text-muted-foreground">Fall & jolt sensor</h2>
         <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ring-1 ${motion.permission === 'granted' ? 'bg-success-soft text-success ring-success-soft' : 'bg-warning-soft text-warning ring-warning-soft'}`}>
           {motion.permission === 'granted' ? (motion.checking ? `Checking ${motion.checking}s` : 'Watching') : motion.permission === 'unsupported' ? 'No sensor' : motion.permission === 'denied' ? 'Blocked' : 'Needs access'}
         </span>
