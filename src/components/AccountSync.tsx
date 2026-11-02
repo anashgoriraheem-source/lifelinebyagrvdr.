@@ -3,10 +3,12 @@ import { useServerFn } from '@tanstack/react-start'
 import { useRouter } from '@tanstack/react-router'
 import { supabase } from '@/integrations/supabase/client'
 import { readSafetyAccount } from '@/lib/account.functions'
+import { getSafetyPreferences } from '@/lib/alerts.functions'
 import { appStore, set } from '@/lib/store'
 
 export function AccountSync() {
   const read = useServerFn(readSafetyAccount)
+  const readPrefs = useServerFn(getSafetyPreferences)
   const router = useRouter()
   useEffect(() => {
     let active = true
@@ -17,12 +19,18 @@ export function AccountSync() {
       if (!active || my !== generation) return
       const user = data.user
       if (appStore.state.userId === (user?.id ?? null)) return
-      set({ userId: user?.id ?? null, userEmail: user?.email ?? null, contacts: [], profile: { name: '', age: null, bloodType: '', conditions: [], allergies: [], medications: [] }, log: [], incident: null, accountStatus: user ? 'loading' : 'signed-out' })
+      set({ userId: user?.id ?? null, userEmail: user?.email ?? null, contacts: [], profile: { name: '', age: null, bloodType: '', conditions: [], allergies: [], medications: [] }, log: [], incident: null, consents: { contactAlerts: false, shareLocation: false, shareMedical: false }, accountStatus: user ? 'loading' : 'signed-out' })
       if (!user) return
       try {
-        const safety = await read()
+        const [safety, prefs] = await Promise.all([read(), readPrefs().catch(() => null)])
         if (!active || my !== generation || appStore.state.userId !== user.id) return
         const p = safety.profile
+        set({
+          consents: prefs
+            ? { contactAlerts: prefs.contactAlerts, shareLocation: prefs.shareLocation, shareMedical: prefs.shareMedical }
+            : { contactAlerts: false, shareLocation: false, shareMedical: false },
+          ...(prefs ? { countryCode: prefs.countryCode } : {}),
+        })
         set({ contacts: safety.contacts.map(c => ({ id: c.id, name: c.name, relationship: c.relationship, phone: c.phone, call: c.call, sms: c.sms })), profile: p ? { name: p.full_name, age: p.age, bloodType: p.blood_type, conditions: p.conditions, allergies: p.allergies, medications: p.medications } : { name: '', age: null, bloodType: '', conditions: [], allergies: [], medications: [] }, accountStatus: 'ready' })
       } catch { if (active && my === generation) set({ accountStatus: 'error' }) }
     }

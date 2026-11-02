@@ -50,10 +50,49 @@ export const CHANNEL_LABEL: Record<AlertChannel, string> = { sms: 'Text message'
 
 export const ATTEMPT_STATUS_LABEL: Record<string, string> = {
   simulated: 'Test only, not sent',
-  queued: 'Queued',
-  sent: 'Sent',
-  delivered: 'Delivered',
+  unavailable: 'Not sent: no alert provider set up',
+  queued: 'Queued, not yet sent',
+  attempted: 'Send attempted, outcome unconfirmed',
+  sent: 'Send attempted, outcome unconfirmed',
+  provider_accepted: 'Accepted by provider, delivery unconfirmed',
+  delivered: 'Delivery confirmed by provider',
+  acknowledged: 'Acknowledged by contact',
   failed: 'Failed',
+  unknown: 'Outcome unknown',
+}
+
+/** Why automatic contact alerts were or were not planned for an alarm. */
+export type AutoAlertOutcome = 'not-sos' | 'demo' | 'no-consent' | 'no-contacts' | 'provider-unavailable' | 'live-disabled'
+
+export const AUTO_ALERT_TEXT: Record<AutoAlertOutcome, string> = {
+  'not-sos': 'Automatic contact alerts only follow a deliberate SOS. Nothing was sent.',
+  demo: 'Demo alarm: nobody is contacted.',
+  'no-consent': 'Automatic contact alerts are off in your account settings. Nothing was sent.',
+  'no-contacts': 'No saved contacts can receive alerts. Nothing was sent.',
+  'provider-unavailable': 'Automatic alerts are not set up yet (no messaging provider). Nothing was sent. Use the buttons below.',
+  'live-disabled': 'Live alert sending is switched off for this deployment. Nothing was sent.',
+}
+
+/** Decides whether automatic attempts may be planned. Pure, so it can be unit-tested. */
+export function autoAlertGate(input: { reasonType: AlarmReason['type']; isDemo: boolean; consent: boolean; contactCount: number }): AutoAlertOutcome | 'allowed' {
+  if (input.isDemo) return 'demo'
+  if (input.reasonType !== 'sos') return 'not-sos'
+  if (!input.consent) return 'no-consent'
+  if (input.contactCount === 0) return 'no-contacts'
+  return 'allowed'
+}
+
+export function toUnavailableAttemptRows(eventId: string, userId: string, planned: PlannedAttempt[]) {
+  return planned.map((p) => ({
+    event_id: eventId,
+    user_id: userId,
+    contact_id: p.contactId,
+    contact_name: p.contactName,
+    channel: p.channel,
+    provider: 'none',
+    status: 'unavailable' as const,
+    detail: 'No messaging provider is configured.',
+  }))
 }
 
 export function buildAlertIdempotencyKey(startedAt: number, reasonType: AlarmReason['type']) {

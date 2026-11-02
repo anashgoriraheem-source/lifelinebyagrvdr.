@@ -14,24 +14,31 @@ export const clockTime = (t: number) => new Date(t).toLocaleTimeString([], { hou
 /** A location older than this must not be presented as current in a message. */
 export const STALE_FIX_MS = 120_000
 
+/**
+ * Location and medical details are included only with the user's explicit consent.
+ * The person reviews and sends the message from their own messaging app.
+ */
 export function buildSosMessage(reason: AlarmReason | null, fix: LocationFix | null, opts: { test?: boolean } = {}) {
-  const p = appStore.state.profile
-  const inc = appStore.state.incident
-  const track = inc && typeof window !== 'undefined' ? `${window.location.origin}/track/${inc.token}` : null
+  const { profile: p, consents } = appStore.state
+  const name = p.name.trim() || 'A Lifeline user'
+  const identity = [p.age !== null ? `age ${p.age}` : null, consents.shareMedical && p.bloodType ? `blood ${p.bloodType}` : null].filter(Boolean).join(', ')
   const fixAge = fix ? Date.now() - fix.at : 0
-  const locationLine = fix
-    ? fixAge > STALE_FIX_MS
-      ? `Location: ${mapsLink(fix)} (OUT OF DATE — measured ${Math.max(1, Math.round(fixAge / 60_000))} min ago, ±${Math.round(fix.accuracy)} m; confirm your location by phone)`
-      : `Location: ${mapsLink(fix)} (±${Math.round(fix.accuracy)} m, ${clockTime(fix.at)})`
-    : 'Location: unavailable — please call.'
+  const locationLine = !consents.shareLocation
+    ? 'Location: not shared — please call to confirm where I am.'
+    : fix
+      ? fixAge > STALE_FIX_MS
+        ? `Location: ${mapsLink(fix)} (OUT OF DATE — measured ${Math.max(1, Math.round(fixAge / 60_000))} min ago, ±${Math.round(fix.accuracy)} m; confirm your location by phone)`
+        : `Location: ${mapsLink(fix)} (±${Math.round(fix.accuracy)} m, ${clockTime(fix.at)})`
+      : 'Location: unavailable — please call.'
+  const list = (items: string[]) => items.join(', ') || 'none listed'
   const lines = [
-    `${opts.test ? '[TEST — no action needed] ' : ''}EMERGENCY: ${p.name} (${p.age}, blood ${p.bloodType}) needs help.`,
+    `${opts.test ? '[TEST — no action needed] ' : ''}EMERGENCY: ${name}${identity ? ` (${identity})` : ''} needs help.`,
     reason ? `Reason: ${reason.label} — ${reason.reading} at ${clockTime(Date.now())}.` : 'Reason: SOS pressed.',
     locationLine,
-    `Conditions: ${p.conditions.join(', ') || 'none listed'}. Allergies: ${p.allergies.join(', ') || 'none listed'}. Meds: ${p.medications.join(', ') || 'none listed'}.`,
+    consents.shareMedical ? `Conditions: ${list(p.conditions)}. Allergies: ${list(p.allergies)}. Meds: ${list(p.medications)}.` : null,
     'Sent via Lifeline.',
   ]
-  return lines.join('\n')
+  return lines.filter(Boolean).join('\n')
 }
 
 const digits = (phone: string) => phone.replace(/[^\d+]/g, '')

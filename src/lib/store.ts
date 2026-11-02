@@ -1,7 +1,7 @@
 import { Store } from '@tanstack/react-store'
 import { DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY } from './fixtures'
 import { persistedSettingsSchema } from './settings'
-import type { AlertRecordState } from './alertPlan'
+import type { AlertRecordState, AutoAlertOutcome } from './alertPlan'
 import type {
   AlarmReason, AlarmState, Profile, Contact, LocationFix, LocationStatus, LogEntry, Reading, Threshold, VitalKey,
 } from './types'
@@ -29,6 +29,10 @@ export interface AppState {
   incident: { id: string; token: string } | null
   /** Whether the current alarm was written to the account's test-mode alert history. */
   alertRecord: AlertRecordState
+  /** Server's explanation of whether automatic contact alerts were planned for the current alarm. */
+  autoAlert: AutoAlertOutcome | null
+  /** Explicit, default-off consents. Loaded from the account when signed in. */
+  consents: { contactAlerts: boolean; shareLocation: boolean; shareMedical: boolean }
 }
 
 export interface DeviceState {
@@ -61,6 +65,8 @@ const initial: AppState = {
   assistantLanguage: 'en',
   incident: null,
   alertRecord: 'idle',
+  autoAlert: null,
+  consents: { contactAlerts: false, shareLocation: false, shareMedical: false },
 }
 
 export const appStore = new Store<AppState>(initial)

@@ -1,7 +1,10 @@
 import { createServerFn } from '@tanstack/react-start'
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware'
 import { z } from 'zod'
-import { type AlertHistoryEvent, planAlertAttempts, toSandboxAttemptRows } from './alertPlan'
+import {
+  type AlertHistoryEvent, type AutoAlertOutcome, autoAlertGate, planAlertAttempts, toUnavailableAttemptRows,
+} from './alertPlan'
+import { getAlertProvider, liveAlertsEnabled } from './alertProvider.server'
 
 const recordAlarmInput = z.object({
   idempotencyKey: z.string().min(1).max(200),
@@ -12,12 +15,20 @@ const recordAlarmInput = z.object({
   startedAt: z.number().int().positive(),
 })
 
-/** Records an alarm in test mode. Re-sending the same alarm returns the existing event and never duplicates attempts. */
+/**
+ * Records one durable alarm event per trigger (idempotent on the client key).
+ * Automatic contact attempts are planned only for a deliberate, non-demo SOS with
+ * the user's consent. With no provider configured they are stored as `unavailable`;
+ * nothing is ever reported as sent or delivered without a provider confirming it.
+ */
 export const recordAlarmEvent = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => recordAlarmInput.parse(data))
-  .handler(async ({ context, data }) => {
+  .handler(async ({ context, data }): Promise<{ ok: true; eventId: string; autoAlert: AutoAlertOutcome; attempts: number }> => {
     const { supabase, userId } = context
-    const contacts = await supabase.from('contacts').select('id, name, sms, call').eq('user_id', userId).order('position')
+    const [contacts, prefs] = await Promise.all([
+      supabase.from('contacts').select('id, name, sms, call').eq('user_id', userId).order('position'),
+      supabase.from('safety_preferences').select('contact_alerts_consent').eq('user_id', userId).maybeSingle(),
+    ])
     if (contacts.error) throw new Error('Could not read your saved contacts, so this alarm was not recorded.')
 
     const event = await supabase.from('alert_events').upsert({
@@ -34,17 +45,26 @@ export const recordAlarmEvent = createServerFn({ method: 'POST' }).middleware([r
 
     let eventId = event.data[0]?.id
     if (!eventId) {
-      const existing = await supabase.from('alert_events').select('id').eq('idempotency_key', data.idempotencyKey).maybeSingle()
+      const existing = await supabase.from('alert_events').select('id').eq('user_id', userId).eq('idempotency_key', data.idempotencyKey).maybeSingle()
       if (existing.error || !existing.data) throw new Error('This alarm could not be recorded in your account.')
       eventId = existing.data.id
     }
 
-    const rows = toSandboxAttemptRows(eventId, userId, planAlertAttempts(contacts.data))
-    if (rows.length > 0) {
-      const attempts = await supabase.from('alert_attempts').upsert(rows, { onConflict: 'event_id,contact_id,channel', ignoreDuplicates: true })
-      if (attempts.error) throw new Error('Test attempts could not be recorded for this alarm.')
-    }
-    return { ok: true as const, eventId }
+    const planned = planAlertAttempts(contacts.data)
+    const gate = autoAlertGate({
+      reasonType: data.reasonType,
+      isDemo: data.isDemo,
+      consent: prefs.data?.contact_alerts_consent === true,
+      contactCount: planned.length,
+    })
+    if (gate !== 'allowed') return { ok: true as const, eventId, autoAlert: gate, attempts: 0 }
+
+    const provider = getAlertProvider()
+    const autoAlert: AutoAlertOutcome = !provider ? 'provider-unavailable' : !liveAlertsEnabled() ? 'live-disabled' : 'provider-unavailable'
+    const rows = toUnavailableAttemptRows(eventId, userId, planned)
+    const attempts = await supabase.from('alert_attempts').upsert(rows, { onConflict: 'event_id,contact_id,channel', ignoreDuplicates: true })
+    if (attempts.error) throw new Error('Alert attempts could not be recorded for this alarm.')
+    return { ok: true as const, eventId, autoAlert, attempts: rows.length }
   })
 
 export const listAlertHistory = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).handler(async ({ context }): Promise<{ events: AlertHistoryEvent[] }> => {
@@ -59,7 +79,7 @@ export const listAlertHistory = createServerFn({ method: 'POST' }).middleware([r
   const eventIds = events.data.map((e) => e.id)
   const attemptRows: { event_id: string; channel: string; contact_name: string; status: string; provider: string }[] = []
   if (eventIds.length > 0) {
-    const attempts = await supabase.from('alert_attempts').select('event_id, channel, contact_name, status, provider').in('event_id', eventIds).order('created_at')
+    const attempts = await supabase.from('alert_attempts').select('event_id, channel, contact_name, status, provider').eq('user_id', userId).in('event_id', eventIds).order('created_at')
     if (attempts.error) throw new Error('Alert history could not be loaded. Try again.')
     attemptRows.push(...attempts.data)
   }
@@ -72,3 +92,43 @@ export const listAlertHistory = createServerFn({ method: 'POST' }).middleware([r
     })),
   }
 })
+
+const preferencesInput = z.object({
+  countryCode: z.enum(['IN', 'US', 'GB', 'EU', 'AU']),
+  contactAlerts: z.boolean(),
+  shareLocation: z.boolean(),
+  shareMedical: z.boolean(),
+})
+export type SafetyPreferences = z.infer<typeof preferencesInput>
+
+export const getSafetyPreferences = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth]).handler(async ({ context }): Promise<SafetyPreferences | null> => {
+  const { supabase, userId } = context
+  const res = await supabase.from('safety_preferences').select('country_code, contact_alerts_consent, share_location_consent, share_medical_consent').eq('user_id', userId).maybeSingle()
+  if (res.error) throw new Error('Your alert preferences could not be loaded.')
+  if (!res.data) return null
+  const parsed = preferencesInput.safeParse({
+    countryCode: res.data.country_code,
+    contactAlerts: res.data.contact_alerts_consent,
+    shareLocation: res.data.share_location_consent,
+    shareMedical: res.data.share_medical_consent,
+  })
+  return parsed.success ? parsed.data : null
+})
+
+export const saveSafetyPreferences = createServerFn({ method: 'POST' }).middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => preferencesInput.parse(data))
+  .handler(async ({ context, data }) => {
+    const { supabase, userId } = context
+    const now = new Date().toISOString()
+    const res = await supabase.from('safety_preferences').upsert({
+      user_id: userId,
+      country_code: data.countryCode,
+      contact_alerts_consent: data.contactAlerts,
+      share_location_consent: data.shareLocation,
+      share_medical_consent: data.shareMedical,
+      consent_updated_at: now,
+      updated_at: now,
+    }, { onConflict: 'user_id' })
+    if (res.error) throw new Error('Your alert preferences could not be saved.')
+    return { ok: true as const }
+  })

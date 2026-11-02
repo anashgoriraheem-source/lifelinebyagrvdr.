@@ -22,7 +22,7 @@ export function AlertRecorder() {
       set({ alertRecord: 'signed-out' })
       return
     }
-    set({ alertRecord: 'saving' })
+    set({ alertRecord: 'saving', autoAlert: null })
     const isCurrent = () => lastKey.current === key && appStore.state.alarm.startedAt === startedAt
     record({
       data: {
@@ -34,7 +34,7 @@ export function AlertRecorder() {
         startedAt,
       },
     })
-      .then(() => { if (isCurrent()) set({ alertRecord: 'saved' }) })
+      .then((res) => { if (isCurrent()) set({ alertRecord: 'saved', autoAlert: res.autoAlert }) })
       .catch(() => { if (isCurrent()) set({ alertRecord: 'error' }) })
   }, [alarm, userId, record])
 

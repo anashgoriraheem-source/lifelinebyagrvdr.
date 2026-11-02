@@ -128,6 +128,88 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_events: {
+        Row: {
+          created_at: string
+          id: string
+          idempotency_key: string
+          is_demo: boolean
+          mode: string
+          reason_label: string
+          reason_reading: string
+          reason_type: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          is_demo?: boolean
+          mode?: string
+          reason_label: string
+          reason_reading?: string
+          reason_type: string
+          started_at: string
+          user_id?: string
+        }
+        Update: Partial<Database['public']['Tables']['alert_events']['Insert']>
+        Relationships: []
+      }
+      alert_attempts: {
+        Row: {
+          attempt_count: number
+          channel: string
+          contact_id: string | null
+          contact_name: string
+          created_at: string
+          detail: string
+          event_id: string
+          id: string
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempt_count?: number
+          channel: string
+          contact_id?: string | null
+          contact_name: string
+          created_at?: string
+          detail?: string
+          event_id: string
+          id?: string
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: Partial<Database['public']['Tables']['alert_attempts']['Insert']>
+        Relationships: []
+      }
+      safety_preferences: {
+        Row: {
+          consent_updated_at: string | null
+          contact_alerts_consent: boolean
+          country_code: string
+          share_location_consent: boolean
+          share_medical_consent: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consent_updated_at?: string | null
+          contact_alerts_consent?: boolean
+          country_code?: string
+          share_location_consent?: boolean
+          share_medical_consent?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Update: Partial<Database['public']['Tables']['safety_preferences']['Insert']>
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
