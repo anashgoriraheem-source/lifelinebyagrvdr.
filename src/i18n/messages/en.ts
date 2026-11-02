@@ -3,6 +3,9 @@
  * localized shell, translator, assistant and emergency surfaces lives here.
  * New locales may translate any subset; missing keys fall back to English.
  */
+import { accountEn } from "./account";
+import { contactsEn } from "./contacts";
+
 export const en = {
   "nav.home": "Home",
   "nav.monitor": "Monitor",
@@ -29,7 +32,7 @@ export const en = {
   "lang.preview": "Preview language",
   "lang.status.complete": "Complete interface pack",
   "lang.status.machine-draft":
-    "Machine-drafted interface pack — not reviewed by a fluent speaker. Translated here: navigation, the assistant, the translator and their safety notices. Contacts, account, monitor detail and the emergency overlay stay in English, and emergency/first-aid wording is always English until a qualified reviewer signs it off.",
+    "Machine-drafted interface pack — not reviewed by a fluent speaker. Translated here: navigation, the assistant, the translator, contacts, the account page and their notices. The monitor readings detail and the emergency overlay stay in English, and emergency/first-aid wording is always English until a qualified reviewer signs it off.",
   "lang.status.partial": "Partly translated — English shown for missing text",
   "lang.safetyUnreviewed":
     "Safety wording has not been reviewed in this language. English safety text is shown below and emergency calling stays available.",
@@ -253,6 +256,9 @@ export const en = {
   "device.connect.technicalTitle": "Technical details",
   "device.connect.technicalBody":
     "Lifeline asks the browser for these standard Bluetooth services: Heart Rate (0x180D), Pulse Oximeter (0x1822), Blood Pressure (0x1810) and Glucose (0x1808). No device list leaves your device.",
+
+  ...contactsEn,
+  ...accountEn,
 } as const;
 
 export type MessageKey = keyof typeof en;

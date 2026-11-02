@@ -45,7 +45,7 @@ function Monitor() {
         : { t: 'Available readings in range', d: 'Only readings your connected device provides are shown. Keep this page open to monitor.', c: 'text-foreground' }
 
   return (
-    <main id="main-content" className="mx-auto max-w-6xl px-4 pb-32 pt-6">
+    <main id="main-content" className="monitor-page mx-auto max-w-6xl px-4 pb-32 pt-6">
       {demo && (
         <div className="mb-5 flex flex-wrap items-center gap-3 rounded-lg bg-warning-soft px-4 py-3 text-sm text-foreground ring-1 ring-warning-soft">
           <FlaskConical className="size-4.5 shrink-0" />

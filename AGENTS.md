@@ -58,9 +58,15 @@ and the publishable/service keys; all of them are supplied by compose.
   machine-drafted: no fluent speaker or clinician has reviewed it, and the
   picker says so. Adding an English key increases the denominator, so the
   language picker and the audit immediately report it as missing in every pack.
-- Surfaces outside the catalog (home copy, contacts, account, the monitor
-  readings detail and the emergency overlay) are still English-only. Never
-  describe the app as fully localized in Hindi; run `auditLocale("hi")`.
+- Contacts (`messages/contacts.ts`) and the account page (`messages/account.ts`)
+  keep their English and Hindi strings side by side; the Hindi object is typed
+  against the English one, so a key without a Hindi counterpart fails the
+  build. Data rendered from fixtures, the server or storage (relationship and
+  country names, vital labels, provider policy steps, Supabase errors) is not
+  in the catalog and is shown as received.
+- Surfaces outside the catalog (home copy, the monitor readings detail and the
+  emergency overlay) are still English-only. Never describe the app as fully
+  localized in Hindi; run `auditLocale("hi")`.
 - `src/i18n/coverage.ts` is the only source of truth for "is this language
   complete". Never label a locale complete from `locales.ts` alone; run
   `auditLocale()`/`describeLocale()`. `coverage.test.ts` fails if a required
@@ -95,6 +101,11 @@ and the publishable/service keys; all of them are supplied by compose.
   static `.rising-grid` floor in `styles.css` stays visible. Reduced motion
   stops the automatic tile cycle. Verify by loading `/` and confirming the
   `#rt-title`, the `/monitor` call to action and the status line render.
+- The floating "First aid" launcher (`src/components/Assistant.tsx`) is fixed
+  above the bottom bar on phones and covers whatever scrolls beneath it. On
+  `/monitor` (marked `monitor-page`) it is hidden below 640px because it sat on
+  the pairing status and its buttons; first aid stays one tap away in the
+  Assistant tab. Keep new full-width forms in mind when adding it to a page.
 - `src/components/DevicePairing.tsx` owns the guided Bluetooth flow on
   `/monitor`. It reads `useApp(s => s.device.status)`, translates device and
   browser errors into plain-language next steps, announces state through a

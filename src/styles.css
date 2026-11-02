@@ -147,6 +147,11 @@ input:focus-visible,select:focus-visible { outline-offset: 2px; }
   main { padding-bottom: 160px; }
   body > button { bottom: 84px; }
   .assistant-launch { bottom: calc(80px + env(safe-area-inset-bottom)); }
+  /* On the monitor page the floating pill sits over the device-pairing status
+     and its buttons while the page scrolls. On phones it is removed there: the
+     Assistant tab in the bottom bar opens the same guidance and never covers
+     the reading status, the SOS button or the pairing card. */
+  body:has(main.monitor-page) .assistant-launch { display: none; }
   .assistant-panel { bottom: calc(72px + env(safe-area-inset-bottom)); max-height: calc(100dvh - 90px); }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

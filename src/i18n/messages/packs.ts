@@ -8,11 +8,13 @@
  * wording therefore stays in English until a qualified Hindi-speaking
  * clinician/translator record exists.
  *
- * Screens that are not yet part of the catalog (contacts, account, the alarm
- * overlay, the monitor detail view) are single-language and stay in English;
- * that is reported to the user in the language picker, not hidden.
+ * Screens that are not yet part of the catalog (the alarm overlay and the
+ * monitor readings detail) are single-language and stay in English; that is
+ * reported to the user in the language picker, not hidden.
  */
 import type { LocaleCode } from "../locales";
+import { accountHi } from "./account";
+import { contactsHi } from "./contacts";
 import type { MessageKey } from "./en";
 
 export type Pack = Partial<Record<MessageKey, string>>;
@@ -43,7 +45,7 @@ const hi: Pack = {
   "lang.preview": "भाषा का पूर्वावलोकन",
   "lang.status.complete": "पूरा इंटरफ़ेस पैक",
   "lang.status.machine-draft":
-    "मशीन द्वारा तैयार इंटरफ़ेस पैक — किसी धाराप्रवाह वक्ता या समीक्षक ने पुष्टि नहीं की। यहाँ अनुवादित: नेविगेशन, सहायक, अनुवाद पेज और उनके सुरक्षा नोटिस। संपर्क, खाता, मॉनिटर का विवरण और आपातकालीन स्क्रीन अंग्रेज़ी में हैं, और आपातकालीन/प्राथमिक चिकित्सा का पाठ तब तक अंग्रेज़ी में रहेगा जब तक योग्य समीक्षक उसे स्वीकृत न करें।",
+    "मशीन द्वारा तैयार इंटरफ़ेस पैक — किसी धाराप्रवाह वक्ता या समीक्षक ने पुष्टि नहीं की। यहाँ अनुवादित: नेविगेशन, सहायक, अनुवाद पेज, संपर्क, खाता पेज और उनके नोटिस। मॉनिटर का रीडिंग विवरण और आपातकालीन स्क्रीन अंग्रेज़ी में हैं, और आपातकालीन/प्राथमिक चिकित्सा का पाठ तब तक अंग्रेज़ी में रहेगा जब तक योग्य समीक्षक उसे स्वीकृत न करें।",
   "lang.status.partial": "आंशिक अनुवाद — छूटा हुआ पाठ अंग्रेज़ी में दिखेगा",
   "lang.safetyUnreviewed":
     "इस भाषा में सुरक्षा से जुड़े शब्दों की समीक्षा नहीं हुई है। सुरक्षा और प्राथमिक चिकित्सा का पाठ अंग्रेज़ी में दिखाया जाता है, और आपातकालीन कॉल हमेशा उपलब्ध रहता है।",
@@ -266,6 +268,9 @@ const hi: Pack = {
   "device.connect.technicalTitle": "तकनीकी जानकारी",
   "device.connect.technicalBody":
     "लाइफलाइन ब्राउज़र से ये मानक ब्लूटूथ सेवाएँ माँगता है: हृदय गति (0x180D), पल्स ऑक्सीमीटर (0x1822), रक्तचाप (0x1810) और ग्लूकोज़ (0x1808)। डिवाइस की सूची आपके डिवाइस से बाहर नहीं जाती।",
+
+  ...contactsHi,
+  ...accountHi,
 };
 
 export const packs: Record<LocaleCode, Pack> = {
