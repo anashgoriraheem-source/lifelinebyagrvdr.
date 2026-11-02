@@ -37,7 +37,7 @@ export function VitalCard({ k, delay = 0 }: { k: VitalKey; delay?: number }) {
     >
       <div className="flex items-center gap-2">
         <span className="grid size-8 place-items-center rounded-lg bg-muted text-muted-foreground"><Icon className="size-4" /></span>
-        <h3 className="mr-auto text-sm font-semibold text-muted-foreground">{meta.label}</h3>
+        <h2 className="mr-auto text-sm font-semibold text-muted-foreground">{meta.label}</h2>
         <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ring-1 ${st.badge}`}>{st.label}</span>
       </div>
       <div className="mt-4 flex items-baseline gap-1.5">

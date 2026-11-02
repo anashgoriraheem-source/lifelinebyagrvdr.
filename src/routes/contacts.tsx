@@ -148,7 +148,7 @@ function Contacts() {
           <span className="font-mono text-3xl font-bold">{countdown === 0 ? 'Instant' : `${countdown}s`}</span>
         </div>
         <p className="text-sm text-muted-foreground">Time to cancel before call and message actions appear. SOS opens those actions immediately.</p>
-        <input type="range" min={0} max={60} value={countdown} onChange={(e) => set({ countdownSeconds: Number(e.target.value) })} className="mt-4 w-full accent-destructive" />
+        <input type="range" min={0} max={60} value={countdown} aria-label="Cancel countdown time" aria-valuetext={countdown === 0 ? 'Instant' : `${countdown} seconds`} onChange={(e) => set({ countdownSeconds: Number(e.target.value) })} className="mt-4 w-full accent-destructive" />
       </section>
 
       {/* Thresholds */}
@@ -241,7 +241,7 @@ function ContactForm({ initial, country, onClose }: { initial: Contact | null; c
           <Button variant="ghost" size="icon" type="button" onClick={onClose} aria-label="Close" className="grid size-8 place-items-center rounded-full hover:bg-muted"><X className="size-4" /></Button>
         </div>
         <label className="mt-4 block text-sm font-medium">Name
-          <input aria-label="Name" aria-invalid={touched && !nameOk} aria-describedby={touched && !nameOk ? 'contact-name-error' : undefined} className={input} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} autoFocus />
+          <input aria-label="Name" aria-invalid={touched && !nameOk} aria-describedby={touched && !nameOk ? 'contact-name-error' : undefined} className={input} value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
           {touched && !nameOk && <span id="contact-name-error" role="alert" className="text-xs text-critical">Enter a name.</span>}
         </label>
         <label className="mt-3 block text-sm font-medium">Relationship

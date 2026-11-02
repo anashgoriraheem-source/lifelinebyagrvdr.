@@ -132,7 +132,7 @@ function Monitor() {
             <div><dt className="text-xs text-muted-foreground">Allergies</dt><dd className="text-critical">{PATIENT.allergies.join(' · ') || 'Not entered'}</dd></div>
             <div><dt className="text-xs text-muted-foreground">Medications</dt><dd>{PATIENT.medications.join(' · ') || 'Not entered'}</dd></div>
           </dl>
-          <Link to="/contacts" className="mt-5 inline-block text-xs font-semibold text-primary hover:underline">Emergency contacts →</Link>
+          <Link to="/contacts" className="mt-3 inline-block rounded px-2 py-3.5 text-xs font-semibold text-primary hover:underline">Emergency contacts →</Link>
         </article>
         <article className="rounded-lg bg-card p-5 shadow-sm ring-1 ring-border">
           <h2 className="text-sm font-semibold text-muted-foreground">Activity log</h2>
