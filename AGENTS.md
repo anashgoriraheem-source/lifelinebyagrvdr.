@@ -29,6 +29,11 @@ and the publishable/service keys; all of them are supplied by compose.
   superuser because the migrations create triggers on `auth.users`.
 - The published PostgREST image is shell-less, so compose copies its binary onto
   `node:22` to give the healthcheck a probe.
+- On a fresh database volume the `db` log shows one
+  `ERROR: relation "schema_migrations" does not exist` at startup. That is
+  GoTrue's own migrator probing for `auth.schema_migrations` before it creates
+  it (the same second logs `GoTrue migrations applied successfully`). It is
+  harmless and does not recur; do not pre-create that table.
 - `vite.config.ts` changes defaults only when `BASE44_PREVIEW_MODE=1` (the
   sandbox flag): port 3000 and the preview hostname in `allowedHosts`. Unset or
   any other value keeps the original port-8080 defaults.
