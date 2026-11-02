@@ -11,7 +11,7 @@ import { DEMO_DEVICE, SCENARIOS } from '@/lib/fixtures'
 import { VITAL_META, classify, isStale } from '@/lib/detection'
 import { set } from '@/lib/store'
 import type { VitalKey } from '@/lib/types'
-import { disconnectWearable, pairWearable } from '@/core/ble/connect'
+import { DevicePairing } from '@/components/DevicePairing'
 
 export const Route = createFileRoute('/monitor')({
   ssr: false,
@@ -45,7 +45,7 @@ function Monitor() {
         : { t: 'Available readings in range', d: 'Only readings your connected device provides are shown. Keep this page open to monitor.', c: 'text-foreground' }
 
   return (
-    <main id="main-content" className="mx-auto max-w-6xl px-4 pb-32 pt-6">
+    <main id="main-content" className="monitor-page mx-auto max-w-6xl px-4 pb-32 pt-6">
       {demo && (
         <div className="mb-5 flex flex-wrap items-center gap-3 rounded-lg bg-warning-soft px-4 py-3 text-sm text-foreground ring-1 ring-warning-soft">
           <FlaskConical className="size-4.5 shrink-0" />
@@ -67,16 +67,6 @@ function Monitor() {
           </span>
         )}
         <div className="ml-auto flex gap-2">
-          {device.status === 'connected' || device.status === 'reconnecting' ? (
-            <Button variant="outline" onClick={disconnectWearable} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-border hover:bg-card">Disconnect</Button>
-          ) : (
-            <Button
-              onClick={() => pairWearable().catch((e: Error) => e.name !== 'NotFoundError' && alert(e.message))}
-              className="flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground"
-            >
-              <Bluetooth className="size-3.5" /> Connect wearable
-            </Button>
-          )}
           {!demo && device.status !== 'connected' && (
             <Button variant="outline" onClick={() => set({ demoMode: true })} className="rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-border hover:bg-card">Try demo mode</Button>
           )}
@@ -92,6 +82,9 @@ function Monitor() {
         </div>
         <SosButton />
       </section>
+
+      {/* Guided pairing: plain-language steps, announced status, recovery paths. */}
+      <DevicePairing />
 
       {/* Vitals */}
       <section className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

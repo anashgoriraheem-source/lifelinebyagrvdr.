@@ -17,6 +17,7 @@ import {
   saveSafetyProfile,
 } from "@/lib/account.functions";
 import { persistedSettingsSchema } from "@/lib/settings";
+import { useI18n } from "@/i18n";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
@@ -39,6 +40,7 @@ export const Route = createFileRoute("/account")({
 });
 
 function Account() {
+  const { t } = useI18n();
   const userId = useApp((s) => s.userId);
   const email = useApp((s) => s.userEmail);
   const profile = useApp((s) => s.profile);
@@ -69,7 +71,7 @@ function Account() {
     try {
       await task();
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Something went wrong. Try again.");
+      setFeedback(error instanceof Error ? error.message : t("common.error"));
     } finally {
       setBusy(false);
     }
@@ -80,13 +82,13 @@ function Account() {
       if (error) throw error;
       setRecovery(false);
       setPassword("");
-      setFeedback("Password updated.");
+      setFeedback(t("account.passwordUpdated"));
     } else if (mode === "reset") {
       const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
         redirectTo: `${window.location.origin}/account`,
       });
       if (error) throw error;
-      setFeedback("If this email has an account, a recovery link will arrive shortly.");
+      setFeedback(t("account.recoverySent"));
     } else if (mode === "signup") {
       const { error } = await supabase.auth.signUp({
         email: loginEmail,
@@ -95,7 +97,7 @@ function Account() {
       });
       if (error) throw error;
       setPassword("");
-      setFeedback("Check your email and confirm your account before signing in.");
+      setFeedback(t("account.checkEmail"));
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
       if (error) throw error;
@@ -132,45 +134,39 @@ function Account() {
     a.download = "lifeline-private-data.json";
     a.click();
     URL.revokeObjectURL(url);
-    setFeedback(
-      userId ? "Your account data was exported." : "Your data on this device was exported.",
-    );
+    setFeedback(userId ? t("account.exportDoneAccount") : t("account.exportDoneLocal"));
   };
   const input = "mt-2 min-h-11 w-full rounded-md border border-border bg-card px-3 py-2";
   return (
     <main id="main-content" className="mx-auto max-w-3xl px-4 pb-32 pt-8">
       <div className="flex items-center gap-3">
         <UserRound className="size-7 text-primary" />
-        <h1 className="font-display text-3xl font-bold">Safety account</h1>
+        <h1 className="font-display text-3xl font-bold">{t("account.title")}</h1>
       </div>
-      <p className="mt-2 text-muted-foreground">
-        Optional, private medical details and trusted contacts.
-      </p>
+      <p className="mt-2 text-muted-foreground">{t("account.subtitle")}</p>
       <section className="mt-6 rounded-xl border border-border bg-card p-4">
-        <h2 className="font-display text-lg font-bold">Language and consent</h2>
+        <h2 className="font-display text-lg font-bold">{t("account.langHeading")}</h2>
         <LanguagePicker variant="full" className="mt-3" />
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          Changing the language previews it immediately. When you are signed in, it is saved to your
-          account; otherwise it is saved in this browser. Interface translations are independent of
-          machine translation on the Translate page.
+          {t("account.langNote")}
         </p>
         <Link
           to="/contacts"
           className="mt-3 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
         >
-          Manage automatic contact consent and channels →
+          {t("account.manageContacts")}
         </Link>
       </section>
       {(!userId || recovery) && (
         <section className="mt-8 max-w-md border-t border-border py-6">
           <h2 className="text-xl font-bold">
             {recovery
-              ? "Choose a new password"
+              ? t("account.passwordTitle")
               : mode === "signup"
-                ? "Create account"
+                ? t("account.createTitle")
                 : mode === "reset"
-                  ? "Recover account"
-                  : "Sign in"}
+                  ? t("account.recoverTitle")
+                  : t("account.signInTitle")}
           </h2>
           <form
             onSubmit={(e) => {
@@ -181,7 +177,7 @@ function Account() {
           >
             {!recovery && (
               <label className="block text-sm">
-                Email
+                {t("account.email")}
                 <input
                   className={input}
                   type="email"
@@ -194,7 +190,7 @@ function Account() {
             )}
             {(recovery || mode !== "reset") && (
               <label className="block text-sm">
-                Password
+                {t("account.password")}
                 <input
                   className={input}
                   type="password"
@@ -208,14 +204,14 @@ function Account() {
             )}
             <Button disabled={busy} type="submit" className="w-full">
               {busy
-                ? "Please wait…"
+                ? t("account.wait")
                 : recovery
-                  ? "Update password"
+                  ? t("account.updatePassword")
                   : mode === "signup"
-                    ? "Create account"
+                    ? t("account.createAccount")
                     : mode === "reset"
-                      ? "Send recovery email"
-                      : "Sign in with email"}
+                      ? t("account.sendRecovery")
+                      : t("account.signInEmail")}
             </Button>
           </form>
           {!recovery && (
@@ -235,7 +231,9 @@ function Account() {
                       })
                     }
                   >
-                    Sign in with {provider === "google" ? "Google" : "Lovable"}
+                    {t("account.signInWith", {
+                      provider: provider === "google" ? "Google" : "Lovable",
+                    })}
                   </Button>
                 ))}
               </div>
@@ -244,21 +242,18 @@ function Account() {
                   variant="ghost"
                   onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
                 >
-                  {mode === "signup" ? "Already have an account?" : "Create an account"}
+                  {mode === "signup" ? t("account.haveAccount") : t("account.noAccount")}
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => setMode(mode === "reset" ? "signin" : "reset")}
                 >
-                  {mode === "reset" ? "Back to sign in" : "Forgot password?"}
+                  {mode === "reset" ? t("account.backToSignIn") : t("account.forgotPassword")}
                 </Button>
               </div>
             </>
           )}
-          <p className="mt-4 text-sm text-muted-foreground">
-            Phone sign-in is not available until an SMS provider is configured. Emergency calls
-            remain available without signing in.
-          </p>
+          <p className="mt-4 text-sm text-muted-foreground">{t("account.phoneNote")}</p>
         </section>
       )}
       {userId && !recovery && (
@@ -277,17 +272,17 @@ function Account() {
               }
             >
               <LogOut className="size-4" />
-              Sign out
+              {t("account.signOut")}
             </Button>
           </section>
           {status === "loading" && (
             <p role="status" className="mt-4">
-              Loading private data…
+              {t("account.loadingPrivate")}
             </p>
           )}
           {status === "error" && (
             <div role="alert" className="mt-4 text-critical">
-              Your saved data could not be loaded.
+              {t("account.loadError")}
               <Button
                 variant="outline"
                 onClick={() =>
@@ -311,16 +306,13 @@ function Account() {
                   })
                 }
               >
-                Retry
+                {t("common.retry")}
               </Button>
             </div>
           )}
           <section className="border-b border-border py-6">
-            <h2 className="text-xl font-bold">Import this device’s contacts</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Replaces account contacts only after confirmation. Your previous device-local contacts
-              are not uploaded automatically.
-            </p>
+            <h2 className="text-xl font-bold">{t("account.importHeading")}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{t("account.importBody")}</p>
             <Button
               className="mt-4"
               variant="outline"
@@ -331,19 +323,19 @@ function Account() {
                     JSON.parse(localStorage.getItem("lifeline:settings:v1") || "{}"),
                   );
                   if (!parsed.success || !parsed.data.contacts?.length)
-                    throw new Error("No saved device contacts found.");
-                  if (!confirm("Replace your account contacts with this device’s saved contacts?"))
+                    throw new Error(t("account.importNone"));
+                  if (!confirm(t("account.importConfirm")))
                     return;
                   const contacts = parsed.data.contacts;
                   await saveContacts({
                     data: contacts.map((c) => ({ ...c, phone: c.phone.replace(/[^\d+]/g, "") })),
                   });
                   set({ contacts });
-                  setFeedback("Device contacts imported to your private account.");
+                  setFeedback(t("account.importDone"));
                 })
               }
             >
-              Import saved device contacts
+              {t("account.importButton")}
             </Button>
           </section>
         </>
@@ -357,27 +349,23 @@ function Account() {
               void run(async () => {
                 if (userId) {
                   await save({ data: profile });
-                  setFeedback("Private profile saved to your account.");
+                  setFeedback(t("account.profileSavedAccount"));
                 } else {
-                  setFeedback(
-                    "Profile saved in this browser only. Sign in to keep it private across devices.",
-                  );
+                  setFeedback(t("account.profileSavedLocal"));
                 }
               });
             }}
           >
-            <h2 className="text-xl font-bold">Personal safety profile</h2>
+            <h2 className="text-xl font-bold">{t("account.profileHeading")}</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              {userId
-                ? "Only you can access this profile in your private account. Including it in an emergency message requires a separate choice."
-                : "Saved in this browser only — nothing is backed up or synced until you sign in. Including it in an emergency message requires a separate choice."}
+              {userId ? t("account.profileNoteAccount") : t("account.profileNoteLocal")}
             </p>
             <fieldset
               disabled={busy || (!!userId && status !== "ready")}
               className="mt-4 grid gap-4 sm:grid-cols-2"
             >
               <label>
-                Name
+                {t("account.fieldName")}
                 <input
                   className={input}
                   maxLength={120}
@@ -386,7 +374,7 @@ function Account() {
                 />
               </label>
               <label>
-                Age
+                {t("account.fieldAge")}
                 <input
                   className={input}
                   type="number"
@@ -401,7 +389,7 @@ function Account() {
                 />
               </label>
               <label>
-                Blood type
+                {t("account.fieldBlood")}
                 <select
                   className={input}
                   value={profile.bloodType}
@@ -409,14 +397,20 @@ function Account() {
                 >
                   {["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((v) => (
                     <option key={v} value={v}>
-                      {v || "Not provided"}
+                      {v || t("account.bloodNotProvided")}
                     </option>
                   ))}
                 </select>
               </label>
-              {(["conditions", "allergies", "medications"] as const).map((key) => (
-                <label key={key} className="capitalize">
-                  {key}
+              {(
+                [
+                  ["conditions", t("account.fieldConditions")],
+                  ["allergies", t("account.fieldAllergies")],
+                  ["medications", t("account.fieldMedications")],
+                ] as const
+              ).map(([key, label]) => (
+                <label key={key}>
+                  {label}
                   <input
                     className={input}
                     value={profile[key].join(",")}
@@ -430,28 +424,23 @@ function Account() {
                     }
                   />
                   <span className="text-xs text-muted-foreground">
-                    Separate entries with commas.
+                    {t("account.separateWithCommas")}
                   </span>
                 </label>
               ))}
               <Button type="submit">
                 <Save className="size-4" />
-                {userId ? "Save private profile" : "Save to this browser"}
+                {userId ? t("account.savePrivate") : t("account.saveLocal")}
               </Button>
             </fieldset>
           </form>
           <section className="py-6">
-            <h2 className="text-xl font-bold">Privacy centre</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Signed-out contacts and profile stay in this browser. Signed-in profiles and
-              explicitly saved contacts stay in your private cloud account. Location is held in
-              memory, not uploaded. Your timeline lasts for this session. Shared texts leave
-              Lifeline and follow the recipient’s privacy practices.
-            </p>
+            <h2 className="text-xl font-bold">{t("account.privacyHeading")}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{t("account.privacyBody")}</p>
             <div className="mt-4 flex flex-wrap gap-3">
               <Button variant="outline" disabled={busy} onClick={() => void run(exportData)}>
                 <Download className="size-4" />
-                {userId ? "Export my account data" : "Export current data"}
+                {userId ? t("account.exportAccount") : t("account.exportLocal")}
               </Button>
               <Button
                 variant="outline"
@@ -459,9 +448,7 @@ function Account() {
                 onClick={() =>
                   void run(async () => {
                     if (
-                      !confirm(
-                        "Delete your contacts, profile and saved incidents? This cannot be undone.",
-                      )
+                      !confirm(t("account.deleteDataConfirm"))
                     )
                       return;
                     if (userId) await clear();
@@ -473,12 +460,12 @@ function Account() {
                       incident: null,
                       location: { status: "idle", fix: null, error: null },
                     });
-                    setFeedback("Safety data deleted.");
+                    setFeedback(t("account.dataDeleted"));
                   })
                 }
               >
                 <Trash2 className="size-4" />
-                Delete safety data
+                {t("account.deleteData")}
               </Button>
               {userId && (
                 <Button
@@ -486,14 +473,14 @@ function Account() {
                   disabled={busy}
                   onClick={() =>
                     void run(async () => {
-                      if (!confirm("Permanently delete your account and all safety data?")) return;
+                      if (!confirm(t("account.deleteAccountConfirm"))) return;
                       await remove();
                       await supabase.auth.signOut();
-                      setFeedback("Account deleted.");
+                      setFeedback(t("account.accountDeleted"));
                     })
                   }
                 >
-                  Delete account
+                  {t("account.deleteAccount")}
                 </Button>
               )}
             </div>

@@ -123,6 +123,23 @@ input:focus-visible,select:focus-visible { outline-offset: 2px; }
 .lc-attachment img { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); }
 .skip-link { position: fixed; top: 6px; left: 6px; z-index: 100; transform: translateY(-150%); background: var(--primary); color: var(--primary-foreground); padding: 12px; }
 .skip-link:focus { transform: none; }
+/* Rising tile hero — the status readout and button use semantic tokens so the
+   section reads as part of Lifeline. The glow marks the lifted tile only. */
+.rising-status { color: var(--muted-foreground); }
+.rising-dot { background: color-mix(in oklab, var(--muted-foreground) 45%, transparent); transition: background .3s, box-shadow .3s; }
+.rising-status.on { color: var(--foreground); }
+.rising-status.on .rising-dot { background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+.rising-cta:hover { background: color-mix(in oklab, var(--primary) 88%, white); }
+@media (prefers-reduced-motion: reduce) { .rising-cta, .rising-dot { transition: none; } }
+/* Static tile floor behind the WebGL art. It keeps the section finished when a
+   browser has no WebGL (the canvas is then hidden) instead of showing a void. */
+.rising-grid {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 60% 60% at 50% 120%, color-mix(in oklab, var(--primary) 15%, transparent), transparent 70%),
+    repeating-linear-gradient(46.5deg, transparent 0 52px, color-mix(in oklab, var(--card) 94%, black) 52px 55px),
+    repeating-linear-gradient(-46.5deg, transparent 0 52px, color-mix(in oklab, var(--card) 94%, black) 52px 55px);
+}
 @media(max-width:640px) {
   .nav-optional { display: none; }
   .app-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); z-index: 35; display: grid; grid-template-columns: repeat(5,1fr); }
@@ -130,6 +147,11 @@ input:focus-visible,select:focus-visible { outline-offset: 2px; }
   main { padding-bottom: 160px; }
   body > button { bottom: 84px; }
   .assistant-launch { bottom: calc(80px + env(safe-area-inset-bottom)); }
+  /* On the monitor page the floating pill sits over the device-pairing status
+     and its buttons while the page scrolls. On phones it is removed there: the
+     Assistant tab in the bottom bar opens the same guidance and never covers
+     the reading status, the SOS button or the pairing card. */
+  body:has(main.monitor-page) .assistant-launch { display: none; }
   .assistant-panel { bottom: calc(72px + env(safe-area-inset-bottom)); max-height: calc(100dvh - 90px); }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

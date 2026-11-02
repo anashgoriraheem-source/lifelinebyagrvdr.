@@ -26,6 +26,7 @@ import { DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY, RELATIONSHIPS } from "@/lib/f
 import { appStore, emergencyNumbers, set } from "@/lib/store";
 import { VITAL_META, thresholdError } from "@/lib/detection";
 import { buildSosMessage, isValidPhone, smsHref, telHref } from "@/lib/sos";
+import { useI18n } from "@/i18n";
 import type { Contact, VitalKey } from "@/lib/types";
 
 export const Route = createFileRoute("/contacts")({
@@ -52,6 +53,7 @@ export const Route = createFileRoute("/contacts")({
 const card = "border-t border-border py-6";
 
 function Contacts() {
+  const { t } = useI18n();
   const contacts = useApp((s) => s.contacts);
   const country = useApp((s) => s.countryCode);
   const countdown = useApp((s) => s.countdownSeconds);
@@ -102,17 +104,19 @@ function Contacts() {
 
   return (
     <main id="main-content" className="mx-auto max-w-4xl px-4 pb-32 pt-6">
-      <h1 className="font-display text-4xl font-extrabold tracking-normal">Contacts & alerts</h1>
-      <p className="mt-1 text-muted-foreground">
-        Your trusted people and emergency calling preferences.
-      </p>
+      <h1 className="font-display text-4xl font-extrabold tracking-normal">
+        {t("contacts.title")}
+      </h1>
+      <p className="mt-1 text-muted-foreground">{t("contacts.subtitle")}</p>
 
       {/* Emergency services */}
       <section className={`${card} mt-6`}>
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="mr-auto font-display text-xl font-bold">Emergency services</h2>
+          <h2 className="mr-auto font-display text-xl font-bold">
+            {t("contacts.emergencyHeading")}
+          </h2>
           <label className="text-sm text-muted-foreground">
-            Country{" "}
+            {t("contacts.country")}{" "}
             <select
               value={country}
               onChange={(e) => set({ countryCode: e.target.value })}
@@ -129,14 +133,19 @@ function Contacts() {
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
             {
-              label: "Emergency",
+              label: t("contacts.emergencyGeneral"),
               num: n.general,
               icon: Siren,
               c: "bg-destructive text-destructive-foreground",
             },
-            { label: "Police", num: n.police, icon: Shield, c: "bg-muted" },
-            { label: "Ambulance", num: n.ambulance, icon: Ambulance, c: "bg-muted" },
-            { label: "Fire", num: n.fire, icon: Flame, c: "bg-muted" },
+            { label: t("contacts.police"), num: n.police, icon: Shield, c: "bg-muted" },
+            {
+              label: t("contacts.ambulance"),
+              num: n.ambulance,
+              icon: Ambulance,
+              c: "bg-muted",
+            },
+            { label: t("contacts.fire"), num: n.fire, icon: Flame, c: "bg-muted" },
           ].map((x) => (
             <a
               key={x.label}
@@ -150,16 +159,18 @@ function Contacts() {
           ))}
         </div>
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-          Lifeline never auto-dials or auto-sends to emergency services. During an alert you get
-          one-tap call buttons
-          {n.smsVerified
-            ? ` and an SMS draft to ${n.smsNumber} pre-filled with your location and medical details`
-            : ""}
-          . You place every call and press Send yourself.
+          {t("contacts.emergencyNote", {
+            extra: n.smsVerified
+              ? t("contacts.emergencyNoteSms", { number: n.smsNumber })
+              : "",
+          })}
         </p>
         {!n.smsVerified && (
           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-            Emergency SMS in {n.country}: {n.smsNote} Calling is the recommended option.
+            {t("contacts.emergencySmsUnverified", {
+              country: n.country,
+              note: n.smsNote ?? "",
+            })}
           </p>
         )}
       </section>
@@ -168,12 +179,10 @@ function Contacts() {
       <section className={`${card} mt-5`}>
         <div className="flex items-center gap-3">
           <div className="mr-auto">
-            <h2 className="font-display text-xl font-bold">Personal contacts</h2>
+            <h2 className="font-display text-xl font-bold">{t("contacts.personalHeading")}</h2>
             <p className="text-sm text-muted-foreground">
-              Order only organizes this list — there is no automatic escalation.{" "}
-              {userId
-                ? "Changes stay unsaved until you save to your account."
-                : "Saved locally on this device."}
+              {t("contacts.orderNote")}{" "}
+              {userId ? t("contacts.accountPending") : t("contacts.deviceOnly")}
             </p>
           </div>
           <Button
@@ -181,12 +190,12 @@ function Contacts() {
             onClick={() => setEditing("new")}
             className="flex items-center gap-1.5 rounded-full bg-secondary px-4 py-2 text-sm font-bold text-foreground"
           >
-            <Plus className="size-4" /> Add
+            <Plus className="size-4" /> {t("contacts.add")}
           </Button>
         </div>
         {contacts.length === 0 && (
           <div className="mt-5 rounded-lg border-2 border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            No contacts yet. Add at least one person who should hear from you in an emergency.
+            {t("contacts.empty")}
           </div>
         )}
         <ol className="mt-4 space-y-2">
@@ -201,55 +210,53 @@ function Contacts() {
               <div className="mr-auto min-w-0">
                 <p className="truncate font-semibold">
                   {c.name}
-                  {i === 0 && <span className="ml-2 text-xs text-primary">Primary</span>}
+                  {i === 0 && <span className="ml-2 text-xs text-primary">{t("contacts.primary")}</span>}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {c.relationship} · <span className="font-mono">{c.phone}</span>
                   {c.email ? ` · ${c.email}` : ""}
                 </p>
                 <p className={`text-[11px] ${c.confirmedAt ? "text-success" : "text-warning"}`}>
-                  {c.confirmedAt
-                    ? "Details self-confirmed"
-                    : "Not confirmed — automatic contact will skip this person"}
-                  {c.testDestination !== false ? " · test destination" : ""}
+                  {c.confirmedAt ? t("contacts.confirmed") : t("contacts.unconfirmed")}
+                  {c.testDestination !== false ? ` · ${t("contacts.testDestination")}` : ""}
                 </p>
               </div>
               <Toggle
                 on={c.call}
                 onClick={() => patch(c.id, { call: !c.call })}
                 icon={<Phone className="size-3.5" />}
-                label="Call"
+                label={t("contacts.channelCall")}
               />
               <Toggle
                 on={c.sms}
                 onClick={() => patch(c.id, { sms: !c.sms })}
                 icon={<MessageSquare className="size-3.5" />}
-                label="SMS"
+                label={t("contacts.channelSms")}
               />
               <Toggle
                 on={Boolean(c.emailAlerts)}
                 onClick={() => patch(c.id, { emailAlerts: !c.emailAlerts })}
                 icon={<Mail className="size-3.5" />}
-                label="Email"
+                label={t("contacts.channelEmail")}
               />
               <div className="flex">
-                <IconBtn label="Move up" onClick={() => move(i, -1)} disabled={i === 0}>
+                <IconBtn label={t("contacts.moveUp")} onClick={() => move(i, -1)} disabled={i === 0}>
                   <ArrowUp className="size-4" />
                 </IconBtn>
                 <IconBtn
-                  label="Move down"
+                  label={t("contacts.moveDown")}
                   onClick={() => move(i, 1)}
                   disabled={i === contacts.length - 1}
                 >
                   <ArrowDown className="size-4" />
                 </IconBtn>
-                <IconBtn label="Edit" onClick={() => setEditing(c)}>
+                <IconBtn label={t("contacts.edit")} onClick={() => setEditing(c)}>
                   <Pencil className="size-4" />
                 </IconBtn>
                 <IconBtn
-                  label="Delete"
+                  label={t("contacts.delete")}
                   onClick={() =>
-                    confirm(`Remove ${c.name}?`) &&
+                    confirm(t("contacts.removeConfirm", { name: c.name })) &&
                     set((s) => ({ contacts: s.contacts.filter((x) => x.id !== c.id) }))
                   }
                 >
@@ -273,19 +280,19 @@ function Contacts() {
                 await savePrefs({
                   data: { language: appStore.state.language, dispatchConsent, shareLocation },
                 });
-                setSaveStatus("Contacts and consent saved to your private account.");
+                setSaveStatus(t("contacts.saved"));
               } catch (e) {
-                setSaveStatus(e instanceof Error ? e.message : "Save failed. Try again.");
+                setSaveStatus(e instanceof Error ? e.message : t("contacts.saveFailed"));
               } finally {
                 setSaving(false);
               }
             }}
           >
-            {saving ? "Saving…" : "Save contacts to account"}
+            {saving ? t("contacts.saving") : t("contacts.saveToAccount")}
           </Button>
         ) : (
           <Link to="/account" className="mt-4 inline-block text-primary underline">
-            Sign in to save contacts privately across devices
+            {t("contacts.signInToSave")}
           </Link>
         )}
         {saveStatus && (
@@ -294,17 +301,14 @@ function Contacts() {
           </p>
         )}
         <div className="mt-5 flex flex-wrap items-center gap-3 rounded-lg bg-accent p-4 text-sm text-primary">
-          <p className="mr-auto">
-            Opens a labelled test in your messaging app. You must press Send; delivery is not
-            confirmed here.
-          </p>
+          <p className="mr-auto">{t("contacts.testNotice")}</p>
           <a
             href={
               smsList.length
                 ? smsHref(
                     smsList.map((c) => c.phone),
                     buildSosMessage(
-                      { type: "sos", label: "Test alert", reading: "checking Lifeline works" },
+                      { type: "sos", label: t("contacts.testReason"), reading: t("contacts.testReading") },
                       fix,
                       { test: true },
                     ),
@@ -313,16 +317,15 @@ function Contacts() {
             }
             className={`rounded-full bg-primary px-4 py-2 font-bold text-primary-foreground ${smsList.length ? "" : "pointer-events-none opacity-40"}`}
           >
-            Prepare test message
+            {t("contacts.testAction")}
           </a>
         </div>
       </section>
 
       <section className={`${card} mt-5`}>
-        <h2 className="font-display text-xl font-bold">Automatic emergency contact</h2>
+        <h2 className="font-display text-xl font-bold">{t("contacts.autoHeading")}</h2>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          After you deliberately raise an SOS, Lifeline contacts the confirmed people below on the
-          channels they enabled. It never calls emergency services for you.
+          {t("contacts.autoIntro")}
         </p>
         <div className="mt-4 space-y-3">
           <label className="flex items-start gap-3 rounded-lg bg-background p-3 ring-1 ring-border">
@@ -333,12 +336,9 @@ function Contacts() {
               onChange={(e) => set({ dispatchConsent: e.target.checked })}
             />
             <span className="text-sm">
-              <span className="block font-semibold">
-                I consent to automatic contact after I raise SOS
-              </span>
+              <span className="block font-semibold">{t("contacts.consent")}</span>
               <span className="block text-xs text-muted-foreground">
-                SMS and email go to everyone who enabled them. Automated calls follow the order
-                above. You can withdraw consent here at any time.
+                {t("contacts.consentBody")}
               </span>
             </span>
           </label>
@@ -350,27 +350,24 @@ function Contacts() {
               onChange={(e) => set({ shareLocation: e.target.checked })}
             />
             <span className="text-sm">
-              <span className="block font-semibold">
-                Share my consented location in alert messages
-              </span>
+              <span className="block font-semibold">{t("contacts.location")}</span>
               <span className="block text-xs text-muted-foreground">
-                Only the last GPS fix at the moment of SOS, with its accuracy and age. Messages
-                label a stale fix honestly.
+                {t("contacts.locationBody")}
               </span>
             </span>
           </label>
         </div>
         <div className="mt-4 rounded-lg bg-background p-3 text-xs ring-1 ring-border">
-          <p className="font-semibold text-foreground">Default policy</p>
+          <p className="font-semibold text-foreground">{t("contacts.policy")}</p>
           <ol className="mt-1 list-decimal space-y-1 ps-5 text-muted-foreground">
             {(
               provider?.policySteps ?? [
-                "SMS and email go to every contact who enabled them, as soon as you raise SOS.",
-                "Automated voice calls follow your contact order, starting with the first contact.",
-                "The next contact is tried after a provider failure or 30 seconds without an answer.",
-                "Unacknowledged attempts are retried once after 2 minutes.",
-                "Retries stop when you cancel the incident or a contact acknowledges it.",
-                "Emergency services are never called automatically. Use the call button yourself.",
+                t("contacts.policy1"),
+                t("contacts.policy2"),
+                t("contacts.policy3"),
+                t("contacts.policy4"),
+                t("contacts.policy5"),
+                t("contacts.policy6"),
               ]
             ).map((step) => (
               <li key={step}>{step}</li>
@@ -381,19 +378,19 @@ function Contacts() {
           <p
             className={`mt-3 rounded-lg p-3 text-xs leading-relaxed ${provider.mode === "live" && provider.liveReady ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`}
           >
-            Provider mode: <b>{provider.mode}</b>. SMS{" "}
-            {provider.sms ? "configured" : "not configured"}, voice{" "}
-            {provider.voice ? "configured" : "not configured"}, email{" "}
-            {provider.email ? "configured" : "not configured"}.
+            {t("contacts.providerMode", {
+              mode: provider.mode,
+              sms: provider.sms ? t("contacts.configured") : t("contacts.notConfigured"),
+              voice: provider.voice ? t("contacts.configured") : t("contacts.notConfigured"),
+              email: provider.email ? t("contacts.configured") : t("contacts.notConfigured"),
+            })}{" "}
             {provider.mode === "live" && provider.liveReady
-              ? " Live dispatch is enabled. Only contacts marked as real destinations are contacted."
-              : " Test mode: no message or call leaves the server. Add provider credentials and set DISPATCH_MODE=live on the server for live sending."}
+              ? t("contacts.providerLive")
+              : t("contacts.providerTest")}
           </p>
         )}
         <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-          Queued escalation advances while the emergency screen is open. Background operation needs
-          a scheduled job, which is not configured. Confirmation here is self-confirmation; no OTP
-          or provider verification is configured yet.
+          {t("contacts.queueNote")}
         </p>
       </section>
 
@@ -402,22 +399,23 @@ function Contacts() {
       {/* Countdown */}
       <section className={`${card} mt-5`}>
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-xl font-bold">Cancel countdown</h2>
+          <h2 className="font-display text-xl font-bold">{t("contacts.countdownHeading")}</h2>
           <span className="font-mono text-3xl font-bold">
-            {countdown === 0 ? "Instant" : `${countdown}s`}
+            {countdown === 0 ? t("contacts.instant") : `${countdown}s`}
           </span>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Time to cancel before call and message actions appear. SOS opens those actions
-          immediately.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("contacts.countdownBody")}</p>
         <input
           type="range"
           min={0}
           max={60}
           value={countdown}
-          aria-label="Cancel countdown time"
-          aria-valuetext={countdown === 0 ? "Instant" : `${countdown} seconds`}
+          aria-label={t("contacts.countdownAria")}
+          aria-valuetext={
+            countdown === 0
+              ? t("contacts.instant")
+              : t("contacts.countdownSeconds", { count: countdown })
+          }
           onChange={(e) => set({ countdownSeconds: Number(e.target.value) })}
           className="mt-4 w-full accent-destructive"
         />
@@ -426,25 +424,24 @@ function Contacts() {
       {/* Thresholds */}
       <section className={`${card} mt-5`}>
         <div className="flex items-center">
-          <h2 className="mr-auto font-display text-xl font-bold">Critical limits</h2>
+          <h2 className="mr-auto font-display text-xl font-bold">{t("contacts.limitsHeading")}</h2>
           <Button
             onClick={() => set({ thresholds: DEFAULT_THRESHOLDS })}
             className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-border hover:bg-background"
           >
-            <RotateCcw className="size-3.5" /> Reset to defaults
+            <RotateCcw className="size-3.5" /> {t("contacts.reset")}
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          These limits decide when an alarm fires — they are not medical advice. Talk to your doctor
-          before changing them. Saved in this browser{userId ? " and your account" : ""}.
+          {t("contacts.limitsBody", { account: userId ? t("contacts.limitsAccount") : "" })}
         </p>
         <table className="mt-4 w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase tracking-normal text-muted-foreground">
-              <th className="pb-2 font-semibold">Vital</th>
-              <th className="pb-2 font-semibold">Alarm under</th>
-              <th className="pb-2 font-semibold">Alarm over</th>
-              <th className="pb-2 font-semibold">Second value</th>
+              <th className="pb-2 font-semibold">{t("contacts.colVital")}</th>
+              <th className="pb-2 font-semibold">{t("contacts.colUnder")}</th>
+              <th className="pb-2 font-semibold">{t("contacts.colOver")}</th>
+              <th className="pb-2 font-semibold">{t("contacts.colSecond")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -460,7 +457,10 @@ function Contacts() {
                       type="number"
                       value={thresholds[k][f] ?? ""}
                       placeholder="—"
-                      aria-label={`${VITAL_META[k].label} ${f === "below" ? "lower" : "upper"} limit`}
+                      aria-label={t(
+                        f === "below" ? "contacts.lowerLimit" : "contacts.upperLimit",
+                        { label: VITAL_META[k].label },
+                      )}
                       onChange={(e) => editThreshold(k, f, e.target.value)}
                       className="w-full max-w-20 rounded-lg border border-border px-2 py-1 font-mono"
                     />
@@ -472,7 +472,7 @@ function Contacts() {
                       type="number"
                       value={thresholds.bp.above2 ?? ""}
                       placeholder="—"
-                      aria-label="Blood pressure diastolic upper limit"
+                      aria-label={t("contacts.diastolicLimit")}
                       onChange={(e) => editThreshold("bp", "above2", e.target.value)}
                       className="w-full max-w-20 rounded-lg border border-border px-2 py-1 font-mono"
                     />
@@ -486,7 +486,7 @@ function Contacts() {
         </table>
         {Object.values(tErr).some(Boolean) && (
           <p role="alert" className="mt-2 text-xs font-semibold text-critical">
-            {Object.values(tErr).find(Boolean)} — change rejected, the previous limit is kept.
+            {t("contacts.rejected", { error: Object.values(tErr).find(Boolean) ?? "" })}
           </p>
         )}
       </section>
@@ -560,6 +560,7 @@ function ContactForm({
   country: string;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const [f, setF] = useState<Contact>(
     initial ?? {
       id: `c${Date.now()}`,
@@ -605,23 +606,23 @@ function ContactForm({
       >
         <div className="flex items-center">
           <h3 id="contact-form-title" className="mr-auto font-display text-xl font-bold">
-            {initial ? "Edit contact" : "New contact"}
+            {initial ? t("contacts.formEdit") : t("contacts.formNew")}
           </h3>
           <Button
             variant="ghost"
             size="icon"
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("contacts.formClose")}
             className="grid size-8 place-items-center rounded-full hover:bg-muted"
           >
             <X className="size-4" />
           </Button>
         </div>
         <label className="mt-4 block text-sm font-medium">
-          Name
+          {t("contacts.formName")}
           <input
-            aria-label="Name"
+            aria-label={t("contacts.formName")}
             aria-invalid={touched && !nameOk}
             aria-describedby={touched && !nameOk ? "contact-name-error" : undefined}
             className={input}
@@ -630,12 +631,12 @@ function ContactForm({
           />
           {touched && !nameOk && (
             <span id="contact-name-error" role="alert" className="text-xs text-critical">
-              Enter a name.
+              {t("contacts.formNameError")}
             </span>
           )}
         </label>
         <label className="mt-3 block text-sm font-medium">
-          Relationship
+          {t("contacts.formRelationship")}
           <select
             className={input}
             value={f.relationship}
@@ -647,9 +648,9 @@ function ContactForm({
           </select>
         </label>
         <label className="mt-3 block text-sm font-medium">
-          Phone (with country code)
+          {t("contacts.formPhone")}
           <input
-            aria-label="Phone (with country code)"
+            aria-label={t("contacts.formPhone")}
             aria-invalid={touched && !phoneOk}
             aria-describedby={touched && !phoneOk ? "contact-phone-error" : undefined}
             className={`${input} font-mono`}
@@ -659,14 +660,14 @@ function ContactForm({
           />
           {touched && !phoneOk && (
             <span id="contact-phone-error" role="alert" className="text-xs text-critical">
-              Enter a valid number, e.g. +91 98765 43210.
+              {t("contacts.formPhoneError")}
             </span>
           )}
         </label>
         <label className="mt-3 block text-sm font-medium">
-          Email (optional)
+          {t("contacts.formEmail")}
           <input
-            aria-label="Email"
+            aria-label={t("contacts.formEmail")}
             aria-invalid={touched && !emailOk}
             className={input}
             inputMode="email"
@@ -676,7 +677,7 @@ function ContactForm({
           />
           {touched && !emailOk && (
             <span role="alert" className="text-xs text-critical">
-              Enter a valid email address.
+              {t("contacts.formEmailError")}
             </span>
           )}
         </label>
@@ -685,19 +686,19 @@ function ContactForm({
             on={f.call}
             onClick={() => setF({ ...f, call: !f.call })}
             icon={<Phone className="size-3.5" />}
-            label="Call"
+            label={t("contacts.channelCall")}
           />
           <Toggle
             on={f.sms}
             onClick={() => setF({ ...f, sms: !f.sms })}
             icon={<MessageSquare className="size-3.5" />}
-            label="SMS"
+            label={t("contacts.channelSms")}
           />
           <Toggle
             on={Boolean(f.emailAlerts)}
             onClick={() => setF({ ...f, emailAlerts: !f.emailAlerts })}
             icon={<Mail className="size-3.5" />}
-            label="Email"
+            label={t("contacts.channelEmail")}
           />
         </div>
         <label className="mt-4 flex items-start gap-3 rounded-lg bg-background p-3 text-sm ring-1 ring-border">
@@ -708,10 +709,9 @@ function ContactForm({
             onChange={(e) => setF({ ...f, confirmedAt: e.target.checked ? Date.now() : null })}
           />
           <span>
-            <span className="block font-medium">I have checked these details are correct</span>
+            <span className="block font-medium">{t("contacts.formConfirm")}</span>
             <span className="block text-xs text-muted-foreground">
-              Self-confirmation only. Provider verification (OTP) is not configured, so Lifeline
-              cannot prove this address belongs to the contact.
+              {t("contacts.formConfirmBody")}
             </span>
           </span>
         </label>
@@ -723,15 +723,14 @@ function ContactForm({
             onChange={(e) => setF({ ...f, testDestination: e.target.checked })}
           />
           <span>
-            <span className="block font-medium">Test destination</span>
+            <span className="block font-medium">{t("contacts.formTest")}</span>
             <span className="block text-xs text-muted-foreground">
-              Recommended. A test destination never receives a live provider message, even when live
-              dispatch is on.
+              {t("contacts.formTestBody")}
             </span>
           </span>
         </label>
         <Button className="mt-6 w-full rounded-lg bg-secondary py-3 font-bold text-foreground">
-          Save contact
+          {t("contacts.formSave")}
         </Button>
       </form>
     </div>

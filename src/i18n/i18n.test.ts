@@ -1,73 +1,71 @@
 import { describe, expect, it } from "vitest";
-import { LOCALES, isRtl, localeByCode } from "./locales";
+import {
+  DEFAULT_LOCALE,
+  LOCALE_CODES,
+  LOCALES,
+  isLocaleCode,
+  isRtl,
+  localeByCode,
+} from "./locales";
 import { en } from "./messages/en";
 import { packs } from "./messages/packs";
 import { translate } from "./index";
+import { worldLanguageByCode } from "./worldLanguages";
+
+const REFERENCE_KEYS = Object.keys(en) as (keyof typeof en)[];
 
 describe("locale catalog", () => {
-  it("ships English plus the 22 Scheduled Languages of India", () => {
-    expect(LOCALES).toHaveLength(23);
-    expect(new Set(LOCALES.map((l) => l.code)).size).toBe(23);
-    expect(new Set(LOCALES.map((l) => l.tag)).size).toBe(23);
-    expect(LOCALES.map((l) => l.code)).toEqual(
-      expect.arrayContaining([
-        "as",
-        "bn",
-        "brx",
-        "doi",
-        "gu",
-        "hi",
-        "kn",
-        "ks",
-        "kok",
-        "mai",
-        "ml",
-        "mni",
-        "mr",
-        "ne",
-        "or",
-        "pa",
-        "sa",
-        "sat",
-        "sd",
-        "ta",
-        "te",
-        "ur",
-      ]),
-    );
+  it("ships only the interface languages whose packs are complete", () => {
+    expect(LOCALES.map((l) => l.code)).toEqual(["en", "hi"]);
+    expect(new Set(LOCALES.map((l) => l.tag)).size).toBe(LOCALES.length);
+    expect(DEFAULT_LOCALE).toBe("en");
+    expect(LOCALE_CODES.every(isLocaleCode)).toBe(true);
+    expect(isLocaleCode("ur")).toBe(false);
   });
 
-  it("marks right-to-left scripts and never claims reviewed safety wording", () => {
-    expect(isRtl("ur")).toBe(true);
-    expect(isRtl("ks")).toBe(true);
-    expect(isRtl("sd")).toBe(true);
-    expect(isRtl("hi")).toBe(false);
+  it("uses India-specific BCP-47 tags", () => {
+    expect(localeByCode("en").tag).toBe("en-IN");
+    expect(localeByCode("hi").tag).toBe("hi-IN");
+    expect(localeByCode("hi").nativeName).toBe("हिन्दी");
+  });
+
+  it("never claims reviewed safety wording, and stays left-to-right", () => {
     expect(LOCALES.every((l) => !l.safetyReviewed)).toBe(true);
-    expect(localeByCode("ur").nativeName).toBe("اردو");
+    expect(LOCALES.every((l) => l.safetyReviewer === null)).toBe(true);
+    expect(isRtl("hi")).toBe(false);
+    expect(isRtl("en")).toBe(false);
+    // Urdu is a translate-only language: direction comes from the world list,
+    // it is never an interface locale by accident.
+    expect(worldLanguageByCode("ur")?.dir).toBe("rtl");
   });
 
-  it("only translates keys that exist in the reference pack", () => {
-    const keys = new Set(Object.keys(en));
+  it("has a complete Hindi pack with no unknown or empty keys", () => {
+    const keys = new Set(REFERENCE_KEYS);
     for (const [code, pack] of Object.entries(packs)) {
-      for (const key of Object.keys(pack ?? {})) {
-        expect(keys.has(key), `${code} has unknown key ${key}`).toBe(true);
+      for (const [key, value] of Object.entries(pack)) {
+        expect(keys.has(key as keyof typeof en), `${code} has unknown key ${key}`).toBe(true);
+        expect((value ?? "").trim().length, `${code}:${key} is empty`).toBeGreaterThan(0);
       }
     }
+    const missing = REFERENCE_KEYS.filter((k) => !(k in packs.hi));
+    expect(missing).toEqual([]);
   });
 
-  it("reports partial coverage instead of silently claiming completeness", () => {
-    for (const locale of LOCALES.filter((l) => l.code !== "en")) {
-      const coverage = Object.keys(packs[locale.code] ?? {}).length / Object.keys(en).length;
-      expect(coverage).toBeGreaterThan(0.15);
-      expect(coverage).toBeLessThan(1);
-      expect(locale.status).toBe("machine-draft");
+  it("keeps every interpolation placeholder in the Hindi pack", () => {
+    for (const key of REFERENCE_KEYS) {
+      const placeholders = (text: string) => (text.match(/\{(\w+)\}/g) ?? []).sort();
+      expect(placeholders(packs.hi[key] ?? ""), `placeholders in ${key}`).toEqual(
+        placeholders(en[key]),
+      );
     }
   });
 
   it("interpolates values and keeps unreviewed safety text in English", () => {
     expect(translate("en", "translate.tooLong", { max: 5000 })).toContain("5000");
+    expect(translate("hi", "translate.tooLong", { max: 5000 })).toContain("5000");
     expect(translate("hi", "safety.callEmergency")).toBe(en["safety.callEmergency"]);
+    expect(translate("hi", "chat.escalationBody")).toBe(en["chat.escalationBody"]);
     expect(translate("hi", "chat.send")).toBe("संदेश भेजें");
-    expect(translate("ur", "chat.title")).toBe("لائف لائن معاون");
+    expect(translate("hi", "onboarding.confirm", { language: "हिन्दी" })).toContain("हिन्दी");
   });
 });
