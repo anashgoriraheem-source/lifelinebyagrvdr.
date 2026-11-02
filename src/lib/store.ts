@@ -1,6 +1,7 @@
 import { Store } from '@tanstack/react-store'
 import { DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY } from './fixtures'
 import { persistedSettingsSchema } from './settings'
+import { loadReadingDays, mergeDay, saveReadingDays, type ReadingDays } from './readingDays'
 import type { AlertRecordState } from './alertPlan'
 import type {
   AlarmReason, AlarmState, Profile, Contact, LocationFix, LocationStatus, LogEntry, Reading, Threshold, VitalKey,
@@ -13,6 +14,8 @@ export interface AppState {
   history: Record<VitalKey, number[]>
   thresholds: Record<VitalKey, Threshold>
   contacts: Contact[]
+  /** Device-local record of which vitals produced a reading on each day. */
+  readingDays: ReadingDays
   countryCode: string
   countdownSeconds: number
   alarm: AlarmState
@@ -47,6 +50,7 @@ const initial: AppState = {
   history: { bp: [], glucose: [], hr: [], spo2: [] },
   thresholds: DEFAULT_THRESHOLDS,
   contacts: [],
+  readingDays: {},
   countryCode: 'IN',
   countdownSeconds: 15,
   alarm: { phase: 'idle', reason: null, startedAt: null, demo: false },
@@ -73,6 +77,19 @@ export const emergencyNumbers = (s: AppState) => EMERGENCY_BY_COUNTRY[s.countryC
 let logSeq = 0
 export function addLog(kind: LogEntry['kind'], text: string) {
   set((s) => ({ log: [{ id: `e${Date.now()}-${logSeq++}`, at: Date.now(), kind, text }, ...s.log].slice(0, 50) }))
+}
+
+/**
+ * Records that these vitals produced a reading today, for the device-local
+ * seven-day overview. Only which vitals were seen is kept — never the values.
+ * Writes only when the day's set actually grows, so per-second readings do not
+ * thrash storage.
+ */
+export function noteReadingDay(keys: VitalKey[], at = Date.now()) {
+  const next = mergeDay(appStore.state.readingDays, keys, at)
+  if (next === appStore.state.readingDays) return
+  saveReadingDays(next)
+  set({ readingDays: next })
 }
 
 /** Start the alarm countdown. De-duplicates: an active alarm is never restarted. */
@@ -109,6 +126,8 @@ type Persisted = Pick<AppState, 'contacts' | 'countryCode' | 'countdownSeconds' 
 let unsubscribeSettings: { unsubscribe: () => void } | null = null
 export function loadSettings() {
   unsubscribeSettings?.unsubscribe()
+  const readingDays = loadReadingDays()
+  if (Object.keys(readingDays).length) set({ readingDays })
   try {
     const raw = localStorage.getItem(SETTINGS_KEY)
     if (raw) {
