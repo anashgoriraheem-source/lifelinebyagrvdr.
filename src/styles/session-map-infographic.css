@@ -1,0 +1,503 @@
+/**
+ * Session board — the adapted "Map Infographic" board.
+ *
+ * The geometry, aspect ratio, card composition (badges, map, offset info card)
+ * and every animation timing are the original design's. Only the colours and
+ * the type come from the app's own tokens, so the board reads as part of
+ * Lifeline instead of a pasted-in block. Everything non-decorative is a custom
+ * property here, including the two colours the canvas reads at runtime.
+ */
+.mig-section {
+  --mig-c-card-bg: var(--card);
+  --mig-c-map-dot-a: var(--primary);
+  --mig-c-map-dot-b: color-mix(in oklab, var(--primary) 62%, var(--card));
+  --mig-c-pin: var(--success);
+  --mig-c-value-text: var(--foreground);
+  --mig-c-label-text: var(--muted-foreground);
+  --mig-c-tooltip-bg: var(--foreground);
+  --mig-c-tooltip-text: var(--background);
+  --mig-c-info-face: var(--primary);
+  --mig-c-info-ink: var(--primary-foreground);
+  --mig-c-info-shadow: var(--accent);
+  container-type: inline-size;
+  container-name: mig-root;
+  background: transparent;
+  width: min(920px, 100%);
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+  color: var(--fg, var(--foreground));
+}
+
+.mig-section *,
+.mig-section *::before,
+.mig-section *::after {
+  box-sizing: border-box;
+}
+
+/* ─── card: fixed aspect ratio, all children absolutely positioned ─── */
+.mig-inner {
+  position: relative;
+  width: 920px;
+  height: 518px;
+  margin: 0;
+  background: var(--mig-c-card-bg);
+  border: 1px solid var(--border);
+  container-type: inline-size;
+  container-name: mig-card;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+/* ─── map: fills the card ─── */
+.mig-map-outer {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 833px;
+  height: 405px;
+  overflow: hidden;
+}
+
+.mig-map-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.mig-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mig-shimmer {
+  mix-blend-mode: screen;
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.mig-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 7;
+}
+
+/* ─── infocard: the pink and the gold plate move as one unit ─── */
+.mig-infocard {
+  position: absolute;
+  bottom: 24px;
+  left: 32px;
+  width: 347px;
+  height: 161px;
+}
+.mig-info-pink {
+  position: absolute;
+  bottom: -6px;
+  left: -8px;
+  width: 340px;
+  height: 146px;
+  z-index: 0;
+}
+.mig-info-box {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  z-index: 1;
+}
+.mig-info-yellow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mig-info-pink svg,
+.mig-info-yellow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.mig-info-pink rect {
+  fill: var(--mig-c-info-shadow);
+}
+.mig-info-yellow path {
+  fill: var(--mig-c-info-face);
+}
+
+.mig-info-text {
+  position: absolute;
+  top: 16px;
+  left: 24px;
+  width: 291px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  z-index: 1;
+}
+
+/* ─── title: inside the plate, enters first ─── */
+.mig-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 600;
+  font-style: normal;
+  line-height: 97%;
+  letter-spacing: -0.36px;
+  color: var(--mig-c-info-ink);
+  margin: 0;
+  opacity: 0;
+  transform: translateY(20px);
+  transform-origin: bottom left;
+  transition:
+    opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── description: enters just after the title, slower still ─── */
+.mig-desc {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--mig-c-info-ink);
+  margin: 0;
+  opacity: 0;
+  transform: translateY(20px);
+  transform-origin: bottom left;
+  transition:
+    opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── badges: bottom-left of the map ─── */
+.mig-badges {
+  position: absolute;
+  left: 432px;
+  bottom: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 60px;
+}
+.mig-ticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.mig-ticker-dot {
+  width: 8px;
+  height: 8px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--mig-c-pin);
+}
+.mig-val {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 56px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.48px;
+  color: var(--mig-c-value-text);
+  line-height: 1;
+}
+.mig-label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--mig-c-label-text);
+  line-height: 1;
+}
+
+@keyframes mig-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* ─── pin tooltip (shown on hover or tap) ─── */
+.mig-marker-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: 6px;
+  background: var(--mig-c-tooltip-bg);
+  white-space: nowrap;
+  transform: translate(-50%, calc(-100% - 12px));
+  pointer-events: none;
+  opacity: 0;
+  isolation: isolate;
+  transition: opacity 0.15s ease;
+}
+.mig-marker-label.is-visible {
+  opacity: 1;
+}
+.mig-marker-label::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--mig-c-tooltip-bg);
+}
+.mig-label-icon {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  padding: 5px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+  background: var(--mig-c-tooltip-text);
+  color: var(--mig-c-tooltip-bg);
+  flex-shrink: 0;
+}
+.mig-label-icon svg {
+  width: 20px;
+  height: 20px;
+}
+.mig-label-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 8px 0 6px;
+}
+.mig-label-name {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--mig-c-tooltip-text);
+  line-height: 1.1;
+  letter-spacing: -0.2px;
+}
+.mig-label-metric {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mig-c-tooltip-text);
+  line-height: 1.1;
+  letter-spacing: -0.39px;
+}
+
+/* ─── entrance: the shadow first, the plate follows 0.3 s later ─── */
+.mig-info-pink,
+.mig-badges {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mig-info-box {
+  transform: translateY(20px);
+  transform-origin: bottom left;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mig-info-pink {
+  transform-origin: bottom left;
+}
+.mig-revealed .mig-info-pink {
+  opacity: 1;
+  transform: none;
+}
+.mig-revealed .mig-info-box {
+  transform: none;
+  transition-delay: 0.3s;
+}
+.mig-revealed .mig-info-yellow {
+  opacity: 1;
+  transition-delay: 0.3s;
+}
+.mig-revealed .mig-title {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.8s;
+}
+.mig-revealed .mig-desc {
+  opacity: 1;
+  transform: none;
+  transition-delay: 1s;
+}
+.mig-revealed .mig-badges {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.375s;
+}
+.mig-ready .mig-info-box {
+  transition-delay: 0s;
+}
+/* hover: the whole infocard (shadow and plate) steps back together */
+.mig-inner:hover .mig-infocard {
+  transform: scale(0.65);
+  transform-origin: bottom left;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.mig-caption {
+  margin: 10px auto 0;
+  max-width: min(920px, 100%);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+
+.mig-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ─── narrow: stacked layout ─── */
+@container mig-root (width < 520px) {
+  .mig-inner {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 20px 16px 24px;
+    overflow: hidden;
+  }
+  .mig-infocard {
+    --mig-lx: calc(14.8px + 2.5cqw);
+    --mig-ly: calc(10.8px + 2.5cqw);
+    position: relative;
+    width: calc(100% + 32px);
+    height: auto;
+    margin: 0 -16px -24px -16px;
+    padding-bottom: var(--mig-ly);
+    bottom: auto;
+    left: auto;
+    overflow: visible;
+  }
+  .mig-info-pink {
+    position: absolute;
+    top: auto;
+    bottom: calc(var(--mig-ly) - 6px);
+    left: calc(var(--mig-lx) - 6px);
+    width: calc(100% - 2 * var(--mig-lx));
+    height: auto;
+    aspect-ratio: 340 / 146;
+    transform: none;
+  }
+  .mig-info-box {
+    position: relative;
+    inset: auto;
+    margin-left: var(--mig-lx);
+    width: calc(100% - 2 * var(--mig-lx));
+    aspect-ratio: 347 / 161;
+    height: auto;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .mig-badges,
+  .mig-map-outer {
+    position: static;
+    width: 100%;
+    transform: none;
+    left: auto;
+    top: auto;
+    bottom: auto;
+    right: auto;
+  }
+  /* stats: two columns, value over label */
+  .mig-badges {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin-bottom: 16px;
+    align-items: start;
+  }
+  .mig-ticker {
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 2px;
+  }
+  .mig-val {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+  .mig-label {
+    flex-basis: 100%;
+    padding-left: 16px;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+  .mig-map-outer {
+    position: relative;
+    aspect-ratio: 833 / 405;
+    height: auto;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .mig-map-wrap {
+    position: absolute;
+    inset: 0;
+  }
+  .mig-info-text {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: auto;
+    padding: clamp(8px, 3cqw, 16px) clamp(10px, 4cqw, 20px) clamp(10px, 4cqw, 20px) 9%;
+    gap: clamp(8px, 4cqw, 16px);
+  }
+  .mig-title {
+    font-size: clamp(18px, 7cqw, 36px);
+  }
+  .mig-desc {
+    font-size: clamp(11px, 2.8cqw, 13px);
+  }
+}
+
+@container mig-root (width < 520px) {
+  /* no hover step-back on touch */
+  .mig-inner:hover .mig-infocard {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mig-info-pink,
+  .mig-badges,
+  .mig-info-box,
+  .mig-info-yellow,
+  .mig-title,
+  .mig-desc,
+  .mig-inner:hover .mig-infocard {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

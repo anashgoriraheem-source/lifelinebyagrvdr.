@@ -26,7 +26,14 @@ const previewServer =
       }
     : undefined;
 
+// Netlify only (NETLIFY=true, set by Netlify's own build environment): the
+// default Cloudflare Worker output cannot be published there, so build Nitro's
+// Netlify Functions adapter instead. Local, sandbox and Vercel builds keep the
+// default target.
+const netlifyBuild = process.env.NETLIFY === "true";
+
 export default defineConfig({
+  ...(netlifyBuild ? { nitro: { preset: "netlify" } } : {}),
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

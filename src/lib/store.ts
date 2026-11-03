@@ -2,11 +2,13 @@ import { Store } from "@tanstack/react-store";
 import { DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY } from "./fixtures";
 import { persistedSettingsSchema } from "./settings";
 import { loadReadingDays, mergeDay, saveReadingDays, type ReadingDays } from "./readingDays";
+import type { RecordedPlace } from "./places";
 import type { AlertRecordState } from "./alertPlan";
 import type { LocaleCode } from "@/i18n/locales";
 import type { DispatchView } from "./dispatch.functions";
 import type {
   AlarmReason,
+  DeviceIssue,
   AlarmState,
   Profile,
   Contact,
@@ -33,6 +35,8 @@ export interface AppState {
   alarm: AlarmState;
   log: LogEntry[];
   location: { status: LocationStatus; fix: LocationFix | null; error: string | null };
+  /** Places recorded in this tab, newest first. In memory only — see `places.ts`. */
+  places: RecordedPlace[];
   assistantOpen: boolean;
   device: DeviceState;
   profile: Profile;
@@ -60,8 +64,27 @@ export interface AppState {
 export interface DeviceState {
   status: "idle" | "connecting" | "connected" | "reconnecting" | "disconnected" | "error";
   name: string | null;
+  /** Vitals this connection has a live subscription (or read poll) for. */
   vitals: VitalKey[];
+  /** Machine reason for a failed connection, translated by the UI. */
   error?: string;
+  /** How the device was discovered: filtered by standard services, or any device. */
+  mode?: "standard" | "any";
+  /** When this GATT connection was established; used to explain a missing reading. */
+  connectedAt?: number | null;
+  /** Arrival time of the newest measurement on this connection. */
+  lastReadingAt?: number | null;
+  /** Measurements accepted on this connection (not packets received). */
+  readingCount?: number;
+  /** Vitals a connection actually exposed, and the supported ones it did not. */
+  servicesFound?: VitalKey[];
+  missing?: VitalKey[];
+  /** Time of the newest rejected packet, for "device is sending something unusable". */
+  lastInvalidAt?: number | null;
+  /** Services the device exposed but could not start sending from (see DeviceIssue). */
+  issues?: DeviceIssue[];
+  /** 1-based attempt of an automatic reconnect that is in progress. */
+  recoveryAttempt?: number | null;
 }
 
 const SETTINGS_KEY = "lifeline:settings:v1";
@@ -80,6 +103,7 @@ const initial: AppState = {
   alarm: { phase: "idle", reason: null, startedAt: null, demo: false },
   log: [],
   location: { status: "idle", fix: null, error: null },
+  places: [],
   assistantOpen: false,
   device: { status: "idle", name: null, vitals: [] },
   profile: { name: "", age: null, bloodType: "", conditions: [], allergies: [], medications: [] },
@@ -191,6 +215,26 @@ type Persisted = Pick<
 >;
 
 let unsubscribeSettings: { unsubscribe: () => void } | null = null;
+
+/**
+ * The contacts and profile saved on this device, as last written before the
+ * visitor signed in. Used to restore what the person can see when they sign
+ * out, and to offer an explicit import — never uploaded on its own.
+ */
+export function deviceLocalSafetySnapshot(): {
+  contacts: AppState["contacts"];
+  profile: AppState["profile"] | null;
+} | null {
+  try {
+    const parsed = persistedSettingsSchema.safeParse(
+      JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"),
+    );
+    if (!parsed.success) return null;
+    return { contacts: parsed.data.contacts ?? [], profile: parsed.data.profile ?? null };
+  } catch {
+    return null;
+  }
+}
 export function loadSettings() {
   unsubscribeSettings?.unsubscribe();
   const readingDays = loadReadingDays();
@@ -262,6 +306,7 @@ export function deleteDeviceLocalData() {
     vitals: {},
     history: { hr: [], spo2: [], bp: [], glucose: [] },
     location: { status: "idle", fix: null, error: null },
+    places: [],
     incident: null,
     shareLocation: false,
     dispatchConsent: false,

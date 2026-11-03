@@ -1,0 +1,17 @@
+# Netlify deploy previews / production builds.
+#
+# The app is a TanStack Start (Nitro) server app, so Netlify must deploy the
+# Nitro `netlify` preset: static assets land in `dist/` and the request handler
+# in `.netlify/functions-internal/server` (picked up automatically by Netlify's
+# build). `vite.config.ts` selects that preset only when Netlify runs the build
+# (`NETLIFY=true`); everywhere else the Cloudflare default is kept.
+#
+# NODE_VERSION is pinned because `npm run build` runs the offline-page generator
+# through Node's `--experimental-strip-types`, which needs Node >= 22.6, and
+# Vite 8 requires Node ^20.19 || >= 22.12.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"

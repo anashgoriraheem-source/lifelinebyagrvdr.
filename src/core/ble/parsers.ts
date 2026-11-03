@@ -1,5 +1,5 @@
 export type HeartRateMeasurement = { value: number; unit: 'bpm'; contactDetected: boolean; energyExpended: boolean; rrIntervalMs: number[] }
-export type BloodPressureMeasurement = { systolic: number; diastolic: number; meanArterialPressure: number; unit: 'mmHg' }
+export type BloodPressureMeasurement = { systolic: number; diastolic: number; meanArterialPressure: number; unit: 'mmHg'; measuredAt?: number }
 export type PulseOxMeasurement = { value: number; unit: '%'; pulseRate?: number }
 export type GlucoseMeasurement = { value: number; unit: 'mg/dL'; sequenceNumber?: number }
 function requireBytes(bytes: ArrayLike<number>, length: number) { if(bytes.length < length) throw new Error('Incomplete Bluetooth measurement') }
@@ -28,6 +28,22 @@ export function parseHeartRateMeasurement(data: Uint8Array): HeartRateMeasuremen
   if(value<=0) throw new Error('Invalid heart rate')
   return {value,unit:'bpm',contactDetected:(flags&6)===6,energyExpended:!!(flags&8),rrIntervalMs}
 }
+/** GATT date-time (year, month, day, hours, minutes, seconds). Returns undefined when implausible. */
+function deviceTimestamp(data: ArrayLike<number>, offset: number): number | undefined {
+  const year = word(data, offset)
+  const [, month, day, hours, minutes, seconds] = [
+    year,
+    data[offset + 2],
+    data[offset + 3],
+    data[offset + 4],
+    data[offset + 5],
+    data[offset + 6],
+  ]
+  if (year < 2000 || year > 2100 || month < 1 || month > 12) return undefined
+  if (day < 1 || day > 31 || hours > 23 || minutes > 59 || seconds > 59) return undefined
+  const at = new Date(year, month - 1, day, hours, minutes, seconds).getTime()
+  return Number.isFinite(at) ? at : undefined
+}
 export function parseBloodPressureMeasurement(data: Uint8Array): BloodPressureMeasurement {
   requireBytes(data,7)
   let required=7
@@ -40,7 +56,10 @@ export function parseBloodPressureMeasurement(data: Uint8Array): BloodPressureMe
   const read=(offset:number)=>decodeIEEE11073SFloat(data.subarray(offset,offset+2))*scale
   const systolic=read(1),diastolic=read(3),meanArterialPressure=read(5)
   if(systolic<=0||diastolic<=0)throw new Error('Invalid blood pressure')
-  return {systolic,diastolic,meanArterialPressure,unit:'mmHg'}
+  // The cuff's own clock is only trusted when the field is present and sane;
+  // otherwise the reading keeps the time the browser received it.
+  const measuredAt = data[0]&2 ? deviceTimestamp(data,7) : undefined
+  return {systolic,diastolic,meanArterialPressure,unit:'mmHg',measuredAt}
 }
 /** PLX Continuous Measurement characteristic 0x2a5f. */
 export function parsePulseOxMeasurement(data: Uint8Array): PulseOxMeasurement {
@@ -55,6 +74,24 @@ export function parsePulseOxMeasurement(data: Uint8Array): PulseOxMeasurement {
   const value=decodeIEEE11073SFloat(data.subarray(1,3)),pulseRate=decodeIEEE11073SFloat(data.subarray(3,5))
   if(value<=0||value>100||pulseRate<0)throw new Error('Invalid oxygen measurement')
   return {value,pulseRate,unit:'%'}
+}
+/**
+ * PLX Spot-check Measurement characteristic 0x2a5e — the one-shot form many
+ * finger oximeters use instead of the continuous characteristic. Same SFLOAT
+ * pair, different optional-field layout.
+ */
+export function parsePulseOxSpotCheck(data: Uint8Array): PulseOxMeasurement {
+  requireBytes(data, 5)
+  let required = 5
+  if (data[0] & 1) required += 7
+  if (data[0] & 2) required += 2
+  if (data[0] & 4) required += 3
+  if (data[0] & 8) required += 2
+  requireBytes(data, required)
+  const value = decodeIEEE11073SFloat(data.subarray(1, 3))
+  const pulseRate = decodeIEEE11073SFloat(data.subarray(3, 5))
+  if (value <= 0 || value > 100 || pulseRate < 0) throw new Error('Invalid oxygen measurement')
+  return { value, pulseRate, unit: '%' }
 }
 export function parseGlucoseMeasurement(data: Uint8Array): GlucoseMeasurement {
   requireBytes(data,10)

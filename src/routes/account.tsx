@@ -5,7 +5,7 @@ import { Download, LogOut, Save, ShieldCheck, Trash2, UserRound } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { LanguagePicker } from "@/components/LanguagePicker";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { SignInPanel } from "@/components/SignInPanel";
 import { useApp } from "@/hooks/useApp";
 import { appStore, set } from "@/lib/store";
 import {
@@ -18,6 +18,7 @@ import {
 } from "@/lib/account.functions";
 import { DevicePrivacy } from "@/components/DevicePrivacy";
 import { persistedSettingsSchema } from "@/lib/settings";
+import { contactsFromRows } from "@/lib/accountContacts";
 import { useI18n } from "@/i18n";
 
 export const Route = createFileRoute("/account")({
@@ -46,9 +47,6 @@ function Account() {
   const email = useApp((s) => s.userEmail);
   const profile = useApp((s) => s.profile);
   const status = useApp((s) => s.accountStatus);
-  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
-  const [loginEmail, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [recovery, setRecovery] = useState(false);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -77,34 +75,6 @@ function Account() {
       setFeedback(error instanceof Error ? error.message : t("common.error"));
     } finally {
       setBusy(false);
-    }
-  };
-  const auth = async () => {
-    if (recovery) {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-      setRecovery(false);
-      setPassword("");
-      setFeedback(t("account.passwordUpdated"));
-    } else if (mode === "reset") {
-      const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
-        redirectTo: `${window.location.origin}/account`,
-      });
-      if (error) throw error;
-      setFeedback(t("account.recoverySent"));
-    } else if (mode === "signup") {
-      const { error } = await supabase.auth.signUp({
-        email: loginEmail,
-        password,
-        options: { emailRedirectTo: `${window.location.origin}/account` },
-      });
-      if (error) throw error;
-      setPassword("");
-      setFeedback(t("account.checkEmail"));
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
-      if (error) throw error;
-      setPassword("");
     }
   };
   const empty = {
@@ -148,6 +118,20 @@ function Account() {
       </div>
       <p className="mt-2 text-muted-foreground">{t("account.subtitle")}</p>
       <DevicePrivacy />
+      {userId && (
+        <section className="mt-6 rounded-xl border border-border bg-card p-4">
+          <h2 className="font-display text-lg font-bold">Care schedule</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Plan check-ins, medication rounds and appointments in a private month calendar.
+          </p>
+          <Link
+            to="/schedule"
+            className="mt-3 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Open my care schedule
+          </Link>
+        </section>
+      )}
       <section className="mt-6 rounded-xl border border-border bg-card p-4">
         <h2 className="font-display text-lg font-bold">{t("account.langHeading")}</h2>
         <LanguagePicker variant="full" className="mt-3" />
@@ -170,103 +154,9 @@ function Account() {
         import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
       ) &&
         (!userId || recovery) && (
-          <section className="mt-8 max-w-md border-t border-border py-6">
-            <h2 className="text-xl font-bold">
-              {recovery
-                ? t("account.passwordTitle")
-                : mode === "signup"
-                  ? t("account.createTitle")
-                  : mode === "reset"
-                    ? t("account.recoverTitle")
-                    : t("account.signInTitle")}
-            </h2>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                void run(auth);
-              }}
-              className="mt-4 space-y-4"
-            >
-              {!recovery && (
-                <label className="block text-sm">
-                  {t("account.email")}
-                  <input
-                    className={input}
-                    type="email"
-                    autoComplete="email"
-                    required
-                    value={loginEmail}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </label>
-              )}
-              {(recovery || mode !== "reset") && (
-                <label className="block text-sm">
-                  {t("account.password")}
-                  <input
-                    className={input}
-                    type="password"
-                    minLength={8}
-                    autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </label>
-              )}
-              <Button disabled={busy} type="submit" className="w-full">
-                {busy
-                  ? t("account.wait")
-                  : recovery
-                    ? t("account.updatePassword")
-                    : mode === "signup"
-                      ? t("account.createAccount")
-                      : mode === "reset"
-                        ? t("account.sendRecovery")
-                        : t("account.signInEmail")}
-              </Button>
-            </form>
-            {!recovery && (
-              <>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {(["google", "lovable"] as const).map((provider) => (
-                    <Button
-                      variant="outline"
-                      disabled={busy}
-                      key={provider}
-                      onClick={() =>
-                        void run(async () => {
-                          const result = await lovable.auth.signInWithOAuth(provider, {
-                            redirect_uri: `${window.location.origin}/account`,
-                          });
-                          if (result.error) throw result.error;
-                        })
-                      }
-                    >
-                      {t("account.signInWith", {
-                        provider: provider === "google" ? "Google" : "Lovable",
-                      })}
-                    </Button>
-                  ))}
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <Button
-                    variant="ghost"
-                    onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-                  >
-                    {mode === "signup" ? t("account.haveAccount") : t("account.noAccount")}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setMode(mode === "reset" ? "signin" : "reset")}
-                  >
-                    {mode === "reset" ? t("account.backToSignIn") : t("account.forgotPassword")}
-                  </Button>
-                </div>
-              </>
-            )}
-            <p className="mt-4 text-sm text-muted-foreground">{t("account.phoneNote")}</p>
-          </section>
+          <div className="max-w-md">
+            <SignInPanel recovery={recovery} onPasswordUpdated={() => setRecovery(false)} />
+          </div>
         )}
       {userId && !recovery && (
         <>
@@ -294,7 +184,8 @@ function Account() {
           )}
           {status === "error" && (
             <div role="alert" className="mt-4 text-critical">
-              {t("account.loadError")}
+              <p>{t("account.loadError")}</p>
+              <p className="mt-1 text-sm">{t("account.sessionExpiredHint")}</p>
               <Button
                 variant="outline"
                 onClick={() =>
@@ -302,7 +193,7 @@ function Account() {
                     const data = await read();
                     const p = data.profile;
                     set({
-                      contacts: data.contacts,
+                      contacts: contactsFromRows(data.contacts),
                       profile: p
                         ? {
                             name: p.full_name,
@@ -319,6 +210,20 @@ function Account() {
                 }
               >
                 {t("common.retry")}
+              </Button>
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  void run(async () => {
+                    // A stale or expired session is the usual cause; sign out
+                    // locally so the sign-in panel can be used again.
+                    await supabase.auth.signOut();
+                    set({ userId: null, userEmail: null, accountStatus: "signed-out" });
+                  })
+                }
+              >
+                {t("account.signInAgain")}
               </Button>
             </div>
           )}

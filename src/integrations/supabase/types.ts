@@ -14,38 +14,258 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_attempts: {
+        Row: {
+          channel: string
+          contact_id: string | null
+          contact_name: string
+          created_at: string
+          event_id: string
+          id: string
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          contact_id?: string | null
+          contact_name: string
+          created_at?: string
+          event_id: string
+          id?: string
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          channel?: string
+          contact_id?: string | null
+          contact_name?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_attempts_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alert_attempts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "alert_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alert_events: {
+        Row: {
+          accuracy: number | null
+          cancel_deadline: string | null
+          canceled_at: string | null
+          created_at: string
+          dispatch_started_at: string | null
+          id: string
+          idempotency_key: string
+          is_demo: boolean
+          last_error: string | null
+          lat: number | null
+          lng: number | null
+          location_at: string | null
+          location_source: string | null
+          mode: string
+          next_action_at: string | null
+          reason_label: string
+          reason_reading: string
+          reason_type: string
+          resolved_at: string | null
+          round: number
+          settings_snapshot: Json
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          is_demo?: boolean
+          mode?: string
+          reason_label: string
+          reason_reading?: string
+          reason_type: string
+          started_at: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          is_demo?: boolean
+          mode?: string
+          reason_label?: string
+          reason_reading?: string
+          reason_type?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      alert_settings: {
+        Row: {
+          automation_enabled: boolean
+          consent_at: string | null
+          countdown_seconds: number
+          escalate_after_seconds: number
+          identity_name: string
+          include_location: boolean
+          max_rounds: number
+          test_mode: boolean
+          triggers: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          automation_enabled?: boolean
+          consent_at?: string | null
+          countdown_seconds?: number
+          escalate_after_seconds?: number
+          identity_name?: string
+          include_location?: boolean
+          max_rounds?: number
+          test_mode?: boolean
+          triggers?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          automation_enabled?: boolean
+          consent_at?: string | null
+          countdown_seconds?: number
+          escalate_after_seconds?: number
+          identity_name?: string
+          include_location?: boolean
+          max_rounds?: number
+          test_mode?: boolean
+          triggers?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      care_events: {
+        Row: {
+          color: string
+          created_at: string
+          ends_at: string
+          id: string
+          starts_at: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          ends_at: string
+          id?: string
+          starts_at: string
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          ends_at?: string
+          id?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contacts: {
         Row: {
+          automation_consent: boolean
           call: boolean
+          confirmed_at: string | null
+          consent_at: string | null
+          consent_note: string
           created_at: string
+          email: string | null
+          email_alerts: boolean
           id: string
           name: string
           phone: string
           position: number
           relationship: string
           sms: boolean
+          test_destination: boolean
           user_id: string
         }
         Insert: {
+          automation_consent?: boolean
           call?: boolean
+          confirmed_at?: string | null
+          consent_at?: string | null
+          consent_note?: string
           created_at?: string
+          email?: string | null
+          email_alerts?: boolean
           id?: string
           name: string
           phone: string
           position?: number
           relationship?: string
           sms?: boolean
+          test_destination?: boolean
           user_id: string
         }
         Update: {
+          automation_consent?: boolean
           call?: boolean
+          confirmed_at?: string | null
+          consent_at?: string | null
+          consent_note?: string
           created_at?: string
+          email?: string | null
+          email_alerts?: boolean
           id?: string
           name?: string
           phone?: string
           position?: number
           relationship?: string
           sms?: boolean
+          test_destination?: boolean
           user_id?: string
         }
         Relationships: []
@@ -95,6 +315,50 @@ export type Database = {
         }
         Relationships: []
       }
+      practice_progress: {
+        Row: {
+          attempts: number
+          best_safe: number
+          created_at: string
+          last_practised_at: string
+          scenario_id: string
+          status: string
+          total_decisions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          best_safe?: number
+          created_at?: string
+          last_practised_at?: string
+          scenario_id: string
+          status: string
+          total_decisions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          attempts?: number
+          best_safe?: number
+          created_at?: string
+          last_practised_at?: string
+          scenario_id?: string
+          status?: string
+          total_decisions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age: number | null
@@ -125,6 +389,33 @@ export type Database = {
           id?: string
           medications?: string[]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      safety_preferences: {
+        Row: {
+          consent_at: string | null
+          dispatch_consent: boolean
+          language: string
+          share_location: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consent_at?: string | null
+          dispatch_consent?: boolean
+          language?: string
+          share_location?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consent_at?: string | null
+          dispatch_consent?: boolean
+          language?: string
+          share_location?: boolean
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

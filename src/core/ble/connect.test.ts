@@ -1,8 +1,10 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { appStore, set } from "@/lib/store";
-import { pairWearable, disconnectWearable } from "./connect";
+import { MAX_RECOVERY_ATTEMPTS, pairWearable, disconnectWearable } from "./connect";
 class Characteristic extends EventTarget {
   value?: DataView;
+  properties?: { notify?: boolean; indicate?: boolean; read?: boolean };
+  readValue?: () => Promise<Characteristic>;
   startNotifications = vi.fn(async () => this);
   emit(bytes: number[]) {
     this.value = new DataView(new Uint8Array(bytes).buffer);
@@ -77,13 +79,119 @@ describe("Bluetooth adapter with synthetic EventTarget devices — no physical h
       expect(appStore.state.vitals).toEqual({});
     },
   );
-  it("disconnects an incompatible device and offers no measurement", async () => {
+  it("reports a connected device with no supported service as unsupported, not as connected", async () => {
     const { device } = fakeDevice(false);
     requestDevice.mockResolvedValue(device);
-    await expect(pairWearable()).rejects.toHaveProperty("name", "IncompatibleDeviceError");
+    await expect(pairWearable()).rejects.toHaveProperty("name", "UnsupportedServicesError");
     expect(device.gatt.disconnect).toHaveBeenCalled();
     expect(appStore.state.device.status).toBe("error");
+    expect(appStore.state.device.error).toBe("unsupported-services");
     expect(appStore.state.vitals).toEqual({});
+  });
+
+  it("can list every nearby device while still only reading the standard services", async () => {
+    const { device } = fakeDevice();
+    requestDevice.mockResolvedValue(device);
+    await pairWearable("any");
+    expect(requestDevice).toHaveBeenCalledWith({
+      acceptAllDevices: true,
+      optionalServices: [0x180d, 0x1822, 0x1810, 0x1808],
+    });
+    expect(appStore.state.device.mode).toBe("any");
+    expect(appStore.state.device.vitals).toEqual(["hr"]);
+  });
+
+  it("reads a characteristic that only supports read instead of calling it incompatible", async () => {
+    const ch = new Characteristic();
+    ch.properties = { read: true };
+    ch.readValue = vi.fn(async () => {
+      ch.value = new DataView(new Uint8Array([0, 66]).buffer);
+      return ch;
+    });
+    const device = Object.assign(new EventTarget(), {
+      name: "Synthetic read-only cuff",
+      id: "synthetic-read-only",
+      gatt: { connected: false, connect: vi.fn(), disconnect: vi.fn() },
+    });
+    const server = {
+      connected: true,
+      getPrimaryService: vi.fn(async (uuid: number) => {
+        if (uuid !== 0x180d) throw new Error("Service absent");
+        return { getCharacteristic: async () => ch };
+      }),
+    };
+    device.gatt.connect.mockImplementation(async () => server);
+    requestDevice.mockResolvedValue(device);
+
+    await pairWearable();
+    expect(appStore.state.device.vitals).toEqual(["hr"]);
+    expect(ch.startNotifications).not.toHaveBeenCalled();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(appStore.state.vitals.hr?.value).toBe(66);
+  });
+
+  it("subscribes to the spot-check oximetry characteristic used by finger oximeters", async () => {
+    const ch = new Characteristic();
+    const device = Object.assign(new EventTarget(), {
+      name: "Synthetic spot-check oximeter",
+      id: "synthetic-spot-check",
+      gatt: { connected: false, connect: vi.fn(), disconnect: vi.fn() },
+    });
+    const server = {
+      connected: true,
+      getPrimaryService: vi.fn(async (uuid: number) => {
+        if (uuid !== 0x1822) throw new Error("Service absent");
+        return {
+          getCharacteristic: async (char: number) => {
+            if (char !== 0x2a5e) throw new Error("Characteristic absent");
+            return ch;
+          },
+        };
+      }),
+    };
+    device.gatt.connect.mockImplementation(async () => server);
+    requestDevice.mockResolvedValue(device);
+
+    await pairWearable();
+    expect(appStore.state.device.vitals).toEqual(["spo2"]);
+    ch.emit([0, 98, 0, 64, 0]);
+    expect(appStore.state.vitals.spo2).toMatchObject({ value: 98, unit: "%" });
+  });
+
+  it("reads the current value once when notifications are also offered", async () => {
+    const { device, ch } = fakeDevice();
+    ch.properties = { notify: true, read: true };
+    ch.readValue = vi.fn(async () => {
+      ch.value = new DataView(new Uint8Array([0, 81]).buffer);
+      return ch;
+    });
+    requestDevice.mockResolvedValue(device);
+
+    await pairWearable();
+    expect(ch.startNotifications).toHaveBeenCalledTimes(1);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(appStore.state.vitals.hr?.value).toBe(81);
+  });
+
+  it("records when a measurement arrived and how many were accepted", async () => {
+    const { device, ch } = fakeDevice();
+    requestDevice.mockResolvedValue(device);
+    await pairWearable();
+    expect(appStore.state.device.connectedAt).toBeTypeOf("number");
+    ch.emit([0, 70]);
+    expect(appStore.state.device.lastReadingAt).toBeTypeOf("number");
+    expect(appStore.state.device.readingCount).toBe(1);
+    expect(appStore.state.device.servicesFound).toEqual(["hr"]);
+    expect(appStore.state.device.missing).toEqual(["spo2", "bp", "glucose"]);
+  });
+
+  it("rejects a physiologically impossible value instead of displaying it", async () => {
+    const { device, ch } = fakeDevice();
+    requestDevice.mockResolvedValue(device);
+    await pairWearable();
+    ch.emit([0, 3]); // 3 beats/min is a mis-scaled packet, not a reading
+    expect(appStore.state.vitals.hr).toBeUndefined();
+    expect(appStore.state.device.error).toBe("invalid-reading");
   });
   it("accepts valid packet data as unverified, rejects malformed or no-contact data", async () => {
     const { device, ch } = fakeDevice();
@@ -98,7 +206,8 @@ describe("Bluetooth adapter with synthetic EventTarget devices — no physical h
     ch.emit([4, 72]);
     expect(appStore.state.vitals.hr).toBeUndefined();
   });
-  it("clears readings on loss and never starts automatic reconnect", async () => {
+  it("clears readings on loss and retries the granted device without the chooser", async () => {
+    vi.useFakeTimers();
     const { device, ch } = fakeDevice();
     requestDevice.mockResolvedValue(device);
     await pairWearable();
@@ -107,8 +216,76 @@ describe("Bluetooth adapter with synthetic EventTarget devices — no physical h
     expect(appStore.state.device.status).toBe("disconnected");
     expect(appStore.state.vitals).toEqual({});
     expect(device.gatt.connect).toHaveBeenCalledTimes(1);
+    // The old stream must not reach the page after the loss.
     ch.emit([0, 90]);
     expect(appStore.state.vitals).toEqual({});
+
+    await vi.advanceTimersByTimeAsync(1_500);
+    expect(device.gatt.connect).toHaveBeenCalledTimes(2);
+    expect(requestDevice).toHaveBeenCalledTimes(1);
+    expect(appStore.state.device.status).toBe("connected");
+  });
+
+  it("stops retrying the moment the person disconnects", async () => {
+    vi.useFakeTimers();
+    const { device } = fakeDevice();
+    requestDevice.mockResolvedValue(device);
+    await pairWearable();
+    device.dispatchEvent(new Event("gattserverdisconnected"));
+    disconnectWearable();
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(device.gatt.connect).toHaveBeenCalledTimes(1);
+    expect(appStore.state.device.status).toBe("idle");
+  });
+
+  it("gives up after the bounded attempts and asks for a manual reconnect", async () => {
+    vi.useFakeTimers();
+    const { device } = fakeDevice();
+    requestDevice.mockResolvedValue(device);
+    await pairWearable();
+    device.gatt.connect.mockRejectedValue(
+      Object.assign(new Error("Device out of range"), { name: "NetworkError" }),
+    );
+    device.dispatchEvent(new Event("gattserverdisconnected"));
+
+    await vi.advanceTimersByTimeAsync(30_000);
+    // One original connection plus exactly MAX_RECOVERY_ATTEMPTS retries.
+    expect(device.gatt.connect).toHaveBeenCalledTimes(1 + MAX_RECOVERY_ATTEMPTS);
+    expect(appStore.state.device.status).toBe("disconnected");
+    expect(appStore.state.device.error).toBe("recovery-stopped");
+    expect(appStore.state.vitals).toEqual({});
+  });
+
+  it("names a service it has but cannot start sending from", async () => {
+    const brokenHr = new Characteristic();
+    brokenHr.startNotifications = vi.fn(async () => {
+      throw Object.assign(new Error("GATT operation failed"), { name: "NetworkError" });
+    });
+    const cuff = new Characteristic();
+    const device = Object.assign(new EventTarget(), {
+      name: "Synthetic failing-heart-rate cuff",
+      id: "synthetic-partial",
+      gatt: { connected: false, connect: vi.fn(), disconnect: vi.fn() },
+    });
+    const server = {
+      connected: true,
+      getPrimaryService: vi.fn(async (uuid: number) => {
+        if (uuid === 0x180d) return { getCharacteristic: async () => brokenHr };
+        if (uuid === 0x1810) return { getCharacteristic: async () => cuff };
+        throw new Error("Service absent");
+      }),
+    };
+    device.gatt.connect.mockImplementation(async () => server);
+    requestDevice.mockResolvedValue(device);
+
+    await pairWearable();
+    // The working service still works...
+    expect(appStore.state.device.vitals).toEqual(["bp"]);
+    expect(appStore.state.device.status).toBe("connected");
+    // ...and the one that would not start is reported, not silently dropped.
+    expect(appStore.state.device.issues).toEqual([
+      { key: "hr", reason: "notifications-failed" },
+    ]);
   });
   it("removes the previous device listeners on a later pairing", async () => {
     const one = fakeDevice(),

@@ -10,7 +10,14 @@
 import type { Reading, Threshold, VitalKey, VitalStatus } from './types'
 
 export const SUSTAIN_MS = 3000
-export const MAX_AGE_MS: Record<VitalKey, number> = { hr: 10_000, spo2: 10_000, bp: 30 * 60_000, glucose: 30 * 60_000 }
+/**
+ * Display freshness window per vital: how long a reading may still be called
+ * current. These cover realistic device update intervals (many watches push a
+ * heart rate once a minute), so a slow device is not shown as "no reading".
+ * They are freshness rules, not clinical validity: a stale reading is hidden
+ * and an alarm additionally requires quality === 'good'.
+ */
+export const MAX_AGE_MS: Record<VitalKey, number> = { hr: 60_000, spo2: 120_000, bp: 30 * 60_000, glucose: 30 * 60_000 }
 
 const WARN_MARGIN: Record<VitalKey, number> = { hr: 15, spo2: 4, bp: 20, glucose: 25 }
 const HYSTERESIS: Record<VitalKey, number> = { hr: 5, spo2: 2, bp: 5, glucose: 8 }

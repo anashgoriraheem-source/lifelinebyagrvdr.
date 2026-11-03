@@ -31,9 +31,44 @@ services:
     restart: on-failure
     env_file:
       - ./.env.base44-defaults
+      # Dashboard secrets last, so a real Google client or SMTP account wins
+      # over anything committed here.
+      - /run/base44/app.env
+    # GoTrue only reads its own GOTRUE_* names, while dashboard secrets keep the
+    # provider's own names. The entrypoint bridges them and enables a provider
+    # only when its credentials are actually present, so the app never offers a
+    # Google button it cannot honour.
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        if [ -n "$${GOOGLE_CLIENT_ID:-}" ] && [ -n "$${GOOGLE_CLIENT_SECRET:-}" ]; then
+          export GOTRUE_EXTERNAL_GOOGLE_ENABLED=true
+          export GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID="$${GOOGLE_CLIENT_ID}"
+          export GOTRUE_EXTERNAL_GOOGLE_SECRET="$${GOOGLE_CLIENT_SECRET}"
+          if [ -z "$${GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI:-}" ] && [ -n "$${BASE44_PUBLIC_HOST_SUFFIX:-}" ]; then
+            export GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI="https://8000-$${BASE44_PUBLIC_HOST_SUFFIX}/auth/v1/callback"
+          fi
+          echo "auth: google provider enabled"
+        else
+          echo "auth: google provider not configured (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET absent)"
+        fi
+        if [ -n "$${AUTH_SMTP_HOST:-}" ]; then
+          export GOTRUE_SMTP_HOST="$${AUTH_SMTP_HOST}"
+          export GOTRUE_SMTP_PORT="$${AUTH_SMTP_PORT:-587}"
+          export GOTRUE_SMTP_USER="$${AUTH_SMTP_USER:-}"
+          export GOTRUE_SMTP_PASS="$${AUTH_SMTP_PASS:-}"
+          export GOTRUE_SMTP_ADMIN_EMAIL="$${AUTH_SMTP_ADMIN_EMAIL:-no-reply@lifeline.local}"
+          export GOTRUE_SMTP_SENDER_NAME=Lifeline
+          export GOTRUE_MAILER_AUTOCONFIRM=false
+          echo "auth: email sender configured, confirmation required"
+        else
+          echo "auth: no email sender configured, sign-ups auto-confirm"
+        fi
+        exec auth
     environment:
       GOTRUE_API_HOST: 0.0.0.0
       PORT: "9999"
+      BASE44_PUBLIC_HOST_SUFFIX: ${BASE44_PUBLIC_HOST_SUFFIX:-}
       GOTRUE_DB_DRIVER: postgres
       # GoTrue reads this one without the GOTRUE_ prefix.
       API_EXTERNAL_URL: https://8000-${BASE44_PUBLIC_HOST_SUFFIX}/auth/v1

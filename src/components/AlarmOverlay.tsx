@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useApp } from "@/hooks/useApp";
 import { useNow } from "@/hooks/useNow";
@@ -7,7 +8,23 @@ import { appStore, cancelAlarm, openAlarmActions, emergencyNumbers, set } from "
 import { EMERGENCY_BY_COUNTRY } from "@/lib/fixtures";
 import { smsHref, telHref, mapsLink, STALE_FIX_MS } from "@/lib/sos";
 import { Button } from "@/components/ui/button";
-/** Focus-trapped, ordinary click/keyboard controls. No automated dispatch.
+import { cancelDispatch } from "@/lib/dispatch.functions";
+import { INCIDENT_STATUS_LABEL } from "@/lib/alertTypes";
+import type { AlarmReason } from "@/lib/types";
+
+/** Which sensor (or person) opened this alarm, said plainly. */
+const ALARM_SOURCE: Record<AlarmReason["type"], string> = {
+  sos: "the SOS button / SOS बटन",
+  vital: "a device reading outside your limits / सीमा से बाहर रीडिंग",
+  fall: "the fall detector / गिरने का पता लगाना",
+  jolt: "a possible impact on the motion sensor / संभावित टक्कर",
+  stillness: "60 seconds without movement on the motion sensor / 60 सेकंड बिना हलचल",
+};
+const SENSOR_SOURCES = new Set<AlarmReason["type"]>(["fall", "jolt", "stillness"]);
+/** Focus-trapped, ordinary click/keyboard controls. Automatic alerts are
+ * created by AlertRecorder from the settings the person saved; this screen only
+ * reports their stored state and offers a cancel during the countdown. It never
+ * claims a call or message succeeded on its own.
  * Share switches reset on every new incident and default to no private data.
  */
 export function AlarmOverlay() {
@@ -22,6 +39,9 @@ export function AlarmOverlay() {
   const [shareLocation, setShareLocation] = useState(false);
   const [shareMedical, setShareMedical] = useState(false);
   const [selected, setSelected] = useState(false);
+  const dispatch = useApp((s) => s.dispatch);
+  const cancelAlert = useServerFn(cancelDispatch);
+  const [stopping, setStopping] = useState(false);
   useEffect(() => {
     setShareLocation(false);
     setShareMedical(false);
@@ -92,6 +112,21 @@ export function AlarmOverlay() {
           <Dialog.Description id="emergency-description" className="mt-3 text-sm">
             {t("release.urgent")}
           </Dialog.Description>
+          <p
+            className="mt-3 rounded-lg border border-border p-3 text-sm"
+            data-alarm-source={alarm.reason?.type ?? "none"}
+          >
+            <span className="font-semibold">This alarm came from </span>
+            {alarm.reason ? ALARM_SOURCE[alarm.reason.type] : "an unknown source"} —{" "}
+            {alarm.reason?.label}
+            {alarm.reason?.reading ? ` · ${alarm.reason.reading}` : ""}
+            {alarm.reason && SENSOR_SOURCES.has(alarm.reason.type) && (
+              <span className="mt-2 block text-xs text-muted-foreground">
+                A sensor pattern is not proof that someone is unconscious or injured. If you can
+                respond, choose “I’m OK — cancel the automatic alert” while the countdown runs.
+              </span>
+            )}
+          </p>
           <p className="mt-3 rounded-lg bg-critical-soft p-3 text-sm">{t("release.nearby")}</p>
           <p
             role="status"
@@ -99,7 +134,9 @@ export function AlarmOverlay() {
             aria-atomic="true"
             className="mt-4 rounded-lg border border-border p-3"
           >
-            {t(selected ? "release.linkSelected" : "release.notSent")}
+            {dispatch
+              ? `Automatic alert: ${INCIDENT_STATUS_LABEL[dispatch.incidentStatus] ?? dispatch.incidentStatus}. Lifeline has not placed a public emergency call.`
+              : t(selected ? "release.linkSelected" : "release.notSent")}
           </p>
           {alarm.phase === "countdown" && (
             <div className="mt-4">
@@ -107,6 +144,46 @@ export function AlarmOverlay() {
               <Button className="mt-3" onClick={openAlarmActions}>
                 {t("release.openNow")}
               </Button>
+              <Button
+                variant="outline"
+                className="mt-2 min-h-11 w-full"
+                onClick={() => {
+                  cancelAlarm("Acknowledged — the person says they are OK");
+                  set({ assistantOpen: false });
+                }}
+              >
+                I’m OK — cancel the automatic alert / ठीक हूँ — अलर्ट रद्द करें
+              </Button>
+            </div>
+          )}
+          {dispatch && (
+            <div className="mt-4 rounded-lg border border-border p-3 text-sm">
+              <p role="status" aria-live="polite">
+                <strong>Automatic alert:</strong>{" "}
+                {INCIDENT_STATUS_LABEL[dispatch.incidentStatus] ?? dispatch.incidentStatus}
+                {dispatch.mode === "test" ? " · test mode, no real contact is messaged" : ""}
+              </p>
+              {dispatch.incidentStatus === "countdown" && (
+                <Button
+                  variant="outline"
+                  className="mt-2 min-h-11"
+                  disabled={stopping}
+                  onClick={async () => {
+                    setStopping(true);
+                    try {
+                      set({ dispatch: await cancelAlert({ data: { eventId: dispatch.eventId, reason: "Canceled from the alarm screen" } }) });
+                    } catch {
+                      setStopping(false);
+                    }
+                  }}
+                >
+                  Cancel automatic alert
+                </Button>
+              )}
+              <p className="mt-2 text-xs text-muted-foreground">
+                Delivery status is on the alert panel. An answered call is not an acknowledgement;
+                only a contact pressing 1 is.
+              </p>
             </div>
           )}
           <label htmlFor="emergency-country" className="mt-5 block text-sm font-semibold">

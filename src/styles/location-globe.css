@@ -1,0 +1,608 @@
+/**
+ * Location globe — a draggable, self-turning sphere with colour-coded pins.
+ *
+ * Adapted from the "Map Infographic 3" Figma board (3511:1587) for Lifeline:
+ * the board's layout and behaviour are kept, the palette, type and copy follow
+ * the app's dark theme. The globe is drawn on a canvas from a run-length
+ * encoded land grid (see `LocationGlobe.tsx`), never from an image.
+ *
+ * Load-bearing structure, kept deliberately:
+ *  • .lg-stage is an empty spacer that holds the square open and gives the
+ *    engine the globe's centre and resting radius; the canvas lives in
+ *    .lg-globe-layer, which covers the whole board, so zooming grows the sphere
+ *    behind the header and legend instead of cropping it into a square.
+ *  • .lg-head and .lg-legend each paint a scrim of the board colour so the text
+ *    stays readable over moving dots.
+ *  • A pin is three nested elements with one transform each: .lg-pin places and
+ *    depth-scales, .lg-pin-drop animates the entrance, .lg-pin-body lifts on
+ *    hover. Merging any two loses a transform silently.
+ *  • The control column is absolutely positioned; in flow its height would push
+ *    the globe down.
+ */
+
+.lg-section {
+  --lg-stage-bg: var(--card);
+  --lg-title: var(--foreground);
+  --lg-muted: var(--muted-foreground);
+  --lg-btn-bg: var(--secondary);
+
+  /* The drawn globe: a face just above the board colour, a shaded limb, gold
+     land dots (the one firm mark) and faint grid lines. Hex-free so the canvas
+     reads the same values the CSS paints with. */
+  --lg-sea: oklch(0.252 0.012 275);
+  --lg-sea-edge: oklch(0.205 0.01 275);
+  --lg-land: oklch(0.8 0.075 85);
+  --lg-grid: oklch(0.325 0.012 275);
+
+  /* One colour per recorded place, in legend order. All five sit well above the
+     board colour, so a 4px land dot and a 20px star stay legible. */
+  --lg-p0: var(--primary);
+  --lg-p1: var(--success);
+  --lg-p2: oklch(0.78 0.1 235);
+  --lg-p3: var(--critical);
+  --lg-p4: oklch(0.79 0.09 310);
+
+  /* The subtitle and the legend labels are deliberately the same size at every
+     width, so they share one token instead of two scales that drift apart. */
+  --lg-label-size: 14px;
+
+  --lg-pad-top: clamp(22px, 4cqi, 28px);
+  --lg-pad-side: clamp(16px, 3cqi, 20px);
+  --lg-pad-bottom: clamp(23px, 4.57cqi, 32px);
+
+  box-sizing: border-box;
+  display: block;
+  position: relative;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  width: 100%;
+  max-width: 700px;
+  margin-inline: auto;
+  background: var(--lg-stage-bg);
+  font-family: var(--font-sans);
+  color: var(--lg-title);
+  container: lg-root / inline-size;
+}
+
+.lg-section *,
+.lg-section *::before,
+.lg-section *::after {
+  box-sizing: border-box;
+}
+
+.lg-inner {
+  position: relative;
+  padding: var(--lg-pad-top) var(--lg-pad-side) var(--lg-pad-bottom);
+}
+
+/* ---------------- header: titles centred, map controls floating right ---------------- */
+.lg-head {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: calc(-1 * var(--lg-pad-top)) calc(-1 * var(--lg-pad-side)) -38px;
+  /* The 52px keeps a wrapping title clear of the control column on the right;
+     matching it on the left keeps the centred text on the board's true centre. */
+  padding: var(--lg-pad-top) calc(var(--lg-pad-side) + 52px) 38px;
+  text-align: center;
+  background: linear-gradient(
+    to bottom,
+    var(--lg-stage-bg) 0%,
+    var(--lg-stage-bg) 56%,
+    color-mix(in oklab, var(--lg-stage-bg) 0%, transparent) 100%
+  );
+}
+
+.lg-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 1.05rem + 0.9cqi, 22px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--lg-title);
+}
+
+.lg-sub {
+  margin: 0;
+  font-size: var(--lg-label-size);
+  font-weight: 400;
+  line-height: 1.43;
+  color: var(--lg-muted);
+}
+
+/* The control column floats over the top-right corner the way real map
+   controls do — in flow its height would set the header height. */
+.lg-controls {
+  position: absolute;
+  top: var(--lg-pad-top);
+  right: var(--lg-pad-side);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 3;
+}
+
+.lg-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: var(--lg-btn-bg);
+  border: 1px solid var(--lg-stage-bg);
+  border-radius: 13px;
+  color: var(--lg-muted);
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    color 0.18s ease;
+}
+
+/* Invisible pad lifts the tap target to 44px without changing the drawn 38px. */
+.lg-btn::after {
+  content: "";
+  position: absolute;
+  inset: -3.2px;
+}
+
+.lg-btn:hover {
+  border-color: var(--border);
+  color: var(--lg-title);
+  transform: translateY(-1px);
+}
+
+.lg-btn:active {
+  transform: translateY(0);
+}
+
+.lg-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.lg-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+
+.lg-btn svg {
+  display: block;
+  width: 19px;
+  height: 19px;
+}
+
+/* The turn control is a play/pause toggle: a pause mark while the globe moves,
+   the rotate mark when it is still. aria-pressed drives both, so what is drawn
+   and what is announced can never disagree. Both <svg>s stay in the button. */
+.lg-btn-turn .lg-icon-pause {
+  display: none;
+}
+
+.lg-btn-turn[aria-pressed="true"] .lg-icon-rotate {
+  display: none;
+}
+
+.lg-btn-turn[aria-pressed="true"] .lg-icon-pause {
+  display: block;
+}
+
+/* ---------------- the globe ----------------
+   .lg-stage is an EMPTY spacer in normal flow: it holds the square open and is
+   what the engine measures for the globe's centre and resting radius.
+   .lg-globe-layer is the canvas and covers the WHOLE board. */
+.lg-stage {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  max-width: 510px;
+  aspect-ratio: 1 / 1;
+  margin: clamp(14px, 3cqi, 20px) auto clamp(24px, 6.3cqi, 44px);
+}
+
+/* Plain CSS sphere underneath, so the board is never an empty hole before the
+   canvas has painted its first frame. */
+.lg-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 38% 34%,
+    var(--lg-sea) 0%,
+    var(--lg-sea) 58%,
+    var(--lg-sea-edge) 100%
+  );
+}
+
+.lg-globe-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.lg-globe-layer[data-lg-dragging] {
+  cursor: grabbing;
+}
+
+.lg-globe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.lg-globe-layer[data-lg-ready] .lg-globe {
+  opacity: 1;
+}
+
+/* ---------------- pins ----------------
+   Placed by the engine from real latitude/longitude. --lg-x / --lg-y are the
+   pin TIP; --lg-depth shrinks pins that have turned toward the limb. Until the
+   first frame lands, a pin sits at the centre of the stage, under the sphere. */
+.lg-pin {
+  position: absolute;
+  left: var(--lg-x, 50%);
+  top: var(--lg-y, 50%);
+  width: var(--lg-pin-w, 7.003%);
+  aspect-ratio: 35.714 / 58.8231;
+  min-height: 0;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--lg-pin-color);
+  cursor: pointer;
+  transform-origin: 50% 100%;
+  transform: translate(-50%, -100%) scale(var(--lg-depth, 1));
+  opacity: var(--lg-fade, 1);
+  z-index: 2;
+}
+
+/* A pin that has turned to the far side of the sphere is not there to click. */
+.lg-pin[data-lg-behind] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Invisible 44px tap target centred on the pin. */
+.lg-pin::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
+.lg-pin:focus-visible {
+  outline: none;
+}
+
+.lg-pin-drop {
+  position: absolute;
+  inset: 0;
+}
+
+.lg-pin-body {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 100%;
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.28s ease;
+}
+
+.lg-pin-shape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.lg-pin-shape .lg-pin-fill {
+  fill: currentColor;
+}
+
+.lg-pin-shape .lg-pin-star {
+  fill: var(--lg-stage-bg);
+  stroke: var(--lg-stage-bg);
+  stroke-width: 0.232521;
+}
+
+.lg-pin.is-active .lg-pin-body,
+.lg-pin:focus-visible .lg-pin-body {
+  transform: translateY(-7px) scale(1.1);
+  filter: drop-shadow(0 8px 14px var(--surface-shadow));
+}
+
+/* The name pill — hidden at rest, shown BELOW the tip so a pin near the top of
+   the stage is never clipped. It is also the pin's accessible name. */
+.lg-pin-label {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-top: 5px;
+  padding: 3px 9px;
+  transform: translate(-50%, -4px);
+  background: var(--lg-btn-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 3px 10px var(--surface-shadow);
+  color: var(--lg-title);
+  font-size: 13px;
+  line-height: 1.35;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+
+.lg-pin.is-active .lg-pin-label,
+.lg-pin:focus-visible .lg-pin-label {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.lg-pin--p0 {
+  --lg-pin-color: var(--lg-p0);
+}
+.lg-pin--p1 {
+  --lg-pin-color: var(--lg-p1);
+}
+.lg-pin--p2 {
+  --lg-pin-color: var(--lg-p2);
+}
+.lg-pin--p3 {
+  --lg-pin-color: var(--lg-p3);
+}
+.lg-pin--p4 {
+  --lg-pin-color: var(--lg-p4);
+}
+
+/* ---------------- legend ----------------
+   The legend paints the matching scrim at the foot of the board so the globe can
+   grow down behind it and the labels stay readable. */
+.lg-legend {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px 22px;
+  margin: -52px calc(-1 * var(--lg-pad-side)) calc(-1 * var(--lg-pad-bottom));
+  padding: 52px var(--lg-pad-side) var(--lg-pad-bottom);
+  list-style: none;
+  background: linear-gradient(
+    to top,
+    var(--lg-stage-bg) 0%,
+    var(--lg-stage-bg) 62%,
+    color-mix(in oklab, var(--lg-stage-bg) 0%, transparent) 100%
+  );
+}
+
+/* flex, not block — a block li adds descender space and the row stops matching
+   the design height */
+.lg-legend li {
+  display: flex;
+}
+
+.lg-key {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--lg-muted);
+  font-family: inherit;
+  font-size: var(--lg-label-size);
+  line-height: 1.6;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.lg-key:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Invisible pad so the short key is still a reasonable tap target. */
+.lg-key::after {
+  content: "";
+  position: absolute;
+  inset: -3px -8px;
+}
+
+.lg-star {
+  display: block;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 19px;
+  color: var(--lg-key-color);
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: 50% 50%;
+}
+
+.lg-star svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.lg-key.is-active {
+  color: var(--lg-title);
+}
+
+/* 51.43deg = 360/7, one point of the seven-pointed star, so the twist lands back
+   on the shape instead of leaving it tilted. */
+.lg-key.is-active .lg-star {
+  transform: scale(1.12) rotate(51.43deg);
+}
+
+.lg-key--p0 {
+  --lg-key-color: var(--lg-p0);
+}
+.lg-key--p1 {
+  --lg-key-color: var(--lg-p1);
+}
+.lg-key--p2 {
+  --lg-key-color: var(--lg-p2);
+}
+.lg-key--p3 {
+  --lg-key-color: var(--lg-p3);
+}
+.lg-key--p4 {
+  --lg-key-color: var(--lg-p4);
+}
+
+.lg-empty {
+  margin: 0;
+  max-width: 34ch;
+  text-align: center;
+  font-size: var(--lg-label-size);
+  line-height: 1.5;
+  color: var(--lg-muted);
+}
+
+.lg-empty strong {
+  color: var(--lg-title);
+  font-weight: 600;
+}
+
+/* Only for screen readers: the readable list of recorded places. */
+.lg-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Above 480px the title steps up, matching the app's section headings. */
+@container lg-root (width > 480px) {
+  .lg-title {
+    font-size: 24px;
+  }
+}
+
+/* Above 650px the sides match the top exactly — the token, not a copy. */
+@container lg-root (width > 650px) {
+  .lg-inner {
+    --lg-pad-side: var(--lg-pad-top);
+  }
+}
+
+/* Below 400px the subtitle wraps, and the 1.43 leading opens too big a gap. */
+@container lg-root (width < 400px) {
+  .lg-sub {
+    line-height: 1.25;
+  }
+}
+
+/* Once the panel fits all five keys on one line, spread them edge to edge. */
+@container lg-root (width >= 620px) {
+  .lg-legend {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+}
+
+/* ---------------- entrance ----------------
+   THE LEGEND LEADS AND THE PINS FOLLOW. One --lg-delay per place, in legend
+   order, authored once on a rule covering both halves so the pair cannot drift
+   apart; the pin trails its own label by --lg-pin-lag. Renumber if the legend is
+   reordered. Pure CSS, nothing gates the first paint. The .lg-no-entrance escape
+   hatch is a repair, not a gate: if the component is mounted in a frozen frame
+   the animation never plays and these would be left invisible. */
+.lg-section {
+  --lg-pin-lag: 0.14s;
+}
+
+.lg-pin--p0,
+.lg-key--p0 {
+  --lg-delay: 0.1s;
+}
+.lg-pin--p1,
+.lg-key--p1 {
+  --lg-delay: 0.2s;
+}
+.lg-pin--p2,
+.lg-key--p2 {
+  --lg-delay: 0.3s;
+}
+.lg-pin--p3,
+.lg-key--p3 {
+  --lg-delay: 0.4s;
+}
+.lg-pin--p4,
+.lg-key--p4 {
+  --lg-delay: 0.5s;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lg-pin-drop {
+    animation: lg-drop 0.55s cubic-bezier(0.34, 1.3, 0.64, 1)
+      calc(var(--lg-delay, 0s) + var(--lg-pin-lag, 0s)) both;
+  }
+
+  .lg-key {
+    animation: lg-key-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) var(--lg-delay, 0s) both;
+  }
+
+  .lg-section.lg-no-entrance .lg-pin-drop,
+  .lg-section.lg-no-entrance .lg-key {
+    animation: none;
+  }
+}
+
+@keyframes lg-drop {
+  from {
+    transform: translateY(-18px) scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes lg-key-in {
+  from {
+    transform: translateY(7px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}

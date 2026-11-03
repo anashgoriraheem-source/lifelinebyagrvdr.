@@ -1,0 +1,394 @@
+/**
+ * Reading days by month — isometric oval-disc chart.
+ *
+ * Shape is fixed: five tilted elliptical discs stacked vertically inside a
+ * dashed 100% ring. Only the palette, type and surfaces follow Lifeline's theme
+ * (dark card, warm sand primary, mono figures). The disc colours are mixed from
+ * the app's own semantic tokens so the chart sits inside the monitor rather than
+ * looking pasted in.
+ */
+
+.rmc {
+  display: flex;
+  justify-content: center;
+  font-family: var(--font-sans);
+  color: var(--foreground);
+}
+
+.rmc *,
+.rmc *::before,
+.rmc *::after {
+  box-sizing: border-box;
+}
+
+.rmc-card {
+  width: 100%;
+  max-width: 446px;
+  min-height: 464px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 26px 22px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.rmc-title {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--foreground);
+  text-align: center;
+  margin: 0 0 6px;
+}
+
+.rmc-meta {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+  text-align: center;
+  margin: 0;
+}
+
+.rmc-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin-block: auto;
+  padding-block: 10px;
+  perspective: 714px;
+}
+
+.rmc-row {
+  position: relative;
+  width: 100%;
+  max-width: 370px;
+  height: 51px;
+  transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rmc-track {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(25deg);
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dashed ring = the full 100% axis; the disc sits top-aligned inside it. */
+.rmc-ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 100%;
+  max-width: 294px;
+  height: 51px;
+  background: transparent;
+  pointer-events: none;
+  z-index: 2;
+  transform-style: preserve-3d;
+  transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rmc-ring-line {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 2;
+  color: color-mix(in oklab, var(--foreground) 30%, transparent);
+}
+
+.rmc-oval {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: var(--rmc-w, 80%);
+  height: 44px;
+  border-radius: 50%;
+  transform-origin: center top;
+  transform: translateY(0);
+  transform-style: preserve-3d;
+  transition:
+    height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.2s ease,
+    opacity 0.3s ease;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 50% 50% at 50% 50%,
+    color-mix(in oklab, var(--rmc-hue) 42%, white) 0%,
+    var(--rmc-hue) 64%,
+    color-mix(in oklab, var(--rmc-hue) 58%, black) 100%
+  );
+}
+
+/* Hover: the pointed-at disc opens; the rest compress to a stack. */
+.rmc-chart:hover .rmc-row:hover {
+  height: 110px;
+}
+.rmc-chart:hover .rmc-row:hover .rmc-track {
+  transform: rotateX(10deg);
+}
+.rmc-chart:hover .rmc-row:hover .rmc-oval {
+  height: 96px;
+  opacity: 1;
+  transform: translateY(7px);
+}
+.rmc-chart:hover .rmc-row:hover .rmc-ring {
+  height: 110px;
+}
+.rmc-chart:hover .rmc-row:not(:hover) {
+  height: 44px;
+}
+
+/* Score sits on the disc and is always visible; ink is the page surface colour
+   so it keeps >4.5:1 contrast on every disc centre. */
+.rmc-score {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--background);
+  line-height: 1;
+  white-space: nowrap;
+  z-index: 4;
+}
+
+.rmc-score::before {
+  content: "";
+  position: absolute;
+  width: 44px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: color-mix(in oklab, white 24%, transparent);
+  border-radius: 50%;
+  filter: blur(5px);
+  z-index: -1;
+}
+
+/* ---------- brand hues, one per month slot ---------- */
+.rmc-row:nth-child(1) .rmc-oval {
+  --rmc-hue: var(--primary);
+}
+.rmc-row:nth-child(2) .rmc-oval {
+  --rmc-hue: var(--success);
+}
+.rmc-row:nth-child(3) .rmc-oval {
+  --rmc-hue: var(--critical);
+}
+.rmc-row:nth-child(4) .rmc-oval {
+  --rmc-hue: oklch(0.72 0.1 245);
+}
+.rmc-row:nth-child(5) .rmc-oval {
+  --rmc-hue: oklch(0.7 0.05 300);
+}
+
+/* ---------- entrance ---------- */
+.rmc.is-animated .rmc-card {
+  animation: rmc-fade-in 0.45s ease both;
+}
+.rmc.is-animated .rmc-title {
+  animation: rmc-slide-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+.rmc.is-animated .rmc-meta {
+  animation: rmc-slide-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+.rmc.is-animated .rmc-row:nth-child(1) .rmc-ring-line {
+  animation: rmc-grow-x 0.55s ease-out 0.2s both;
+}
+.rmc.is-animated .rmc-row:nth-child(2) .rmc-ring-line {
+  animation: rmc-grow-x 0.55s ease-out 0.35s both;
+}
+.rmc.is-animated .rmc-row:nth-child(3) .rmc-ring-line {
+  animation: rmc-grow-x 0.55s ease-out 0.5s both;
+}
+.rmc.is-animated .rmc-row:nth-child(4) .rmc-ring-line {
+  animation: rmc-grow-x 0.55s ease-out 0.65s both;
+}
+.rmc.is-animated .rmc-row:nth-child(5) .rmc-ring-line {
+  animation: rmc-grow-x 0.55s ease-out 0.8s both;
+}
+.rmc.is-animated .rmc-row:nth-child(1) .rmc-oval {
+  animation: rmc-disc-expand 0.55s ease-out 0.29s both;
+}
+.rmc.is-animated .rmc-row:nth-child(2) .rmc-oval {
+  animation: rmc-disc-expand 0.55s ease-out 0.44s both;
+}
+.rmc.is-animated .rmc-row:nth-child(3) .rmc-oval {
+  animation: rmc-disc-expand 0.55s ease-out 0.59s both;
+}
+.rmc.is-animated .rmc-row:nth-child(4) .rmc-oval {
+  animation: rmc-disc-expand 0.55s ease-out 0.74s both;
+}
+.rmc.is-animated .rmc-row:nth-child(5) .rmc-oval {
+  animation: rmc-disc-expand 0.55s ease-out 0.89s both;
+}
+.rmc.is-animated .rmc-footer {
+  animation: rmc-slide-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+@keyframes rmc-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rmc-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rmc-grow-x {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+@keyframes rmc-disc-expand {
+  from {
+    clip-path: ellipse(0% 50% at 50% 50%);
+    opacity: 0;
+    filter: blur(4px);
+  }
+  12% {
+    opacity: 1;
+  }
+  to {
+    clip-path: ellipse(50% 50% at 50% 50%);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .rmc-card {
+    min-height: 0;
+    padding: 20px 18px 18px;
+  }
+  .rmc-chart {
+    padding-block: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rmc.is-animated .rmc-card,
+  .rmc.is-animated .rmc-title,
+  .rmc.is-animated .rmc-meta,
+  .rmc.is-animated .rmc-row .rmc-ring-line,
+  .rmc.is-animated .rmc-row .rmc-oval,
+  .rmc.is-animated .rmc-footer {
+    animation: none;
+  }
+  .rmc-row,
+  .rmc-track,
+  .rmc-ring,
+  .rmc-oval {
+    transition: none;
+  }
+}
+
+/* ---------- footer ---------- */
+.rmc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 0;
+}
+.rmc-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rmc-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.rmc-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--rmc-dot);
+}
+.rmc-legend-lbl {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.rmc-legend-item:nth-child(1) {
+  --rmc-dot: var(--primary);
+}
+.rmc-legend-item:nth-child(2) {
+  --rmc-dot: var(--success);
+}
+.rmc-legend-item:nth-child(3) {
+  --rmc-dot: var(--critical);
+}
+.rmc-legend-item:nth-child(4) {
+  --rmc-dot: oklch(0.72 0.1 245);
+}
+.rmc-legend-item:nth-child(5) {
+  --rmc-dot: oklch(0.7 0.05 300);
+}
+
+.rmc-avg {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  margin: 0;
+}
+.rmc-avg strong {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--foreground);
+  margin-inline-start: 4px;
+}
+
+.rmc-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  text-align: center;
+}

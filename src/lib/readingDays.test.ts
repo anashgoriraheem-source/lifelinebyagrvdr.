@@ -32,10 +32,11 @@ describe('mergeDay', () => {
     expect(mergeDay(once, ['bp'], at)['2026-11-02']).toEqual(['hr', 'spo2', 'bp'])
   })
 
-  it('drops days outside the kept window', () => {
+  it('drops days outside the kept window but keeps the last 12 months', () => {
     const at = new Date(2026, 10, 2, 10).getTime()
-    const next = mergeDay({ '2026-09-01': ['hr'] }, ['hr'], at)
-    expect(next['2026-09-01']).toBeUndefined()
+    const next = mergeDay({ '2024-09-01': ['hr'], '2026-01-15': ['bp'] }, ['hr'], at)
+    expect(next['2024-09-01']).toBeUndefined()
+    expect(next['2026-01-15']).toEqual(['bp'])
     expect(next['2026-11-02']).toEqual(['hr'])
   })
 })

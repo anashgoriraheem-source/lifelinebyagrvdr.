@@ -1,8 +1,12 @@
 > **RC1 review build (2026-11-02): not approved for public/commercial release.** Read [RELEASE_CANDIDATE.md](./RELEASE_CANDIDATE.md) for implementation, evidence and go-live gates. Use the npm lockfile for this candidate; older setup/roadmap statements below are historical. No app was deployed during this review.
 
-# Lifelinebyagrvdr
+# Lifeline
 
-Implement exactly the screenshot and nothing else
+Emergency-support web app: readings from compatible Bluetooth health devices,
+emergency contacts with one-tap call/message drafts, explicit location sharing
+and offline first-aid guidance. Nothing is sent automatically and help is never
+claimed to be dispatched. Device support and its limits are documented in
+[docs/device-support.md](./docs/device-support.md).
 
 This project was built with [Lovable](https://lovable.dev).
 

@@ -1,6 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import {
   Activity,
+  BellRing,
+  BookOpen,
+  GraduationCap,
   HeartPulse,
   House,
   Languages,
@@ -45,8 +48,8 @@ export function Nav() {
           <span className="grid size-10 place-items-center rounded-lg border border-border text-primary">
             <HeartPulse className="size-6" strokeWidth={1.6} />
           </span>
-          <span className="font-display text-xl font-bold">
-            Lifeline<span className="ml-1 text-primary">.</span>
+          <span className="font-display text-lg font-bold leading-none tracking-[0.02em] sm:text-xl">
+            Life<span className="text-primary">line</span>
           </span>
         </Link>
 
@@ -63,10 +66,24 @@ export function Nav() {
             <Sparkles className="size-4" aria-hidden="true" />
             {t("nav.assistant")}
           </Link>
+          <Link to="/guide" className="app-nav-link">
+            <BookOpen className="size-4" aria-hidden="true" />
+            Field guide
+          </Link>
+          <Link to="/practice" className="app-nav-link app-nav-link--practice">
+            <GraduationCap className="size-4" aria-hidden="true" />
+            Practice
+          </Link>
           <Link to="/contacts" className="app-nav-link">
             <Users className="size-4" aria-hidden="true" />
             {t("nav.contacts")}
           </Link>
+          <span className="nav-optional">
+            <Link to="/alerts" className="app-nav-link">
+              <BellRing className="size-4" aria-hidden="true" />
+              Alerts
+            </Link>
+          </span>
           <Link to="/account" className="app-nav-link">
             <UserRound className="size-4" aria-hidden="true" />
             {t("nav.account")}
@@ -91,6 +108,9 @@ export function Nav() {
             {t("nav.more")}
           </summary>
           <div className="absolute end-0 top-full z-50 min-w-44 rounded-lg border border-border bg-card p-2">
+            <Link to="/alerts" className="app-nav-link">
+              Automatic alerts
+            </Link>
             <Link to="/translate" className="app-nav-link">
               {t("nav.translate")}
             </Link>

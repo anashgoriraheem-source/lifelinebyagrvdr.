@@ -1,0 +1,839 @@
+/**
+ * Care schedule calendar — the adapted "Full Grid Calendar" component.
+ *
+ * The layout, the two event shapes, the pinned date, the hover-only "+" and the
+ * native <dialog> in the top layer are the reference design's. Only the colours,
+ * type and surfaces come from the app's semantic tokens (obsidian surfaces, warm
+ * gold accent) so the calendar reads as part of Lifeline. Every card colour is a
+ * dark tint of the card surface with the app's foreground ink, so event text
+ * keeps its contrast instead of sitting on a pastel fill.
+ */
+.cc-section {
+  --cc-bg: var(--card);
+  --cc-line: var(--border);
+  --cc-out: color-mix(in oklab, var(--muted) 42%, var(--card));
+  --cc-dayname: color-mix(in oklab, var(--muted-foreground) 78%, var(--card));
+  --cc-today-bg: var(--primary);
+  --cc-today-ink: var(--primary-foreground);
+  --cc-ink: var(--foreground);
+  --cc-sub: color-mix(in oklab, var(--foreground) 76%, var(--card));
+  --cc-yellow: color-mix(in oklab, var(--primary) 26%, var(--card));
+  --cc-peach: color-mix(in oklab, oklch(0.64 0.12 45) 24%, var(--card));
+  --cc-lilac: color-mix(in oklab, oklch(0.64 0.1 305) 26%, var(--card));
+  --cc-sage: color-mix(in oklab, oklch(0.66 0.1 158) 24%, var(--card));
+  --cc-stone: var(--muted);
+  --cc-danger: var(--critical);
+  --cc-danger-strong: var(--destructive);
+
+  container: cc-root / inline-size;
+  font-family: var(--font-sans);
+  color: var(--cc-ink);
+  margin: 0;
+}
+.cc-section *,
+.cc-section *::before,
+.cc-section *::after {
+  box-sizing: border-box;
+}
+
+.cc-stage {
+  padding: clamp(0px, 2.4cqi, 32px);
+}
+
+/* ---------- Month toolbar ---------- */
+.cc-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  max-width: 1272px;
+  margin: 0 auto 12px;
+}
+.cc-month {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 2.4cqi, 24px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+.cc-toolbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: auto;
+}
+.cc-tool {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--cc-line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--cc-ink);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+.cc-tool:hover {
+  background: var(--accent);
+  border-color: var(--primary);
+}
+.cc-tool:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.cc-tool--text {
+  width: auto;
+  padding: 0 12px;
+  font: 600 12px/1 var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- The card ---------- */
+.cc-card {
+  width: 100%;
+  max-width: 1272px;
+  margin-inline: auto;
+  background: var(--cc-bg);
+  border: 1px solid var(--cc-line);
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: calc(800px - 2 * clamp(0px, 2.4cqi, 32px));
+  overflow-y: auto;
+  color: var(--cc-ink);
+  animation: cc-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes cc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes cc-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes cc-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------- Phone: day-by-day list (the default) ---------- */
+.cc-head {
+  display: none;
+}
+.cc-grid {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.cc-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid var(--cc-line);
+  cursor: pointer;
+}
+.cc-day:last-child {
+  border-bottom: 0;
+}
+.cc-day--out {
+  background: var(--cc-out);
+}
+.cc-day--out .cc-date {
+  color: var(--cc-sub);
+}
+/* A day with no events is exactly 56px tall, date and "+ Add event" centred. */
+.cc-day--empty {
+  height: 56px;
+  padding-block: 0;
+  justify-content: center;
+}
+.cc-day--empty .cc-add {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.cc-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  animation: cc-fade 0.5s ease both;
+  animation-delay: calc(200ms + var(--cc-r, 0) * 80ms + var(--cc-c, 0) * 40ms);
+}
+.cc-meta-day {
+  font: 700 12px/1 var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--cc-dayname);
+}
+.cc-day--today .cc-meta-day {
+  color: var(--cc-today-bg);
+}
+.cc-date {
+  font: 700 14px/1 var(--font-sans);
+  color: var(--cc-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.cc-events {
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cc-events:empty {
+  display: none;
+}
+
+.cc-item {
+  animation: cc-pop 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(
+    250ms + var(--cc-r, 0) * 80ms + var(--cc-c, 0) * 40ms + var(--cc-k, 0) * 60ms
+  );
+}
+.cc-item--new {
+  animation: cc-pop 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: 0s;
+}
+
+/* Event card (a button): first event of a day, title over time. */
+.cc-ev {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--cc-stone);
+  color: var(--cc-ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+.cc-ev:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+.cc-ev:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.cc-ev--yellow {
+  background: var(--cc-yellow);
+}
+.cc-ev--peach {
+  background: var(--cc-peach);
+}
+.cc-ev--lilac {
+  background: var(--cc-lilac);
+}
+.cc-ev--sage {
+  background: var(--cc-sage);
+}
+.cc-ev--stone {
+  background: var(--cc-stone);
+}
+
+/* Every later event of the day: slim card, title and time on one line. */
+.cc-ev--inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: 8px;
+  min-height: 29px;
+  padding: 6px 10px;
+}
+/* A lone event fills its day. */
+.cc-ev--tall {
+  min-height: 87px;
+}
+
+.cc-ev-title {
+  min-width: 0;
+  font: 700 12px/1.25 var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+.cc-ev-time {
+  font: 400 12px/1.2 var(--font-sans);
+  color: var(--cc-sub);
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The add button. Phone: a visible text button on the date line. */
+.cc-add {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  margin: 0;
+  padding: 0 8px 0 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cc-sub);
+  font: 700 11px/1 var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+.cc-add:hover {
+  background: var(--accent);
+  color: var(--cc-ink);
+}
+.cc-add:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+  opacity: 1;
+}
+
+/* Phone event cards put the time on the right of the same line. */
+@container cc-root (width < 860px) {
+  .cc-ev {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    column-gap: 8px;
+  }
+}
+
+/* ---------- Wide: the seven-column month grid ---------- */
+@container cc-root (width >= 860px) {
+  .cc-card {
+    max-height: none;
+    overflow: hidden;
+  }
+
+  .cc-head {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    border-bottom: 1px solid var(--cc-line);
+  }
+  .cc-head-cell {
+    display: flex;
+    align-items: center;
+    height: 65px;
+    padding-inline: 16px;
+    margin: 0;
+    font: 700 clamp(16px, 1.6cqi, 22px) / 1 var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cc-dayname);
+    border-inline-end: 1px solid var(--cc-line);
+    animation: cc-fade 0.5s ease both;
+    animation-delay: calc(150ms + var(--cc-c, 0) * 40ms);
+  }
+  .cc-head-cell:last-child {
+    border-inline-end: 0;
+  }
+  /* The only "today" marker: the dark label on today's column. */
+  .cc-head-cell--today {
+    background: var(--cc-today-bg);
+    color: var(--cc-today-ink);
+  }
+
+  .cc-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+
+  .cc-day {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 131px;
+    height: auto;
+    gap: 0;
+    padding: 0;
+    border-bottom: 1px solid var(--cc-line);
+    border-inline-end: 1px solid var(--cc-line);
+  }
+  .cc-events:empty {
+    display: flex;
+  }
+  .cc-day:nth-child(7n) {
+    border-inline-end: 0;
+  }
+  .cc-day:nth-last-child(-n + 7) {
+    border-bottom: 0;
+  }
+
+  .cc-events {
+    order: 1;
+    flex: 1 0 auto;
+    padding: clamp(6px, 0.63cqi, 8px);
+  }
+  .cc-meta {
+    order: 2;
+    margin-top: auto;
+    padding: 8px;
+  }
+  /* The header band names the day; this stays for screen readers. */
+  .cc-meta-day {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .cc-date {
+    text-transform: uppercase;
+  }
+
+  /* "+": icon only, bottom-right on the date row, hidden until hover/focus. */
+  .cc-add {
+    top: auto;
+    inset-inline-end: 4px;
+    bottom: 2px;
+    transform: none;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    opacity: 0;
+  }
+  .cc-add-label {
+    display: none;
+  }
+  .cc-day--empty .cc-add {
+    top: auto;
+    transform: none;
+  }
+  .cc-day:hover .cc-add,
+  .cc-add:focus-visible {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .cc-add {
+      opacity: 0.6;
+    }
+  }
+
+  .cc-ev {
+    padding-inline: clamp(8px, 0.94cqi, 12px);
+  }
+  .cc-ev-title {
+    font-size: clamp(11px, 0.94cqi, 12px);
+  }
+}
+
+/* ---------- The event dialog (native <dialog>, browser top layer) ---------- */
+.cc-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(420px, calc(100% - 24px));
+  height: fit-content;
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--cc-line);
+  border-radius: 12px;
+  background: var(--cc-bg);
+  color: var(--cc-ink);
+  box-shadow:
+    0 24px 48px -12px rgb(0 0 0 / 0.55),
+    0 2px 6px rgb(0 0 0 / 0.3);
+  /* Required: the open time list hangs past the dialog's bottom edge. */
+  overflow: visible;
+}
+.cc-dialog[open] {
+  animation: cc-pop 0.22s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.cc-dialog::backdrop {
+  background: color-mix(in oklab, var(--surface-shadow) 78%, transparent);
+  animation: cc-fade 0.22s ease;
+}
+
+.cc-form {
+  display: grid;
+  margin: 0;
+  padding: 24px;
+  font: 400 14px/1.45 var(--font-sans);
+}
+.cc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.cc-dlg-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cc-dlg-kicker {
+  margin: 0;
+  font: 700 11px/1 var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--cc-sub);
+}
+.cc-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cc-ink);
+  cursor: pointer;
+}
+.cc-icon-btn:hover {
+  background: var(--accent);
+}
+.cc-icon-btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.cc-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+.cc-chip {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--cc-yellow);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
+}
+.cc-title-field {
+  flex: 1;
+  min-width: 0;
+}
+.cc-title-input {
+  width: 100%;
+  margin: 0;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid var(--cc-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--cc-ink);
+  font: 700 19px/1.25 var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.cc-title-input::placeholder {
+  color: var(--cc-dayname);
+  text-transform: none;
+  font-family: var(--font-sans);
+  font-weight: 500;
+}
+.cc-title-input:focus {
+  border-bottom-color: var(--primary);
+  box-shadow: 0 1px 0 0 var(--primary);
+}
+
+.cc-when {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+.cc-date-line {
+  margin: 0;
+  font-weight: 600;
+}
+.cc-date-line--warn {
+  color: var(--cc-danger);
+}
+.cc-time-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.cc-time {
+  position: relative;
+}
+.cc-time-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--cc-line);
+  border-radius: 8px;
+  background: var(--cc-out);
+  color: var(--cc-ink);
+  font: 500 14px/1.2 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.cc-time-btn:hover {
+  border-color: var(--primary);
+}
+.cc-time-btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+.cc-time-btn[aria-expanded="true"] .cc-time-chev {
+  transform: rotate(180deg);
+}
+.cc-time-chev {
+  flex: none;
+  transition: transform 0.2s ease;
+}
+.cc-time-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  inset-inline-start: 0;
+  z-index: 2;
+  width: max-content;
+  min-width: 200px;
+  /* Exactly five 34px rows; the rest scrolls. */
+  max-height: 172px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--cc-bg);
+  border: 1px solid var(--cc-line);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px -8px rgb(0 0 0 / 0.55);
+  animation: cc-fade 0.15s ease;
+}
+.cc-time-list[hidden] {
+  display: none;
+}
+.cc-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  white-space: nowrap;
+  font: 400 14px/1 var(--font-sans);
+  color: var(--cc-ink);
+  cursor: pointer;
+  outline: none;
+}
+.cc-opt:hover,
+.cc-opt:focus {
+  background: var(--accent);
+}
+.cc-opt[aria-selected="true"] {
+  background: var(--cc-yellow);
+  font-weight: 600;
+}
+.cc-opt > span {
+  flex: none;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.cc-opt-dur {
+  margin-inline-start: auto;
+  color: var(--cc-sub);
+  font-weight: 400;
+}
+
+.cc-colors {
+  display: flex;
+  gap: 10px;
+  margin: 24px 0 0;
+  padding: 0;
+  border: 0;
+}
+.cc-swatch {
+  position: relative;
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.cc-swatch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.cc-swatch:has(input:checked) {
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.22),
+    0 0 0 2px var(--cc-bg),
+    0 0 0 3.5px var(--primary);
+}
+.cc-swatch:has(input:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}
+.cc-swatch--yellow {
+  background: var(--cc-yellow);
+}
+.cc-swatch--peach {
+  background: var(--cc-peach);
+}
+.cc-swatch--lilac {
+  background: var(--cc-lilac);
+}
+.cc-swatch--sage {
+  background: var(--cc-sage);
+}
+.cc-swatch--stone {
+  background: var(--cc-stone);
+}
+
+.cc-dlg-note {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cc-danger);
+}
+
+.cc-dlg-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 24px;
+}
+.cc-dlg-foot[hidden] {
+  display: none;
+}
+.cc-spacer {
+  flex: 1;
+}
+.cc-dlg-foot--confirm {
+  animation: cc-fade 0.15s ease;
+}
+.cc-confirm-text {
+  margin: 0;
+  font-weight: 600;
+}
+.cc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cc-ink);
+  font: 700 12px/1 var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+.cc-btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+/* Delete sits bottom-left, flush with the 24px inner edge. */
+.cc-btn--delete {
+  padding: 0;
+  color: var(--cc-danger);
+}
+.cc-btn--delete:hover {
+  color: var(--cc-danger-strong);
+}
+.cc-btn--ghost:hover {
+  background: var(--accent);
+}
+.cc-btn--danger {
+  background: var(--cc-danger-strong);
+  color: var(--destructive-foreground);
+}
+.cc-btn--danger:hover {
+  background: color-mix(in oklab, var(--cc-danger-strong) 84%, black);
+}
+.cc-btn--primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.cc-btn--primary:hover {
+  background: color-mix(in oklab, var(--primary) 88%, var(--foreground));
+}
+.cc-btn--primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-card,
+  .cc-item,
+  .cc-meta,
+  .cc-head-cell,
+  .cc-dialog[open],
+  .cc-dialog::backdrop,
+  .cc-dlg-foot--confirm {
+    animation: none;
+  }
+  .cc-ev {
+    transition: none;
+  }
+}

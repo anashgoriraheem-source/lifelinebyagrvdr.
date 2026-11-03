@@ -1,5 +1,15 @@
 export type VitalKey = 'bp' | 'glucose' | 'hr' | 'spo2'
 export type Quality = 'good' | 'uncertain' | 'stale'
+
+/**
+ * A supported health service the device exposed but could not deliver readings
+ * from. A device that simply lacks a service is described by `missing` instead:
+ * this is only for "the service is there and still nothing came out".
+ */
+export interface DeviceIssue {
+  key: VitalKey
+  reason: 'notifications-failed' | 'characteristic-missing'
+}
 export type VitalStatus = 'normal' | 'warning' | 'critical' | 'unknown'
 export type SourceBadge = 'live' | 'last-measured' | 'not-provided' | 'demo'
 
@@ -40,6 +50,15 @@ export interface Contact {
   confirmedAt?: number | null
   /** Test destination: never receives a live provider message. */
   testDestination?: boolean
+  /**
+   * Documented consent from this contact to receive automated Lifeline alerts
+   * (SMS and calls). Never implied by saving a phone number.
+   */
+  automationConsent?: boolean
+  /** Epoch ms when that consent was recorded. */
+  consentAt?: number | null
+  /** How consent was obtained (for example "told me in person"). */
+  consentNote?: string
 }
 
 export interface EmergencyNumbers {
@@ -67,6 +86,7 @@ export type AlarmReason =
   | { type: 'vital'; vital: VitalKey; label: string; reading: string }
   | { type: 'fall'; label: string; reading: string }
   | { type: 'jolt'; label: string; reading: string }
+  | { type: 'stillness'; label: string; reading: string }
   | { type: 'sos'; label: string; reading: string }
 
 export interface AlarmState {

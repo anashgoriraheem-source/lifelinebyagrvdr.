@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { SosButton } from "@/components/SosButton";
 import { LanguageOnboarding } from "@/components/LanguageOnboarding";
 import { VitalCard } from "@/components/VitalCard";
+import { ReadingsDashboard } from "@/components/ReadingsDashboard";
 import { useI18n } from "@/i18n";
 export const Route = createFileRoute("/")({ ssr: false, component: Home });
 function Home() {
   const { t } = useI18n();
   return (
     <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-32 pt-8 sm:px-6">
-      <p className="text-sm font-semibold text-primary">Aapda Setu / Lifeline</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Lifeline</p>
       <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">{t("release.title")}</h1>
       <p className="mt-4 max-w-3xl text-lg">{t("release.intro")}</p>
       <LanguageOnboarding />
@@ -55,6 +56,7 @@ function Home() {
           ))}
         </ol>
       </section>
+      <ReadingsDashboard />
       <section className="mt-8" aria-labelledby="readings-heading">
         <h2 id="readings-heading" className="text-2xl font-bold">
           {t("release.monitor")}

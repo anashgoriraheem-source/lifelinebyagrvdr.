@@ -6,13 +6,17 @@ import { Nav } from "@/components/Nav";
 import { AlarmOverlay } from "@/components/AlarmOverlay";
 import { RuntimeNotices } from "@/components/RuntimeNotices";
 import { VitalsEngine } from "@/components/VitalsEngine";
+import { MovementMonitorRunner } from "@/components/MovementMonitorRunner";
 import { AccountSync } from "@/components/AccountSync";
+// Mounted globally: it is the only bridge from a raised alarm to the durable
+// server incident, so every page can trigger the saved automatic alert rules.
+import { AlertRecorder } from "@/components/AlertRecorder";
 
 import { I18nProvider } from "@/i18n";
 
 const siteName = "Lifeline — personal safety and first aid";
 const siteDescription =
-  "Lifeline displays readings from compatible Bluetooth devices and helps you prepare emergency calls, location messages and first-aid guidance.";
+  "Lifeline displays readings from compatible Bluetooth health devices and helps you prepare emergency calls, location messages and first-aid guidance.";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -45,7 +49,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="min-h-screen">
         <I18nProvider>
           <VitalsEngine />
+          {/* The app's single motion listener: fall, stillness and jolt. */}
+          <MovementMonitorRunner />
           <AccountSync />
+          <AlertRecorder />
 
           <Nav />
           {children}

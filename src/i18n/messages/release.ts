@@ -30,6 +30,8 @@ export const releaseEn = {
   "release.receiving": "Readings received — measurement accuracy and timing unverified",
   "release.noDevice": "No device connected",
   "release.lost": "Device disconnected — connect again to receive readings",
+  "release.reconnecting": "Reconnecting to your device — keep it switched on and nearby",
+  "release.deviceStale": "Device connected — the last reading is out of date",
   "release.demo":
     "Demo mode — synthetic readings only. All call and message links in the demo emergency screen are disabled.",
   "release.demoStart": "Try synthetic demo readings",
@@ -116,6 +118,8 @@ export const releaseHi: Record<keyof typeof releaseEn, string> = {
   "release.receiving": "रीडिंग मिली — माप की सटीकता और समय की पुष्टि नहीं है",
   "release.noDevice": "कोई डिवाइस नहीं जुड़ा है",
   "release.lost": "कनेक्शन टूट गया — रीडिंग के लिए फिर जोड़ें",
+  "release.reconnecting": "आपके डिवाइस से दोबारा जुड़ रहे हैं — उसे चालू और पास रखें",
+  "release.deviceStale": "डिवाइस जुड़ा है — पिछली रीडिंग अब ताज़ा नहीं है",
   "release.demo":
     "डेमो मोड — केवल नकली रीडिंग। डेमो आपातकालीन स्क्रीन में सभी कॉल और संदेश लिंक बंद हैं।",
   "release.demoStart": "नकली डेमो रीडिंग आज़माएँ",

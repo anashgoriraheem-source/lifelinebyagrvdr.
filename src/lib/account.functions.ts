@@ -58,6 +58,10 @@ export const saveSafetyContacts = createServerFn({ method: "POST" })
             emailAlerts: z.boolean().optional(),
             confirmedAt: z.number().int().positive().nullable().optional(),
             testDestination: z.boolean().optional(),
+            // Automated-alert consent is a separate, documented choice per contact.
+            automationConsent: z.boolean().optional(),
+            consentAt: z.number().int().positive().nullable().optional(),
+            consentNote: z.string().max(300).optional(),
           })
           .refine((c) => !c.emailAlerts || Boolean(c.email), {
             message: "An email address is required when email alerts are enabled.",
@@ -108,7 +112,8 @@ export const saveSafetyPreferences = createServerFn({ method: "POST" })
 export const exportSafetyAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const [profile, contacts, incidents, events, attempts, preferences] = await Promise.all([
+    const [profile, contacts, incidents, events, attempts, preferences, careEvents] =
+      await Promise.all([
       context.supabase
         .from("profiles")
         .select("full_name, age, blood_type, conditions, allergies, medications, updated_at")
@@ -133,23 +138,27 @@ export const exportSafetyAccount = createServerFn({ method: "POST" })
         .order("started_at", { ascending: false }),
       context.supabase
         .from("alert_attempts")
-        .select(
-          "event_id, channel, contact_name, status, provider, detail, attempted_at, retry_count, acknowledged_at",
-        )
+        .select("event_id, channel, contact_name, status, provider, created_at, updated_at")
         .eq("user_id", context.userId),
       context.supabase
         .from("safety_preferences")
         .select("language, dispatch_consent, consent_at, share_location")
         .eq("user_id", context.userId)
         .maybeSingle(),
-    ]);
+        context.supabase
+          .from("care_events")
+          .select("title, starts_at, ends_at, color, created_at")
+          .eq("user_id", context.userId)
+          .order("starts_at", { ascending: true }),
+      ]);
     if (
       profile.error ||
       contacts.error ||
       incidents.error ||
       events.error ||
       attempts.error ||
-      preferences.error
+      preferences.error ||
+      careEvents.error
     )
       throw new Error("Your data could not be exported. Try again.");
     const attemptRows = attempts.data ?? [];
@@ -158,29 +167,19 @@ export const exportSafetyAccount = createServerFn({ method: "POST" })
       preferences: preferences.data ?? null,
       contacts: contacts.data ?? [],
       incidents: incidents.data ?? [],
+      careEvents: careEvents.data ?? [],
       alertEvents: (events.data ?? []).map(({ id, ...event }) => ({
         ...event,
         attempts: attemptRows
           .filter((a) => a.event_id === id)
           .map(
-            ({
+            ({ channel, contact_name, status, provider, created_at, updated_at }) => ({
               channel,
               contact_name,
               status,
               provider,
-              detail,
-              attempted_at,
-              retry_count,
-              acknowledged_at,
-            }) => ({
-              channel,
-              contact_name,
-              status,
-              provider,
-              detail,
-              attempted_at,
-              retry_count,
-              acknowledged_at,
+              attempted_at: created_at,
+              updated_at,
             }),
           ),
       })),
