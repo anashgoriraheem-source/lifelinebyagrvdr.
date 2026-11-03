@@ -112,7 +112,8 @@ export const saveSafetyPreferences = createServerFn({ method: "POST" })
 export const exportSafetyAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const [profile, contacts, incidents, events, attempts, preferences] = await Promise.all([
+    const [profile, contacts, incidents, events, attempts, preferences, careEvents] =
+      await Promise.all([
       context.supabase
         .from("profiles")
         .select("full_name, age, blood_type, conditions, allergies, medications, updated_at")
@@ -144,14 +145,20 @@ export const exportSafetyAccount = createServerFn({ method: "POST" })
         .select("language, dispatch_consent, consent_at, share_location")
         .eq("user_id", context.userId)
         .maybeSingle(),
-    ]);
+        context.supabase
+          .from("care_events")
+          .select("title, starts_at, ends_at, color, created_at")
+          .eq("user_id", context.userId)
+          .order("starts_at", { ascending: true }),
+      ]);
     if (
       profile.error ||
       contacts.error ||
       incidents.error ||
       events.error ||
       attempts.error ||
-      preferences.error
+      preferences.error ||
+      careEvents.error
     )
       throw new Error("Your data could not be exported. Try again.");
     const attemptRows = attempts.data ?? [];
@@ -160,6 +167,7 @@ export const exportSafetyAccount = createServerFn({ method: "POST" })
       preferences: preferences.data ?? null,
       contacts: contacts.data ?? [],
       incidents: incidents.data ?? [],
+      careEvents: careEvents.data ?? [],
       alertEvents: (events.data ?? []).map(({ id, ...event }) => ({
         ...event,
         attempts: attemptRows

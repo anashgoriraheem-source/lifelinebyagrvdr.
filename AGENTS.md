@@ -323,3 +323,50 @@ and the publishable/service keys; all of them are supplied by compose.
   countdown-then-auto-send path with a live provider, signature acceptance of a
   genuine Twilio callback, TRAI template/sender approval. Do not report those as
   working until a provider is configured and a real test destination is called.
+- No Twilio credentials are set in this workspace (the owner skipped the secrets
+  card). The app boots and every other page works; `/alerts` reports the
+  messaging provider as not configured, `saveAlertSettings` refuses live mode and
+  test mode records the attempt instead of sending. Never describe automatic
+  SMS or calls as working here until the values in `.base44/environment.json`
+  are supplied and a real test destination is called.
+
+## Care schedule calendar (`/schedule`)
+
+- `src/components/CareCalendar.tsx`, `src/components/CareEventDialog.tsx` and
+  `src/styles/care-calendar.css` are the adapted "Full Grid Calendar" design.
+  Keep its load-bearing shape: seven equal Monday-first columns with a day's
+  events at the TOP and its date pinned BOTTOM-LEFT, the separate day-name band
+  where only today's column is filled with `--primary`, the first event of a day
+  as a title-over-time card and every later one as a slim one-line card, the "+"
+  hidden until the day is hovered or focused (faintly visible on touch), and the
+  native `<dialog>` opened with `showModal()` so it lives in the top layer
+  instead of being clipped by the card. Under 860px (`@container cc-root`) the
+  grid becomes a day list with the date on TOP, empty days exactly 56px, and the
+  card capped at 800px with inner scroll. Do not put `overflow: hidden` on the
+  dialog or its form: the open time list hangs past the dialog's bottom edge.
+- Data is real and private: `public.care_events` (one row per block, owner-only
+  RLS, `ends_at > starts_at`, at most 12 hours) through
+  `src/lib/schedule.functions.ts`. `src/lib/schedule.ts` holds every minute and
+  grid calculation (`schedule.test.ts`); the pickers, the Save button and the
+  server overlap check all use it, so a taken time is neither offered nor
+  written. There is no customer/booking/slot model and no seeded demo events.
+- Access: the route is private. A signed-out visitor sees only the sign-in gate;
+  the calendar, the "+" and the dialog exist only for the owner, and the table
+  policy limits reads and writes to `auth.uid()`. The page is reached from
+  `/account`, deliberately not from the main nav. "Delete my data" and account
+  deletion remove the rows via `clear_my_safety_data()`; the export includes
+  them.
+- Reminders are honest: "Next up" is shown only while the page is open and says
+  so. No push notification, SMS reminder or external calendar sync is wired —
+  never claim one.
+- Verified in the preview with a throwaway account (deleted afterwards, along
+  with its rows): the visitor gate, 7 header cells / 42 day cells, create at
+  9 AM (single card tall, chosen colour), rename via the edit dialog, a second
+  event (first stacked, later one inline), delete through the confirm footer,
+  persistence across a full page reload (cross-checked directly in
+  `care_events`), the phone day list with the date on top and no sideways
+  scroll, and the time list capped at 172px. `npm test` (189) and
+  `tsc --noEmit` pass. NOT re-verified in this session: the delete-confirmation
+  copy assertion and the taken-time exclusion read from the add dialog (the
+  delete itself worked and the rule is unit-tested and enforced server-side),
+  keyboard/screen-reader traversal, and any second person's view — there is none.

@@ -149,6 +149,20 @@ function Account() {
       </div>
       <p className="mt-2 text-muted-foreground">{t("account.subtitle")}</p>
       <DevicePrivacy />
+      {userId && (
+        <section className="mt-6 rounded-xl border border-border bg-card p-4">
+          <h2 className="font-display text-lg font-bold">Care schedule</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Plan check-ins, medication rounds and appointments in a private month calendar.
+          </p>
+          <Link
+            to="/schedule"
+            className="mt-3 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Open my care schedule
+          </Link>
+        </section>
+      )}
       <section className="mt-6 rounded-xl border border-border bg-card p-4">
         <h2 className="font-display text-lg font-bold">{t("account.langHeading")}</h2>
         <LanguagePicker variant="full" className="mt-3" />

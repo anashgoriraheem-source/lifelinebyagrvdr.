@@ -12,6 +12,41 @@
       "name": "TRANSLATE_API_KEY",
       "description": "API key for the translation provider above, when it requires one. Kept server-side; never exposed to the browser.",
       "requiredAtBoot": false
+    },
+    {
+      "name": "TWILIO_ACCOUNT_SID",
+      "description": "Twilio Account SID (Twilio Console dashboard). Needed only for live automatic texts and calls; without it the Alerts page says the messaging provider is not configured and test mode records what would be sent.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "TWILIO_AUTH_TOKEN",
+      "description": "Twilio Auth Token from the same Console page. Server-only; also used to verify Twilio status and keypad callbacks.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "TWILIO_FROM_NUMBER",
+      "description": "Twilio sender number in E.164 form (+countrycode...), used for automated voice calls and for SMS when no messaging service is set.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "TWILIO_MESSAGING_SERVICE_SID",
+      "description": "Optional Twilio Messaging Service SID to send automated SMS through instead of the sender number.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "ALERT_PUBLIC_BASE_URL",
+      "description": "Public https base URL of this app (for example https://your-domain) so Twilio delivery and keypad callbacks can reach the app.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "ALERT_TEST_PHONE",
+      "description": "The one phone number test mode is allowed to contact. Without it test mode sends nothing and records the attempt instead.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "ALERT_TICK_SECRET",
+      "description": "Shared secret required by POST /api/alerts/tick, so escalation can continue with no browser open when a scheduler calls it.",
+      "requiredAtBoot": false
     }
   ]
 }

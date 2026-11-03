@@ -172,6 +172,47 @@ export type Database = {
           },
         ]
       }
+      care_events: {
+        Row: {
+          color: string
+          created_at: string
+          ends_at: string
+          id: string
+          starts_at: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          ends_at: string
+          id?: string
+          starts_at: string
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          ends_at?: string
+          id?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contacts: {
         Row: {
           automation_consent: boolean

@@ -16,6 +16,7 @@ import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as MonitorRouteImport } from './routes/monitor'
 import { Route as SaathRouteImport } from './routes/saath'
+import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as TranslateRouteImport } from './routes/translate'
 import { Route as ApiAlertsTickRouteImport } from './routes/api/alerts/tick'
 import { Route as ApiAlertsTwilioAckRouteImport } from './routes/api/alerts/twilio/ack'
@@ -56,6 +57,11 @@ const SaathRoute = SaathRouteImport.update({
   path: '/saath',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScheduleRoute = ScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TranslateRoute = TranslateRouteImport.update({
   id: '/translate',
   path: '/translate',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
+  '/schedule': typeof ScheduleRoute
   '/translate': typeof TranslateRoute
   '/api/alerts/tick': typeof ApiAlertsTickRoute
   '/api/alerts/twilio/ack': typeof ApiAlertsTwilioAckRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
+  '/schedule': typeof ScheduleRoute
   '/translate': typeof TranslateRoute
   '/api/alerts/tick': typeof ApiAlertsTickRoute
   '/api/alerts/twilio/ack': typeof ApiAlertsTwilioAckRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
+  '/schedule': typeof ScheduleRoute
   '/translate': typeof TranslateRoute
   '/api/alerts/tick': typeof ApiAlertsTickRoute
   '/api/alerts/twilio/ack': typeof ApiAlertsTwilioAckRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/monitor'
     | '/saath'
+    | '/schedule'
     | '/translate'
     | '/api/alerts/tick'
     | '/api/alerts/twilio/ack'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/monitor'
     | '/saath'
+    | '/schedule'
     | '/translate'
     | '/api/alerts/tick'
     | '/api/alerts/twilio/ack'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/monitor'
     | '/saath'
+    | '/schedule'
     | '/translate'
     | '/api/alerts/tick'
     | '/api/alerts/twilio/ack'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   ContactsRoute: typeof ContactsRoute
   MonitorRoute: typeof MonitorRoute
   SaathRoute: typeof SaathRoute
+  ScheduleRoute: typeof ScheduleRoute
   TranslateRoute: typeof TranslateRoute
   ApiAlertsTickRoute: typeof ApiAlertsTickRoute
   ApiAlertsTwilioAckRoute: typeof ApiAlertsTwilioAckRoute
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SaathRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/schedule': {
+      id: '/schedule'
+      path: '/schedule'
+      fullPath: '/schedule'
+      preLoaderRoute: typeof ScheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/translate': {
       id: '/translate'
       path: '/translate'
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactsRoute: ContactsRoute,
   MonitorRoute: MonitorRoute,
   SaathRoute: SaathRoute,
+  ScheduleRoute: ScheduleRoute,
   TranslateRoute: TranslateRoute,
   ApiAlertsTickRoute: ApiAlertsTickRoute,
   ApiAlertsTwilioAckRoute: ApiAlertsTwilioAckRoute,
