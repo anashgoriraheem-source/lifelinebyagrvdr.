@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import {
   Activity,
   BellRing,
+  BookOpen,
   HeartPulse,
   House,
   Languages,
@@ -63,6 +64,10 @@ export function Nav() {
           <Link to="/assistant" className="app-nav-link">
             <Sparkles className="size-4" aria-hidden="true" />
             {t("nav.assistant")}
+          </Link>
+          <Link to="/guide" className="app-nav-link">
+            <BookOpen className="size-4" aria-hidden="true" />
+            Field guide
           </Link>
           <Link to="/contacts" className="app-nav-link">
             <Users className="size-4" aria-hidden="true" />

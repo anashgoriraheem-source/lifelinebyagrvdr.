@@ -370,3 +370,30 @@ and the publishable/service keys; all of them are supplied by compose.
   copy assertion and the taken-time exclusion read from the add dialog (the
   delete itself worked and the rule is unit-tested and enforced server-side),
   keyboard/screen-reader traversal, and any second person's view — there is none.
+
+## Field guide shelf (`/guide`)
+
+- `src/components/FieldGuideMegaMenu.tsx`, `GuideShelf.tsx`, `GuideHandbook.tsx`
+  and `src/styles/field-guide.css` are the adapted "Bookshop Header & Hero"
+  design. Keep its shape: the department menu sits above the hero, the open
+  catalogue panel covers it (hover, focus or tap; Escape and the dim close it),
+  the handbook only turns while its own tile is hovered, and below 700px the
+  departments live in a drawer rendered through a portal (the section sets
+  `container-type`, which would otherwise clip a fixed child).
+- Content comes from `src/data/fieldGuide.ts`, built over `GUIDES` in
+  `src/lib/firstAid.ts`: a topic's number is its step count and "written to call
+  first" means `call === "always"`. Do not add invented topics, prices or dates —
+  the shelf is a catalogue of the guides the app already ships.
+- Spines, cards and drawer rows link to `/assistant?guide=<id>`; that route
+  validates the parameter and drops an unknown id.
+- The panel uses its own wider padding (`--fg-panel-pad`) than the hero
+  (`--fg-pad`, which lines the hero and shelf up with the page container); the
+  three-column catalogue squeezed the handbook when both shared one width.
+- Verified: `tsc --noEmit`, `npm run build`, `npm test` (200 pass, one
+  pre-existing `authErrors.test.ts` failure unrelated to this work) and a
+  Playwright pass over `/guide` at 1440/1265/390 px — no horizontal overflow,
+  panel and handbook sized from their tiles, department hover and keyboard focus
+  opening the panel, Escape closing it, the spine hover card inside the content
+  edge, a spine click opening the right guide, the phone drawer in the portal
+  with page scroll locked, and axe reporting no new violations. Not visually
+  inspected in the preview in that session.

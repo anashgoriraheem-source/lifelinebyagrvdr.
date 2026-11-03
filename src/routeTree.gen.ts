@@ -14,6 +14,7 @@ import { Route as AccountRouteImport } from './routes/account'
 import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as ContactsRouteImport } from './routes/contacts'
+import { Route as GuideRouteImport } from './routes/guide'
 import { Route as MonitorRouteImport } from './routes/monitor'
 import { Route as SaathRouteImport } from './routes/saath'
 import { Route as ScheduleRouteImport } from './routes/schedule'
@@ -47,6 +48,11 @@ const AssistantRoute = AssistantRouteImport.update({
 const ContactsRoute = ContactsRouteImport.update({
   id: '/contacts',
   path: '/contacts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuideRoute = GuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MonitorRoute = MonitorRouteImport.update({
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/alerts': typeof AlertsRoute
   '/assistant': typeof AssistantRoute
   '/contacts': typeof ContactsRoute
+  '/guide': typeof GuideRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/alerts': typeof AlertsRoute
   '/assistant': typeof AssistantRoute
   '/contacts': typeof ContactsRoute
+  '/guide': typeof GuideRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/alerts': typeof AlertsRoute
   '/assistant': typeof AssistantRoute
   '/contacts': typeof ContactsRoute
+  '/guide': typeof GuideRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/assistant'
     | '/contacts'
+    | '/guide'
     | '/monitor'
     | '/saath'
     | '/schedule'
@@ -168,6 +178,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/assistant'
     | '/contacts'
+    | '/guide'
     | '/monitor'
     | '/saath'
     | '/schedule'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/assistant'
     | '/contacts'
+    | '/guide'
     | '/monitor'
     | '/saath'
     | '/schedule'
@@ -201,6 +213,7 @@ export interface RootRouteChildren {
   AlertsRoute: typeof AlertsRoute
   AssistantRoute: typeof AssistantRoute
   ContactsRoute: typeof ContactsRoute
+  GuideRoute: typeof GuideRoute
   MonitorRoute: typeof MonitorRoute
   SaathRoute: typeof SaathRoute
   ScheduleRoute: typeof ScheduleRoute
@@ -247,6 +260,13 @@ declare module '@tanstack/react-router' {
       path: '/contacts'
       fullPath: '/contacts'
       preLoaderRoute: typeof ContactsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide': {
+      id: '/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof GuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/monitor': {
@@ -321,6 +341,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsRoute: AlertsRoute,
   AssistantRoute: AssistantRoute,
   ContactsRoute: ContactsRoute,
+  GuideRoute: GuideRoute,
   MonitorRoute: MonitorRoute,
   SaathRoute: SaathRoute,
   ScheduleRoute: ScheduleRoute,

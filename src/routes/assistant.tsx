@@ -1,14 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
-import { GUIDES, matchGuide } from "@/lib/firstAid";
+import { GUIDES, guideById, matchGuide } from "@/lib/firstAid";
 import { detectEmergency } from "@/lib/knowledge";
 import { normaliseAssistantRequest } from "@/lib/assistantLanguages";
 import { useSpeech } from "@/hooks/useSpeech";
 import { SosButton } from "@/components/SosButton";
 import { Button } from "@/components/ui/button";
 import { HEALTH_SOURCES } from "@/data/health-sources";
-export const Route = createFileRoute("/assistant")({ ssr: false, component: AssistantPage });
+export const Route = createFileRoute("/assistant")({
+  ssr: false,
+  // The guide shelf links straight to one topic (`/assistant?guide=cpr`); any
+  // other value is dropped, so a hand-edited URL cannot select an unknown guide.
+  validateSearch: (search: Record<string, unknown>): { guide?: string } => ({
+    guide:
+      typeof search.guide === "string" && guideById(search.guide) ? search.guide : undefined,
+  }),
+  component: AssistantPage,
+});
 const titlesHi: Record<string, string> = {
   cpr: "साँस न लेना · सीपीआर",
   choking: "दम घुटना",
@@ -31,12 +40,17 @@ const titlesHi: Record<string, string> = {
 };
 function AssistantPage() {
   const { t, locale } = useI18n();
+  const { guide: linkedGuide } = Route.useSearch();
   const [question, setQuestion] = useState("");
-  const [guideId, setGuideId] = useState("");
+  const [guideId, setGuideId] = useState(linkedGuide ?? "");
   const [urgent, setUrgent] = useState(false);
   const [unmatched, setUnmatched] = useState(false);
   const speech = useSpeech("en-IN");
   const guide = GUIDES.find((g) => g.id === guideId);
+  // A link from the guide shelf, pressed while this page is already open.
+  useEffect(() => {
+    if (linkedGuide) setGuideId(linkedGuide);
+  }, [linkedGuide]);
   const choose = (id: string) => {
     speech.stopSpeaking();
     setGuideId(id);
