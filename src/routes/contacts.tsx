@@ -53,7 +53,7 @@ export const Route = createFileRoute("/contacts")({
 const card = "border-t border-border py-6";
 
 function Contacts() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const contacts = useApp((s) => s.contacts);
   const country = useApp((s) => s.countryCode);
   const countdown = useApp((s) => s.countdownSeconds);
@@ -124,7 +124,15 @@ function Contacts() {
             >
               {Object.entries(EMERGENCY_BY_COUNTRY).map(([code, v]) => (
                 <option key={code} value={code}>
-                  {v.country}
+                  {locale === "hi"
+                    ? ({
+                        IN: "भारत",
+                        US: "संयुक्त राज्य",
+                        GB: "यूनाइटेड किंगडम",
+                        EU: "यूरोपीय संघ",
+                        AU: "ऑस्ट्रेलिया",
+                      }[code] ?? v.country)
+                    : v.country}
                 </option>
               ))}
             </select>
@@ -153,16 +161,14 @@ function Contacts() {
               className={`rounded-lg p-4 transition hover:-translate-y-0.5 ${x.c}`}
             >
               <x.icon className="size-5 opacity-80" />
-              <p className="mt-2 text-xs font-semibold opacity-70">{x.label}</p>
+              <p className="mt-2 text-xs font-semibold">{x.label}</p>
               <p className="font-mono text-2xl font-bold">{x.num}</p>
             </a>
           ))}
         </div>
         <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
           {t("contacts.emergencyNote", {
-            extra: n.smsVerified
-              ? t("contacts.emergencyNoteSms", { number: n.smsNumber })
-              : "",
+            extra: n.smsVerified ? t("contacts.emergencyNoteSms", { number: n.smsNumber }) : "",
           })}
         </p>
         {!n.smsVerified && (
@@ -210,7 +216,9 @@ function Contacts() {
               <div className="mr-auto min-w-0">
                 <p className="truncate font-semibold">
                   {c.name}
-                  {i === 0 && <span className="ml-2 text-xs text-primary">{t("contacts.primary")}</span>}
+                  {i === 0 && (
+                    <span className="ml-2 text-xs text-primary">{t("contacts.primary")}</span>
+                  )}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {c.relationship} · <span className="font-mono">{c.phone}</span>
@@ -240,7 +248,11 @@ function Contacts() {
                 label={t("contacts.channelEmail")}
               />
               <div className="flex">
-                <IconBtn label={t("contacts.moveUp")} onClick={() => move(i, -1)} disabled={i === 0}>
+                <IconBtn
+                  label={t("contacts.moveUp")}
+                  onClick={() => move(i, -1)}
+                  disabled={i === 0}
+                >
                   <ArrowUp className="size-4" />
                 </IconBtn>
                 <IconBtn
@@ -308,14 +320,19 @@ function Contacts() {
                 ? smsHref(
                     smsList.map((c) => c.phone),
                     buildSosMessage(
-                      { type: "sos", label: t("contacts.testReason"), reading: t("contacts.testReading") },
+                      {
+                        type: "sos",
+                        label: t("contacts.testReason"),
+                        reading: t("contacts.testReading"),
+                      },
                       fix,
                       { test: true },
                     ),
                   )
                 : undefined
             }
-            className={`rounded-full bg-primary px-4 py-2 font-bold text-primary-foreground ${smsList.length ? "" : "pointer-events-none opacity-40"}`}
+            aria-disabled={!smsList.length}
+            className={`rounded-full bg-primary px-4 py-2 font-bold text-primary-foreground ${smsList.length ? "" : "pointer-events-none"}`}
           >
             {t("contacts.testAction")}
           </a>
@@ -323,75 +340,8 @@ function Contacts() {
       </section>
 
       <section className={`${card} mt-5`}>
-        <h2 className="font-display text-xl font-bold">{t("contacts.autoHeading")}</h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          {t("contacts.autoIntro")}
-        </p>
-        <div className="mt-4 space-y-3">
-          <label className="flex items-start gap-3 rounded-lg bg-background p-3 ring-1 ring-border">
-            <input
-              type="checkbox"
-              className="mt-0.5 size-5 shrink-0"
-              checked={dispatchConsent}
-              onChange={(e) => set({ dispatchConsent: e.target.checked })}
-            />
-            <span className="text-sm">
-              <span className="block font-semibold">{t("contacts.consent")}</span>
-              <span className="block text-xs text-muted-foreground">
-                {t("contacts.consentBody")}
-              </span>
-            </span>
-          </label>
-          <label className="flex items-start gap-3 rounded-lg bg-background p-3 ring-1 ring-border">
-            <input
-              type="checkbox"
-              className="mt-0.5 size-5 shrink-0"
-              checked={shareLocation}
-              onChange={(e) => set({ shareLocation: e.target.checked })}
-            />
-            <span className="text-sm">
-              <span className="block font-semibold">{t("contacts.location")}</span>
-              <span className="block text-xs text-muted-foreground">
-                {t("contacts.locationBody")}
-              </span>
-            </span>
-          </label>
-        </div>
-        <div className="mt-4 rounded-lg bg-background p-3 text-xs ring-1 ring-border">
-          <p className="font-semibold text-foreground">{t("contacts.policy")}</p>
-          <ol className="mt-1 list-decimal space-y-1 ps-5 text-muted-foreground">
-            {(
-              provider?.policySteps ?? [
-                t("contacts.policy1"),
-                t("contacts.policy2"),
-                t("contacts.policy3"),
-                t("contacts.policy4"),
-                t("contacts.policy5"),
-                t("contacts.policy6"),
-              ]
-            ).map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ol>
-        </div>
-        {provider && (
-          <p
-            className={`mt-3 rounded-lg p-3 text-xs leading-relaxed ${provider.mode === "live" && provider.liveReady ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`}
-          >
-            {t("contacts.providerMode", {
-              mode: provider.mode,
-              sms: provider.sms ? t("contacts.configured") : t("contacts.notConfigured"),
-              voice: provider.voice ? t("contacts.configured") : t("contacts.notConfigured"),
-              email: provider.email ? t("contacts.configured") : t("contacts.notConfigured"),
-            })}{" "}
-            {provider.mode === "live" && provider.liveReady
-              ? t("contacts.providerLive")
-              : t("contacts.providerTest")}
-          </p>
-        )}
-        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-          {t("contacts.queueNote")}
-        </p>
+        <h2 className="font-display text-xl font-bold">{t("release.actions")}</h2>
+        <p className="mt-3 text-sm leading-relaxed">{t("release.noDelivery")}</p>
       </section>
 
       <AlertHistory />
@@ -457,10 +407,9 @@ function Contacts() {
                       type="number"
                       value={thresholds[k][f] ?? ""}
                       placeholder="—"
-                      aria-label={t(
-                        f === "below" ? "contacts.lowerLimit" : "contacts.upperLimit",
-                        { label: VITAL_META[k].label },
-                      )}
+                      aria-label={t(f === "below" ? "contacts.lowerLimit" : "contacts.upperLimit", {
+                        label: VITAL_META[k].label,
+                      })}
                       onChange={(e) => editThreshold(k, f, e.target.value)}
                       className="w-full max-w-20 rounded-lg border border-border px-2 py-1 font-mono"
                     />

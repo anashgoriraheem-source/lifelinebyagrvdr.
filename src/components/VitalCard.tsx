@@ -1,56 +1,55 @@
-import { Button } from '@/components/ui/button'
-import { Activity, Droplet, Gauge, Wind } from 'lucide-react'
-import { useApp } from '@/hooks/useApp'
-import { useNow } from '@/hooks/useNow'
-import { VITAL_META, classify, formatReading, isStale } from '@/lib/detection'
-import type { VitalKey, VitalStatus } from '@/lib/types'
-import { Sparkline } from './Sparkline'
-
-const ICON = { bp: Gauge, glucose: Droplet, hr: Activity, spo2: Wind }
-
-const STATUS: Record<VitalStatus, { label: string; badge: string; text: string; line: string }> = {
-  normal: { label: 'Normal', badge: 'bg-success-soft text-success ring-success-soft', text: 'text-foreground', line: 'var(--success)' },
-  warning: { label: 'Watch', badge: 'bg-warning-soft text-warning ring-warning-soft', text: 'text-warning', line: 'var(--warning)' },
-  critical: { label: 'Critical', badge: 'bg-destructive text-destructive-foreground ring-destructive', text: 'text-critical', line: 'var(--critical)' },
-  unknown: { label: 'No data', badge: 'bg-muted text-muted-foreground ring-border', text: 'text-muted-foreground', line: 'var(--muted-foreground)' },
-}
-
-export function VitalCard({ k, delay = 0 }: { k: VitalKey; delay?: number }) {
-  const r = useApp((s) => s.vitals[k])
-  const t = useApp((s) => s.thresholds[k])
-  const hist = useApp((s) => s.history[k])
-  const demo = useApp((s) => s.demoMode)
-  const now = useNow()
-  const meta = VITAL_META[k]
-  const Icon = ICON[k]
-  const stale = r ? isStale(k, r, now) : false
-  const status: VitalStatus = !r || stale ? 'unknown' : classify(k, r, t)
-  const st = STATUS[status]
-  const ago = r ? Math.max(0, Math.round((now - r.measuredAt) / 1000)) : null
-  const intermittent = k === 'bp' || k === 'glucose'
-  const source = demo ? 'Demo' : !r ? 'Not provided' : stale ? 'Signal lost' : r.quality === 'uncertain' ? 'Uncertain' : intermittent ? 'Last measured' : 'Live'
-
+import { useApp } from "@/hooks/useApp";
+import { useNow } from "@/hooks/useNow";
+import { useI18n } from "@/i18n";
+import { classify, isStale } from "@/lib/detection";
+import type { VitalKey } from "@/lib/types";
+export function VitalCard({ k }: { k: VitalKey; delay?: number }) {
+  const r = useApp((s) => s.vitals[k]);
+  const limits = useApp((s) => s.thresholds[k]);
+  const demo = useApp((s) => s.demoMode);
+  const { t, formatNumber, formatTime } = useI18n();
+  const now = useNow();
+  const stale = r && isStale(k, r, now);
+  const status = classify(k, r, limits);
+  const label = !r
+    ? "release.noData"
+    : stale
+      ? "release.stale"
+      : demo
+        ? "release.synthetic"
+        : r.quality !== "good"
+          ? "release.uncertain"
+          : status === "critical"
+            ? "release.critical"
+            : status === "warning"
+              ? "release.watch"
+              : "release.normal";
+  const unit =
+    k === "hr"
+      ? "release.unitHr"
+      : k === "bp"
+        ? "release.unitBp"
+        : k === "spo2"
+          ? "release.unitOxygen"
+          : "release.unitGlucose";
+  const value =
+    !r || stale
+      ? "—"
+      : k === "bp"
+        ? `${formatNumber(Math.round(r.value))}/${r.value2 == null ? "—" : formatNumber(Math.round(r.value2))}`
+        : formatNumber(Math.round(r.value));
   return (
-    <article
-      style={{ animationDelay: `${delay}ms` }}
-      className={`animate-fade-up relative flex flex-col rounded-lg bg-card p-5 shadow-sm ring-1 transition ${status === 'critical' ? 'ring-2 ring-destructive shadow-surface-shadow' : 'ring-border'}`}
-    >
-      <div className="flex items-center gap-2">
-        <span className="grid size-8 place-items-center rounded-lg bg-muted text-muted-foreground"><Icon className="size-4" /></span>
-        <h2 className="mr-auto text-sm font-semibold text-muted-foreground">{meta.label}</h2>
-        <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ring-1 ${st.badge}`}>{st.label}</span>
-      </div>
-      <div className="mt-4 flex items-baseline gap-1.5">
-        <span className={`font-mono text-4xl font-bold tracking-normal tabular ${st.text}`}>{r && !stale ? formatReading(k, r) : '—'}</span>
-        <span className="text-sm font-medium text-muted-foreground">{meta.unit}</span>
-      </div>
-      <div className="mt-3 text-muted-foreground" style={{ color: st.line }}>
-        <Sparkline data={hist} color={st.line} />
-      </div>
-      <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
-        <span className={`rounded-md px-1.5 py-0.5 font-semibold ${demo ? 'bg-warning-soft text-warning' : source === 'Live' ? 'bg-success-soft text-success' : source === 'Uncertain' ? 'bg-warning-soft text-warning' : 'bg-muted text-muted-foreground'}`}>{source}</span>
-        <span className="truncate">{r ? `${r.source} · ${(ago ?? 0) < 2 ? 'just now' : `${ago}s ago`}` : 'No connected device provides this'}</span>
-      </div>
+    <article className="min-w-0 rounded-xl border border-border bg-card p-5">
+      <h2 className="font-semibold">{t(`reading.${k}`)}</h2>
+      <p className="mt-4 break-words font-mono text-3xl font-bold">
+        {value} <span className="text-sm font-normal text-muted-foreground">{t(unit)}</span>
+      </p>
+      <p className="mt-3 text-sm text-muted-foreground">{t(label)}</p>
+      <p className="mt-2 break-words text-xs text-muted-foreground">
+        {r
+          ? `${r.source} · ${t("release.receivedAt", { time: formatTime(r.receivedAt) })}`
+          : t("release.noMeasurement")}
+      </p>
     </article>
-  )
+  );
 }

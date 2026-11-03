@@ -78,7 +78,7 @@ export const saveSafetyPreferences = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
     z
       .object({
-        language: z.string().min(2).max(8),
+        language: z.enum(["en", "hi"]),
         dispatchConsent: z.boolean(),
         shareLocation: z.boolean(),
       })

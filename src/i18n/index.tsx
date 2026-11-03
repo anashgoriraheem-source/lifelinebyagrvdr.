@@ -1,4 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useApp } from "@/hooks/useApp";
 import { set } from "@/lib/store";
 import { LOCALES, isLocaleCode, isRtl, localeByCode, type LocaleCode } from "./locales";
@@ -83,9 +91,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       announced.current = true;
       return;
     }
-    setAnnouncement(
-      translate(locale, "a11y.languageChanged", { language: definition.nativeName }),
-    );
+    setAnnouncement(translate(locale, "a11y.languageChanged", { language: definition.nativeName }));
   }, [locale, definition.nativeName]);
 
   const value = useMemo<I18nValue>(() => {
@@ -97,7 +103,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       tag: definition.tag,
       t: (key, vars) => translate(locale, key, vars),
       setLanguage: (code) => {
-        if (isLocaleCode(code)) set({ language: code });
+        if (isLocaleCode(code)) {
+          set({ language: code });
+          try {
+            localStorage.setItem("lifeline:locale", code);
+          } catch {
+            /* announced by settings storage state */
+          }
+        }
       },
       coverage,
       has: (key) => locale === "en" || Boolean(pack?.[key]),

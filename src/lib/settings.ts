@@ -8,10 +8,10 @@ const threshold = z.object({
 });
 
 const contact = z.object({
-  id: z.string(),
-  name: z.string(),
-  relationship: z.string(),
-  phone: z.string(),
+  id: z.string().max(120),
+  name: z.string().trim().max(120),
+  relationship: z.string().max(100),
+  phone: z.string().max(40),
   call: z.boolean(),
   sms: z.boolean(),
   email: z.string().trim().max(200).optional(),
@@ -28,7 +28,7 @@ export const persistedSettingsSchema = z.object({
   dispatchConsent: z.boolean().optional(),
   shareLocation: z.boolean().optional(),
   demoMode: z.boolean().optional(),
-  contacts: z.array(contact).optional(),
+  contacts: z.array(contact).max(50).optional(),
   countryCode: z.enum(["IN", "US", "GB", "EU", "AU"]).optional(),
   countdownSeconds: z.number().int().min(0).max(60).optional(),
   thresholds: z
@@ -36,12 +36,12 @@ export const persistedSettingsSchema = z.object({
     .optional(),
   profile: z
     .object({
-      name: z.string(),
-      age: z.number().nonnegative().nullable(),
-      bloodType: z.string(),
-      conditions: z.array(z.string()),
-      allergies: z.array(z.string()),
-      medications: z.array(z.string()),
+      name: z.string().trim().max(120),
+      age: z.number().int().min(0).max(130).nullable(),
+      bloodType: z.string().max(16),
+      conditions: z.array(z.string().max(200)).max(30),
+      allergies: z.array(z.string().max(200)).max(30),
+      medications: z.array(z.string().max(200)).max(30),
     })
     .optional(),
 });

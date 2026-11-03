@@ -1,3 +1,5 @@
+> **RC1 review build (2026-11-02): not approved for public/commercial release.** Read [RELEASE_CANDIDATE.md](./RELEASE_CANDIDATE.md) for implementation, evidence and go-live gates. Use the npm lockfile for this candidate; older setup/roadmap statements below are historical. No app was deployed during this review.
+
 # Lifelinebyagrvdr
 
 Implement exactly the screenshot and nothing else

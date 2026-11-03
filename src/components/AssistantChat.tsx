@@ -183,7 +183,8 @@ export function AssistantChat({ variant = "inline", className }: Props) {
             imageName: image?.name,
             imageDataUrl: image?.dataUrl,
             history,
-            device: devicePayload(snapshot),
+            // Device-local health and contact records are not sent to the assistant.
+            device: undefined,
           },
         });
         setMessages((m) => [...m, { id: seq++, role: "assistant", answer: reply.answer }]);

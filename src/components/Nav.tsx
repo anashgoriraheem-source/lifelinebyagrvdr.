@@ -38,10 +38,10 @@ export function Nav() {
   return (
     <header className="relative z-30 border-b border-border bg-background">
       <a href="#main-content" className="skip-link">
-        Skip to content
+        {t("common.skip")}
       </a>
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-3" aria-label="Lifeline home">
+      <div className="mx-auto flex flex-wrap max-w-6xl items-center gap-3 px-4 py-3 sm:gap-4 sm:px-6">
+        <Link to="/" className="flex items-center gap-3" aria-label={t("nav.home")}>
           <span className="grid size-10 place-items-center rounded-lg border border-border text-primary">
             <HeartPulse className="size-6" strokeWidth={1.6} />
           </span>
@@ -86,6 +86,19 @@ export function Nav() {
         </nav>
 
         <LanguagePicker className="shrink-0" />
+        <details className="relative nav-mobile">
+          <summary className="flex min-h-11 cursor-pointer items-center rounded-lg border border-border px-3 text-sm">
+            {t("nav.more")}
+          </summary>
+          <div className="absolute end-0 top-full z-50 min-w-44 rounded-lg border border-border bg-card p-2">
+            <Link to="/translate" className="app-nav-link">
+              {t("nav.translate")}
+            </Link>
+            <Link to="/saath" className="app-nav-link">
+              Saath
+            </Link>
+          </div>
+        </details>
       </div>
     </header>
   );

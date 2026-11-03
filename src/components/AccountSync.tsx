@@ -4,6 +4,8 @@ import { useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { readSafetyAccount, saveSafetyPreferences } from "@/lib/account.functions";
 import { appStore, set } from "@/lib/store";
+import { disconnectWearable } from "@/core/ble/connect";
+import { stopTracking } from "@/lib/location";
 import { isLocaleCode } from "@/i18n/locales";
 
 const EMPTY_PROFILE = {
@@ -21,6 +23,8 @@ export function AccountSync() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)
+      return;
     let active = true;
     let generation = 0;
     const sync = async () => {
@@ -29,7 +33,12 @@ export function AccountSync() {
       if (!active || my !== generation) return;
       const user = data.user;
       if (appStore.state.userId === (user?.id ?? null)) return;
+      disconnectWearable();
+      stopTracking();
       set({
+        vitals: {},
+        history: { hr: [], spo2: [], bp: [], glucose: [] },
+        location: { status: "idle", fix: null, error: null },
         userId: user?.id ?? null,
         userEmail: user?.email ?? null,
         contacts: [],

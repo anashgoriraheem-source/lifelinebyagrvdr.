@@ -1,0 +1,74 @@
+{
+  "browser": "156.0.8078.4",
+  "matrix": 56,
+  "overflow": 0,
+  "axeViolationCases": 0,
+  "journeys": [
+    {
+      "name": "Guided pairing does not open chooser before user action",
+      "result": "passed"
+    },
+    {
+      "name": "Valid synthetic reading is visibly unverified, not medically normal",
+      "result": "passed"
+    },
+    {
+      "name": "Malformed reading is rejected and announced",
+      "result": "passed"
+    },
+    {
+      "name": "Connection loss clears readings and has a manual retry",
+      "result": "passed"
+    },
+    {
+      "name": "Synthetic pairing recovery: cancel",
+      "result": "passed"
+    },
+    {
+      "name": "Synthetic pairing recovery: denied",
+      "result": "passed"
+    },
+    {
+      "name": "Synthetic pairing recovery: range",
+      "result": "passed"
+    },
+    {
+      "name": "Synthetic pairing recovery: incompatible",
+      "result": "passed"
+    },
+    {
+      "name": "Unsupported browser retains no-device and first-aid paths",
+      "result": "passed"
+    },
+    {
+      "name": "Keyboard opens emergency dialog; focus is contained; drafts exclude private data by default",
+      "result": "passed"
+    },
+    {
+      "name": "Missing translation provider stays unavailable; public-phrase consent required",
+      "result": "passed"
+    },
+    {
+      "name": "Local first aid works with provider requests blocked; urgent text does not wait for chat",
+      "result": "passed"
+    },
+    {
+      "name": "Language selection persists and changes document language",
+      "result": "passed"
+    },
+    {
+      "name": "Skip link receives keyboard focus and reaches main",
+      "result": "passed"
+    },
+    {
+      "name": "200% text resizing reflows monitor at 390px",
+      "result": "passed"
+    },
+    {
+      "name": "Offline page saves public content only and reopens without network",
+      "result": "passed"
+    }
+  ],
+  "errors": [],
+  "externalRequests": []
+}

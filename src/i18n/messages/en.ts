@@ -1,3 +1,4 @@
+import { releaseEn } from "./release";
 /**
  * English message catalog — the reference pack. Every key used by the
  * localized shell, translator, assistant and emergency surfaces lives here.
@@ -30,13 +31,13 @@ export const en = {
 
   "lang.label": "App language",
   "lang.preview": "Preview language",
-  "lang.status.complete": "Complete interface pack",
+  "lang.status.complete": "Bundled interface text — review pending",
   "lang.status.machine-draft":
-    "Machine-drafted interface pack — not reviewed by a fluent speaker. Translated here: navigation, the assistant, the translator, contacts, the account page and their notices. The monitor readings detail and the emergency overlay stay in English, and emergency/first-aid wording is always English until a qualified reviewer signs it off.",
+    "Hindi text is a machine-drafted review copy. No fluent-speaker or clinical approval has been recorded. First-aid instructions and some directory entries remain English with a language notice. Catalog coverage is not proof of whole-app localization.",
   "lang.status.partial": "Partly translated — English shown for missing text",
   "lang.safetyUnreviewed":
     "Safety wording has not been reviewed in this language. English safety text is shown below and emergency calling stays available.",
-  "lang.coverage": "{done}% of interface strings translated",
+  "lang.coverage": "{done}% of catalogued text has a translation entry",
   "lang.missing": "{count} interface strings still fall back to English",
 
   "safety.callEmergency": "Call emergency services",
@@ -98,7 +99,7 @@ export const en = {
   "translate.listen": "Read translation aloud",
   "translate.machine": "Machine translated — not reviewed by a human translator.",
   "translate.unavailable":
-    "No translation service is configured on this deployment. Add the provider credentials on the server to enable translation.",
+    "Online translation is unavailable. You can still use the bundled English or Hindi interface. The operator must configure and verify the translation service before enabling it.",
   "translate.auto": "Auto-detected",
   "translate.empty": "Enter text to translate.",
   "translate.tooLong": "Keep the text under {max} characters.",
@@ -135,7 +136,8 @@ export const en = {
   "med.currentMeds": "Current medicines, including anything bought without a prescription",
   "med.commaHint": "Separate entries with commas",
   "med.check": "Check safety factors",
-  "med.labelOnly": "Dosing: follow your product label or a pharmacist. Lifeline does not calculate a dose.",
+  "med.labelOnly":
+    "Dosing: follow your product label or a pharmacist. Lifeline does not calculate a dose.",
   "med.genericOnly": "generic name only, no brands",
   "med.factorsChecked": "Safety factors checked",
   "med.referenceSummary": "Reference catalogue · version {version}",
@@ -209,13 +211,15 @@ export const en = {
     "Lifeline can show readings from some Bluetooth health devices. Nothing on this page is sent to anyone, and you can use every other feature without a device.",
   "device.connect.stepsHeading": "Before you start",
   "device.connect.step1":
-    "Use Chrome or Edge on Android, Windows, Mac or a Chromebook. iPhones and iPads cannot connect here.",
-  "device.connect.step2": "Keep the page secure — the address bar should show a padlock.",
+    "Try a browser with device pairing, such as Chrome on Android or a computer. Pairing is not available in Safari on iPhone or iPad. Availability depends on this browser and your device.",
+  "device.connect.step2":
+    "Open this website with https:// at the start of its address. Your browser may also ask you to allow Bluetooth.",
   "device.connect.step3":
     "Switch the device on, charge it, and keep it within about one metre of this phone or computer.",
   "device.connect.step4":
     "If your device has a “share” or “broadcast” setting, switch it on so it can be found.",
-  "device.connect.ready": "This browser can connect. Ready when you are.",
+  "device.connect.ready":
+    "This browser offers device pairing. Compatibility with your health device is not yet verified.",
   "device.connect.unsupported":
     "This browser cannot connect to health devices. Everything else on this page still works — you can add contacts and open first-aid guidance.",
   "device.connect.insecure":
@@ -227,9 +231,10 @@ export const en = {
   "device.connect.statusOpening": "Opening your browser’s device list",
   "device.connect.statusConnecting": "Connecting to {name}. This can take a few seconds.",
   "device.connect.statusConnected":
-    "Connected to {name}. Waiting for a reading — open the device’s own app or take a measurement if nothing appears.",
+    "Connected to {name}. Waiting for a reading. Take a measurement on the device if needed. Another app using the device may prevent sharing.",
   "device.connect.statusReceiving": "Receiving readings from {name}.",
-  "device.connect.statusLost": "The connection to {name} was lost.",
+  "device.connect.statusLost":
+    "The connection to {name} was lost. Keep it close and switched on, then open the device list again. No new readings are available.",
   "device.connect.cancelled":
     "No device was chosen, so nothing has changed. Try again whenever you are ready.",
   "device.connect.denied":
@@ -237,7 +242,7 @@ export const en = {
   "device.connect.rangeError":
     "The device could not be reached. Move it closer, make sure it is switched on, and try again.",
   "device.connect.incompatible":
-    "This device does not share heart rate, oxygen, blood pressure or glucose readings with Lifeline.",
+    "Lifeline could not receive a supported reading from this device. Its sharing method may be different. You can try again or continue without it.",
   "device.connect.failed":
     "The connection did not work. Check that the device is switched on and nearby, then try again.",
   "device.connect.disconnect": "Disconnect device",
@@ -257,6 +262,29 @@ export const en = {
   "device.connect.technicalBody":
     "Lifeline asks the browser for these standard Bluetooth services: Heart Rate (0x180D), Pulse Oximeter (0x1822), Blood Pressure (0x1810) and Glucose (0x1808). No device list leaves your device.",
 
+  "common.skip": "Skip to content",
+  "device.connect.invalidReading":
+    "A reading could not be understood. Check the device fit and take a new measurement. You can disconnect and try again.",
+  "reading.hr": "Heart rate",
+  "reading.spo2": "Blood oxygen",
+  "reading.bp": "Blood pressure",
+  "reading.glucose": "Blood glucose",
+  "network.offline":
+    "You appear to be offline. Saved text may still work. Online translation and account saving are unavailable. Calls and messages need your phone service; delivery is not confirmed here.",
+  "translation.consent":
+    "I agree to send only the selected public setup phrase to the configured translation service. I will not enter health, location or contact information.",
+  "translation.scope":
+    "Only these public setup phrases can use online translation. Health, emergency, location and contact text is blocked. The interface uses bundled language resources, not this API.",
+  "translation.phrase": "Public setup phrase",
+  "privacy.title": "Your information on this device",
+  "privacy.body":
+    "When signed out, contacts, profile, limits and language are saved in this browser if storage is allowed. Someone using this browser can read them. Device readings and chat are kept in this tab’s memory. Nothing is sent to contacts automatically. Account sync, when configured, is a separate action.",
+  "privacy.export": "Export device-local information",
+  "privacy.clear": "Delete device-local information",
+  "privacy.confirm": "Confirm deletion from this browser",
+  "privacy.deleted":
+    "Device-local information deleted. Account data, if any, must be deleted separately from Account.",
+  ...releaseEn,
   ...contactsEn,
   ...accountEn,
 } as const;

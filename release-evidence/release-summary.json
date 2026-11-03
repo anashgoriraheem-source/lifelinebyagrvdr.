@@ -1,0 +1,31 @@
+{
+  "version": "2026.11-rc1",
+  "disposition": "review-only / commercial-go-live-blocked",
+  "unitTests": 83,
+  "unitFiles": 10,
+  "browserCases": 56,
+  "browserJourneys": 16,
+  "browser": "156.0.8078.4",
+  "axeViolationCases": 0,
+  "horizontalOverflowCases": 0,
+  "physicalHardwareTested": false,
+  "actualScreenReaderTested": false,
+  "liveTranslationTested": false,
+  "translationStatus": "blocked-missing-provider-configuration-and-review",
+  "wholeProductHindiComplete": false,
+  "clinicalReview": false,
+  "build": "passed",
+  "typecheck": "passed",
+  "wholeRepositoryLint": "failed",
+  "changedSourceLint": "passed-with-seven-warnings",
+  "runtimeDependencyAudit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "deploymentPerformed": false,
+  "backendOwnershipExecution": "not-run; inspected source and RLS only; schema drift remains"
+}

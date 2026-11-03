@@ -4,12 +4,7 @@ import { z } from "zod";
 import { languageInfo, isTranslatableCode } from "@/i18n/worldLanguages";
 import type { TranslateResult } from "./translate.server";
 
-const input = z.object({
-  text: z.string().trim().min(1).max(5000),
-  /** `auto` asks the provider to detect; otherwise a language code. */
-  source: z.string().refine((v) => v === "auto" || isTranslatableCode(v), "Unsupported source language"),
-  target: z.string().refine(isTranslatableCode, "Unsupported target language"),
-});
+import { translationInput as input } from "./translationPolicy";
 
 export interface TranslationReply extends TranslateResult {
   machine: true;
@@ -66,6 +61,14 @@ export const translationStatus = createServerFn({ method: "GET" }).handler(async
  * languages; anything else is reported as unavailable or unverified.
  */
 export const translationLanguages = createServerFn({ method: "GET" }).handler(async () => {
+  const { checkRateLimit } = await import("./rateLimit.server");
+  if (!checkRateLimit("translation-catalog-global", 30, 60_000))
+    return {
+      status: "error" as const,
+      provider: null,
+      languages: [],
+      note: "Please wait before checking available languages again.",
+    };
   const { providerLanguages } = await import("./translate.server");
   const catalog = await providerLanguages();
   return {

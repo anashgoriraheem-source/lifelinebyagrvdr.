@@ -1,3 +1,4 @@
+import { useI18n } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -952,6 +953,7 @@ function score(
   return value;
 }
 function Saath() {
+  const { locale: interfaceLocale } = useI18n();
   const [query, setQuery] = useState("");
   const ranked = useMemo(() => {
     const prediction = trainedIntent(query);
@@ -964,6 +966,12 @@ function Saath() {
   const visible = query.trim() ? ranked.filter((x) => x.score > 0).map((x) => x.item) : HELPLINES;
   return (
     <main id="main-content" className="mx-auto max-w-5xl px-4 pb-28 pt-7">
+      <p role="note" className="mb-5 rounded-lg border border-warning p-4 text-sm">
+        {interfaceLocale === "hi"
+          ? "यह निर्देशिका भारत के लिए है। कुछ प्रविष्टियाँ अंग्रेज़ी में हैं और नंबरों की हालिया आधिकारिक पुष्टि बाकी है। सुझाया गया मिलान चिकित्सा या आपातकालीन निर्णय नहीं है। स्थानीय आपातकाल में अपनी आपातकालीन सेवा को कॉल करें।"
+          : "This directory is for India. Some entries are English-only and current official verification of directory numbers is pending. A suggested match is not medical triage or an emergency decision. Use your local emergency service for immediate danger."}
+      </p>
+
       <div className="border-b border-border pb-6 text-foreground sm:pb-8">
         <div className="flex items-center gap-3">
           <span className="grid size-12 place-items-center rounded-lg bg-card/10">

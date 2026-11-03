@@ -19,6 +19,7 @@ import type {
 } from "./types";
 
 export interface AppState {
+  storageIssue: "none" | "blocked" | "invalid";
   demoMode: boolean;
   scenario: string;
   vitals: Partial<Record<VitalKey, Reading>>;
@@ -66,6 +67,7 @@ export interface DeviceState {
 const SETTINGS_KEY = "lifeline:settings:v1";
 
 const initial: AppState = {
+  storageIssue: "none",
   demoMode: false,
   scenario: "stable",
   vitals: {},
@@ -101,7 +103,16 @@ export const set = (patch: Partial<AppState> | ((s: AppState) => Partial<AppStat
   appStore.setState((s) => ({ ...s, ...(typeof patch === "function" ? patch(s) : patch) }));
 
 export const emergencyNumbers = (s: AppState) =>
-  EMERGENCY_BY_COUNTRY[s.countryCode] ?? EMERGENCY_BY_COUNTRY.IN;
+  EMERGENCY_BY_COUNTRY[s.countryCode] ?? {
+    country: "Unknown — select your country in Contacts",
+    general: "",
+    police: "",
+    ambulance: "",
+    fire: "",
+    smsVerified: false,
+    smsNumber: "",
+    smsNote: "Emergency numbers are not configured for this location.",
+  };
 
 let logSeq = 0;
 export function addLog(kind: LogEntry["kind"], text: string) {
@@ -184,18 +195,24 @@ export function loadSettings() {
   unsubscribeSettings?.unsubscribe();
   const readingDays = loadReadingDays();
   if (Object.keys(readingDays).length) set({ readingDays });
+  let writable = true;
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) {
       const parsed = persistedSettingsSchema.safeParse(JSON.parse(raw));
       if (parsed.success) set(parsed.data);
+      else {
+        writable = false;
+        set({ storageIssue: "invalid" });
+      }
     }
   } catch {
-    /* inaccessible or corrupt browser storage */
+    writable = false;
+    set({ storageIssue: "blocked" });
   }
   let previous = "";
   unsubscribeSettings = appStore.subscribe((s) => {
-    if (s.userId) return;
+    if (s.userId || !writable) return;
     const p: Persisted = {
       contacts: s.contacts,
       countryCode: s.countryCode,
@@ -215,11 +232,43 @@ export function loadSettings() {
       localStorage.setItem(SETTINGS_KEY, next);
       previous = next;
     } catch {
-      /* Monitoring must work without storage. */
+      if (appStore.state.storageIssue !== "blocked") set({ storageIssue: "blocked" });
     }
   });
   return () => {
     unsubscribeSettings?.unsubscribe();
     unsubscribeSettings = null;
   };
+}
+
+/** Delete only this app's local records, never unrelated browser storage. */
+export function deleteDeviceLocalData() {
+  unsubscribeSettings?.unsubscribe();
+  unsubscribeSettings = null;
+  let failed = false;
+  for (const key of [SETTINGS_KEY, "lifeline:reading-days:v1", "lifeline:locale"]) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      failed = true;
+    }
+  }
+  set({
+    contacts: [],
+    profile: initial.profile,
+    thresholds: DEFAULT_THRESHOLDS,
+    readingDays: {},
+    log: [],
+    vitals: {},
+    history: { hr: [], spo2: [], bp: [], glucose: [] },
+    location: { status: "idle", fix: null, error: null },
+    incident: null,
+    shareLocation: false,
+    dispatchConsent: false,
+    demoMode: false,
+    scenario: "stable",
+    storageIssue: failed ? "blocked" : "none",
+  });
+  if (!failed) loadSettings();
+  return !failed;
 }

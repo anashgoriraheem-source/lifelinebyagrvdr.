@@ -4,10 +4,10 @@ import type { QueryClient } from "@tanstack/react-query";
 import appCss from "../styles.css?url";
 import { Nav } from "@/components/Nav";
 import { AlarmOverlay } from "@/components/AlarmOverlay";
-import { Assistant } from "@/components/Assistant";
+import { RuntimeNotices } from "@/components/RuntimeNotices";
 import { VitalsEngine } from "@/components/VitalsEngine";
 import { AccountSync } from "@/components/AccountSync";
-import { AlertRecorder } from "@/components/AlertRecorder";
+
 import { I18nProvider } from "@/i18n";
 
 const siteName = "Lifeline — personal safety and first aid";
@@ -31,12 +31,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap",
-      },
     ],
   }),
   shellComponent: RootDocument,
@@ -52,10 +46,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <I18nProvider>
           <VitalsEngine />
           <AccountSync />
-          <AlertRecorder />
+
           <Nav />
           {children}
-          <Assistant />
+          <RuntimeNotices />
           <AlarmOverlay />
         </I18nProvider>
         <Scripts />
