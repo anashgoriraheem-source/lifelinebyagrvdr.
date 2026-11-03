@@ -48,6 +48,21 @@ and the publishable/service keys; all of them are supplied by compose.
   from Postgres. Tests:
   `docker compose -f docker-compose.base44.yml exec -T web npm test`.
 
+## Deploy targets (Netlify / Vercel)
+
+- `netlify.toml` sets the build command, `publish = "dist"` and `NODE_VERSION=22`
+  (the offline-page step in `npm run build` needs Node >= 22.6 for
+  `--experimental-strip-types`, and Vite 8 needs ^20.19 || >= 22.12).
+- `vite.config.ts` builds Nitro's `netlify` preset only when Netlify runs the
+  build (`NETLIFY=true`, set by Netlify itself). That output is `dist/` plus the
+  handler in `.netlify/functions-internal/server`; the default Cloudflare Worker
+  output has no `dist/`, which is why every Netlify deploy preview used to fail.
+  With the flag unset (local, sandbox, Vercel) the Cloudflare default is kept.
+- Reproduce a Netlify build locally with `NETLIFY=true npm run build`, then check
+  `dist/index.html` exists and `.netlify/functions-internal/server/main.mjs`
+  renders, e.g. `node -e "import('/app/.netlify/functions-internal/server/main.mjs').then(async m=>{const r=await m.default(new Request('http://localhost/'),{});console.log(r.status,(await r.text()).length)})"`.
+  Both directories are git-ignored build output.
+
 ## Application architecture
 
 - Keep TanStack file routes and the existing device store; uploaded source must be adapted rather than replacing live Bluetooth or Cloud boundaries.
