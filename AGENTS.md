@@ -261,3 +261,65 @@ and the publishable/service keys; all of them are supplied by compose.
   granted location fix (the preview browser denies geolocation), so
   marker/accuracy/follow/copy/share and the globe's pins were not driven end to
   end; their maths is unit-tested.
+
+## Automatic emergency alerts (SMS + automated calls)
+
+- Provider: Twilio REST (`src/lib/alertProvider.server.ts`). Credentials are
+  server-only secrets from `/run/base44/app.env`: `TWILIO_ACCOUNT_SID`,
+  `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` (voice sender; also SMS sender when
+  no messaging service), optional `TWILIO_MESSAGING_SERVICE_SID`,
+  `ALERT_PUBLIC_BASE_URL` (public https base for callbacks), `ALERT_TEST_PHONE`
+  (the only number test mode may contact) and `ALERT_TICK_SECRET`. Nothing here
+  may read the service key in client code or print a secret value.
+- Data: `alert_settings` (explicit opt-in, triggers, countdown, include
+  location, escalation delay/rounds, `test_mode`), `contacts.automation_consent`
+  (+`consent_at`,`consent_note`), `alert_events` (one durable incident per alarm,
+  unique `(user_id, idempotency_key)`, status/cancel deadline/location snapshot/
+  settings snapshot/escalation cursor), `alert_attempts` (one row per contact and
+  channel with provider sid and raw provider status) and `alert_incident_events`
+  (append-only timeline). Browsers may read their rows; they cannot UPDATE them.
+  The dispatcher writes with the service role.
+- State truth: an SMS is `provider-accepted` until a delivery callback says
+  `delivered`; a call is `ringing`/`answered`; only the keypad digit 1 stores
+  `acknowledged`. `classifyProviderStatus` is the single mapping and
+  `alertMessage.test.ts` pins it. Never present accepted as delivered, answered
+  as acknowledged, or a failure as success.
+- Flow: the browser creates the incident through `dispatchEmergency` (auth
+  required). A countdown exists only for sensor alarms and its deadline is stored
+  server-side; SOS dispatches immediately. `pumpIncident` claims state with
+  conditional updates so replays and concurrent ticks cannot double-send. Calls
+  go out one at a time in contact order and escalate after
+  `escalate_after_seconds`, up to `max_rounds`.
+- Durability: progression is driven by the starting request, the open page's
+  polling, a server-side timer, and `POST /api/alerts/tick` with
+  `x-alert-tick-secret`. A scheduled job calling that route is REQUIRED for
+  escalation with no browser open; without it, the app says monitoring is not
+  background.
+- Callbacks: `POST /api/alerts/twilio/status` and `/api/alerts/twilio/ack`
+  verify `X-Twilio-Signature` (`verifyTwilioSignature`) against
+  `ALERT_PUBLIC_BASE_URL` and the form body before changing anything. Without
+  credentials they return 503 rather than accepting unsigned reports.
+- Test mode cannot reach real contacts: it contacts only `ALERT_TEST_PHONE`;
+  with no such number every attempt is stored `simulated`/`test-sandbox` and the
+  incident is `blocked` with a stated reason. Live mode is refused by
+  `saveAlertSettings` while the provider is unconfigured.
+- Public emergency numbers are never dialled by this workflow; the manual
+  emergency actions on `/monitor` stay separate.
+- `AlertRecorder` is mounted once in `src/routes/__root.tsx`. It is the only
+  bridge from a raised alarm to a durable incident; deleting that mount silently
+  disables the whole feature (that was the state before this work). The overlay
+  reads `store.dispatch` for its status line, so its copy must never say "no call
+  or message has been sent" while a dispatch exists.
+- Verified in the preview with a throwaway account: consent recorded, settings
+  saved, a test alert produced one incident + one SMS and one call attempt
+  recorded as `Test only — not sent`, blocked reason shown, timeline present, no
+  horizontal overflow at 375 px; a real SOS press created one non-demo incident
+  with both channels stored as simulated/blocked (nothing sent, honest reason);
+  the overlay showed the incident status; anon reads of `alert_events` are
+  denied; `/api/alerts/tick` and the Twilio callback return 503 without
+  credentials; the test account and its rows were deleted afterwards.
+  NOT verified (no credentials/telephony): real SMS acceptance or delivery, call
+  ringing/answered, keypad acknowledgement, escalation and retry timing, the
+  countdown-then-auto-send path with a live provider, signature acceptance of a
+  genuine Twilio callback, TRAI template/sender approval. Do not report those as
+  working until a provider is configured and a real test destination is called.

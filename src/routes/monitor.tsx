@@ -7,6 +7,7 @@ import { ReadingMonthsChart } from "@/components/ReadingMonthsChart";
 import { LocationCard } from "@/components/LocationCard";
 import { LocationGlobe } from "@/components/LocationGlobe";
 import { SessionMapInfographic } from "@/components/SessionMapInfographic";
+import { AutomaticAlertStatus } from "@/components/AutomaticAlertStatus";
 import { useApp } from "@/hooks/useApp";
 import { useNow } from "@/hooks/useNow";
 import { set } from "@/lib/store";
@@ -77,6 +78,7 @@ function Monitor() {
       <div className="mt-8">
         <SessionMapInfographic />
       </div>
+      <AutomaticAlertStatus />
       <div className="mt-5 flex flex-wrap gap-3">
         <Button variant="outline" onClick={toggleDemo}>
           {t(demo ? "release.demoStop" : "release.demoStart")}

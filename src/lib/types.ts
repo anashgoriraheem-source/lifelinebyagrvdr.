@@ -50,6 +50,15 @@ export interface Contact {
   confirmedAt?: number | null
   /** Test destination: never receives a live provider message. */
   testDestination?: boolean
+  /**
+   * Documented consent from this contact to receive automated Lifeline alerts
+   * (SMS and calls). Never implied by saving a phone number.
+   */
+  automationConsent?: boolean
+  /** Epoch ms when that consent was recorded. */
+  consentAt?: number | null
+  /** How consent was obtained (for example "told me in person"). */
+  consentNote?: string
 }
 
 export interface EmergencyNumbers {

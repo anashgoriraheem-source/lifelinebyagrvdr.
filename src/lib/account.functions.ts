@@ -58,6 +58,10 @@ export const saveSafetyContacts = createServerFn({ method: "POST" })
             emailAlerts: z.boolean().optional(),
             confirmedAt: z.number().int().positive().nullable().optional(),
             testDestination: z.boolean().optional(),
+            // Automated-alert consent is a separate, documented choice per contact.
+            automationConsent: z.boolean().optional(),
+            consentAt: z.number().int().positive().nullable().optional(),
+            consentNote: z.string().max(300).optional(),
           })
           .refine((c) => !c.emailAlerts || Boolean(c.email), {
             message: "An email address is required when email alerts are enabled.",

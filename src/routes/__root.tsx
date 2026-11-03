@@ -7,6 +7,9 @@ import { AlarmOverlay } from "@/components/AlarmOverlay";
 import { RuntimeNotices } from "@/components/RuntimeNotices";
 import { VitalsEngine } from "@/components/VitalsEngine";
 import { AccountSync } from "@/components/AccountSync";
+// Mounted globally: it is the only bridge from a raised alarm to the durable
+// server incident, so every page can trigger the saved automatic alert rules.
+import { AlertRecorder } from "@/components/AlertRecorder";
 
 import { I18nProvider } from "@/i18n";
 
@@ -46,6 +49,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <I18nProvider>
           <VitalsEngine />
           <AccountSync />
+          <AlertRecorder />
 
           <Nav />
           {children}

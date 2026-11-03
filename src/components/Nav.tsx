@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import {
   Activity,
+  BellRing,
   HeartPulse,
   House,
   Languages,
@@ -67,6 +68,12 @@ export function Nav() {
             <Users className="size-4" aria-hidden="true" />
             {t("nav.contacts")}
           </Link>
+          <span className="nav-optional">
+            <Link to="/alerts" className="app-nav-link">
+              <BellRing className="size-4" aria-hidden="true" />
+              Alerts
+            </Link>
+          </span>
           <Link to="/account" className="app-nav-link">
             <UserRound className="size-4" aria-hidden="true" />
             {t("nav.account")}
@@ -91,6 +98,9 @@ export function Nav() {
             {t("nav.more")}
           </summary>
           <div className="absolute end-0 top-full z-50 min-w-44 rounded-lg border border-border bg-card p-2">
+            <Link to="/alerts" className="app-nav-link">
+              Automatic alerts
+            </Link>
             <Link to="/translate" className="app-nav-link">
               {t("nav.translate")}
             </Link>

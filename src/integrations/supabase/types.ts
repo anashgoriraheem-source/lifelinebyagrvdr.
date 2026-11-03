@@ -70,15 +70,30 @@ export type Database = {
       }
       alert_events: {
         Row: {
+          accuracy: number | null
+          cancel_deadline: string | null
+          canceled_at: string | null
           created_at: string
+          dispatch_started_at: string | null
           id: string
           idempotency_key: string
           is_demo: boolean
+          last_error: string | null
+          lat: number | null
+          lng: number | null
+          location_at: string | null
+          location_source: string | null
           mode: string
+          next_action_at: string | null
           reason_label: string
           reason_reading: string
           reason_type: string
+          resolved_at: string | null
+          round: number
+          settings_snapshot: Json
           started_at: string
+          status: string
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -107,10 +122,63 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_settings: {
+        Row: {
+          automation_enabled: boolean
+          consent_at: string | null
+          countdown_seconds: number
+          escalate_after_seconds: number
+          identity_name: string
+          include_location: boolean
+          max_rounds: number
+          test_mode: boolean
+          triggers: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          automation_enabled?: boolean
+          consent_at?: string | null
+          countdown_seconds?: number
+          escalate_after_seconds?: number
+          identity_name?: string
+          include_location?: boolean
+          max_rounds?: number
+          test_mode?: boolean
+          triggers?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          automation_enabled?: boolean
+          consent_at?: string | null
+          countdown_seconds?: number
+          escalate_after_seconds?: number
+          identity_name?: string
+          include_location?: boolean
+          max_rounds?: number
+          test_mode?: boolean
+          triggers?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contacts: {
         Row: {
+          automation_consent: boolean
           call: boolean
           confirmed_at: string | null
+          consent_at: string | null
+          consent_note: string
           created_at: string
           email: string | null
           email_alerts: boolean
@@ -124,8 +192,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          automation_consent?: boolean
           call?: boolean
           confirmed_at?: string | null
+          consent_at?: string | null
+          consent_note?: string
           created_at?: string
           email?: string | null
           email_alerts?: boolean
@@ -139,8 +210,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          automation_consent?: boolean
           call?: boolean
           confirmed_at?: string | null
+          consent_at?: string | null
+          consent_note?: string
           created_at?: string
           email?: string | null
           email_alerts?: boolean

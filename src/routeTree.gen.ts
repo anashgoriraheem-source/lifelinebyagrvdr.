@@ -11,11 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as MonitorRouteImport } from './routes/monitor'
 import { Route as SaathRouteImport } from './routes/saath'
 import { Route as TranslateRouteImport } from './routes/translate'
+import { Route as ApiAlertsTickRouteImport } from './routes/api/alerts/tick'
+import { Route as ApiAlertsTwilioAckRouteImport } from './routes/api/alerts/twilio/ack'
+import { Route as ApiAlertsTwilioStatusRouteImport } from './routes/api/alerts/twilio/status'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -25,6 +29,11 @@ const IndexRoute = IndexRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssistantRoute = AssistantRouteImport.update({
@@ -52,73 +61,116 @@ const TranslateRoute = TranslateRouteImport.update({
   path: '/translate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAlertsTickRoute = ApiAlertsTickRouteImport.update({
+  id: '/api/alerts/tick',
+  path: '/api/alerts/tick',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAlertsTwilioAckRoute = ApiAlertsTwilioAckRouteImport.update({
+  id: '/api/alerts/twilio/ack',
+  path: '/api/alerts/twilio/ack',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAlertsTwilioStatusRoute = ApiAlertsTwilioStatusRouteImport.update({
+  id: '/api/alerts/twilio/status',
+  path: '/api/alerts/twilio/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/alerts': typeof AlertsRoute
   '/assistant': typeof AssistantRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
   '/translate': typeof TranslateRoute
+  '/api/alerts/tick': typeof ApiAlertsTickRoute
+  '/api/alerts/twilio/ack': typeof ApiAlertsTwilioAckRoute
+  '/api/alerts/twilio/status': typeof ApiAlertsTwilioStatusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/alerts': typeof AlertsRoute
   '/assistant': typeof AssistantRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
   '/translate': typeof TranslateRoute
+  '/api/alerts/tick': typeof ApiAlertsTickRoute
+  '/api/alerts/twilio/ack': typeof ApiAlertsTwilioAckRoute
+  '/api/alerts/twilio/status': typeof ApiAlertsTwilioStatusRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/alerts': typeof AlertsRoute
   '/assistant': typeof AssistantRoute
   '/contacts': typeof ContactsRoute
   '/monitor': typeof MonitorRoute
   '/saath': typeof SaathRoute
   '/translate': typeof TranslateRoute
+  '/api/alerts/tick': typeof ApiAlertsTickRoute
+  '/api/alerts/twilio/ack': typeof ApiAlertsTwilioAckRoute
+  '/api/alerts/twilio/status': typeof ApiAlertsTwilioStatusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/account'
+    | '/alerts'
     | '/assistant'
     | '/contacts'
     | '/monitor'
     | '/saath'
     | '/translate'
+    | '/api/alerts/tick'
+    | '/api/alerts/twilio/ack'
+    | '/api/alerts/twilio/status'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/account'
+    | '/alerts'
     | '/assistant'
     | '/contacts'
     | '/monitor'
     | '/saath'
     | '/translate'
+    | '/api/alerts/tick'
+    | '/api/alerts/twilio/ack'
+    | '/api/alerts/twilio/status'
   id:
     | '__root__'
     | '/'
     | '/account'
+    | '/alerts'
     | '/assistant'
     | '/contacts'
     | '/monitor'
     | '/saath'
     | '/translate'
+    | '/api/alerts/tick'
+    | '/api/alerts/twilio/ack'
+    | '/api/alerts/twilio/status'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
+  AlertsRoute: typeof AlertsRoute
   AssistantRoute: typeof AssistantRoute
   ContactsRoute: typeof ContactsRoute
   MonitorRoute: typeof MonitorRoute
   SaathRoute: typeof SaathRoute
   TranslateRoute: typeof TranslateRoute
+  ApiAlertsTickRoute: typeof ApiAlertsTickRoute
+  ApiAlertsTwilioAckRoute: typeof ApiAlertsTwilioAckRoute
+  ApiAlertsTwilioStatusRoute: typeof ApiAlertsTwilioStatusRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -135,6 +187,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assistant': {
@@ -172,17 +231,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TranslateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/alerts/tick': {
+      id: '/api/alerts/tick'
+      path: '/api/alerts/tick'
+      fullPath: '/api/alerts/tick'
+      preLoaderRoute: typeof ApiAlertsTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/alerts/twilio/ack': {
+      id: '/api/alerts/twilio/ack'
+      path: '/api/alerts/twilio/ack'
+      fullPath: '/api/alerts/twilio/ack'
+      preLoaderRoute: typeof ApiAlertsTwilioAckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/alerts/twilio/status': {
+      id: '/api/alerts/twilio/status'
+      path: '/api/alerts/twilio/status'
+      fullPath: '/api/alerts/twilio/status'
+      preLoaderRoute: typeof ApiAlertsTwilioStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
+  AlertsRoute: AlertsRoute,
   AssistantRoute: AssistantRoute,
   ContactsRoute: ContactsRoute,
   MonitorRoute: MonitorRoute,
   SaathRoute: SaathRoute,
   TranslateRoute: TranslateRoute,
+  ApiAlertsTickRoute: ApiAlertsTickRoute,
+  ApiAlertsTwilioAckRoute: ApiAlertsTwilioAckRoute,
+  ApiAlertsTwilioStatusRoute: ApiAlertsTwilioStatusRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

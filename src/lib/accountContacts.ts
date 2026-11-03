@@ -21,5 +21,8 @@ export function contactsFromRows(rows: ContactRow[]): Contact[] {
     emailAlerts: Boolean(c.email_alerts),
     confirmedAt: c.confirmed_at ? Date.parse(c.confirmed_at) : null,
     testDestination: c.test_destination !== false,
+    automationConsent: Boolean(c.automation_consent),
+    consentAt: c.consent_at ? Date.parse(c.consent_at) : null,
+    consentNote: c.consent_note ?? "",
   }));
 }
