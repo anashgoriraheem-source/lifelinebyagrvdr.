@@ -1,4 +1,5 @@
 import { addLog, appStore, set } from "./store";
+import { recordPlace } from "./places";
 
 let watchId: number | null = null;
 let generation = 0;
@@ -22,18 +23,17 @@ export function startTracking() {
     (pos) => {
       if (session !== generation) return;
       const first = appStore.state.location.status !== "tracking";
-      set({
-        location: {
-          status: "tracking",
-          error: null,
-          fix: {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            accuracy: pos.coords.accuracy,
-            at: pos.timestamp,
-          },
-        },
-      });
+      const fix = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracy: pos.coords.accuracy,
+        at: pos.timestamp,
+      };
+      set((s) => ({
+        location: { status: "tracking", error: null, fix },
+        // The map and the globe draw from the same in-memory record.
+        places: recordPlace(s.places, fix),
+      }));
       if (first) addLog("location", `Location tracking on · ±${Math.round(pos.coords.accuracy)} m`);
     },
     (err) => {

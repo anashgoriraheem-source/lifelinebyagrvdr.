@@ -1,4 +1,5 @@
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -7,9 +8,11 @@
 >
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
+
 <!-- LOVABLE:END -->
 
 ## Running this repo in the Base44 sandbox
+
 `docker compose -f docker-compose.base44.yml up -d --build` starts the Vite dev
 server on host port 3000 plus a local Supabase stand-in (Postgres, GoTrue auth,
 PostgREST behind nginx) on host port 8000 at `/auth/v1` and `/rest/v1`. The app
@@ -46,6 +49,7 @@ and the publishable/service keys; all of them are supplied by compose.
   `docker compose -f docker-compose.base44.yml exec -T web npm test`.
 
 ## Application architecture
+
 - Keep TanStack file routes and the existing device store; uploaded source must be adapted rather than replacing live Bluetooth or Cloud boundaries.
 - Use the global semantic theme and shared Button for feature controls so safety states and touch targets remain consistent.
 - Keep multilingual matching local and phrase-backed; unsupported input remains unchanged and medical guidance language is explicitly shown.
@@ -53,6 +57,7 @@ and the publishable/service keys; all of them are supplied by compose.
 - Decode standard Bluetooth packets strictly and reject absent or malformed values rather than supplying defaults.
 
 ## Localization, voice and medical safety
+
 - `src/i18n/messages/en.ts` is the reference catalog; `src/i18n/messages/packs.ts`
   holds the Hindi pack. It is complete for the catalogued surfaces but
   machine-drafted: no fluent speaker or clinician has reviewed it, and the
@@ -95,6 +100,7 @@ and the publishable/service keys; all of them are supplied by compose.
   is NOT working — never describe it as live, and never mock a translation.
 
 ## Home hero and guided pairing
+
 - `src/components/RisingTileHero.tsx` is the full-width home hero. `three` is a
   runtime dependency imported lazily inside the effect, so the home route must
   still render when WebGL is unavailable: the canvas is then hidden and the
@@ -116,6 +122,7 @@ and the publishable/service keys; all of them are supplied by compose.
   manually verified only.
 
 ## Device readings and the readings dashboard
+
 - The app is **Lifeline**. User-visible strings, page titles, the manifest and
   the offline page use that name. Internal identifiers deliberately keep their
   old `lifeline` prefix (`lifeline:settings:v1`, `lifeline:reading-days:v1`,
@@ -144,13 +151,13 @@ and the publishable/service keys; all of them are supplied by compose.
   clinical validity.
 - `src/components/ReadingsDashboard.tsx` (home) renders only real aggregates:
   `src/lib/readingsOverview.ts` builds 12 month buckets from `readingDays`, which
-  stores *which vitals were seen on a day* and no values. `KEEP_DAYS` is 400 so
+  stores _which vitals were seen on a day_ and no values. `KEEP_DAYS` is 400 so
   the 12-month timeline has data; keep it value-free if you extend it.
 - `src/components/ReadingMonthsChart.tsx` (on `/monitor`) is the isometric
   oval-disc "reading days by month" chart. Its shape is fixed (five tilted discs
   on a dashed 100% ring) and it must stay that shape. Values come from
   `src/lib/readingMonths.ts` over the same `readingDays` record — coverage of the
-  month's *elapsed* days, disc width relative to the dataset maximum, average
+  month's _elapsed_ days, disc width relative to the dataset maximum, average
   across the five months. Colours are mixed from the theme tokens; no Google
   Fonts or third-party chart library. An empty record shows zeros, never a sample,
   and the caption says so; demo mode is labelled because the simulator writes to
@@ -168,3 +175,35 @@ and the publishable/service keys; all of them are supplied by compose.
   screen-reader output. `npm run lint` already fails repo-wide on older
   unformatted files; only new files were formatted.
 
+## Location map and the location globe
+
+- `src/lib/places.ts` is the only record of location the UI draws from: the
+  fixes this tab received, newest first, at most five, in **memory only**. It is
+  deliberately not persisted (the card promises a fix stays in this open tab),
+  and `recordPlace` returns the same array for an unchanged leading fix so a
+  once-a-second GPS watch does not re-render the page. `deleteDeviceLocalData`
+  clears it with the rest of the session state.
+- `src/components/LocationMap.tsx` is a real Leaflet map over OpenStreetMap
+  tiles, with the OSM attribution kept visible. Marker = the fix; circle =
+  the accuracy the browser reported. It shows loading, denied, unsupported,
+  no-fix, current, stale ("Not current"), offline and tile-provider-error
+  states. `fixIsStale` (re-exported there) is the one place "current" is decided
+  together with `STALE_FIX_MS` in `sos.ts`. Provider choice, terms and the steps
+  to swap it are in `docs/maps.md`.
+- `src/components/LocationGlobe.tsx` + `src/styles/location-globe.css` are the
+  adapted "Map Infographic 3" board: a canvas sphere drawn from the
+  `MI3_LAND_RLE` land grid (copy it byte for byte; the engine verifies 16200
+  cells / 5392 land), pins from `places`, and a legend that is one control with
+  the pins. Do not flatten `.lg-stage` (empty spacer) out of the canvas layer,
+  do not merge the three pin layers, and do not remove the header/legend scrims.
+  Copy is English + Hindi inline, like `LocationCard`, so the i18n catalog
+  denominator is unchanged.
+- `/monitor` puts the location card and the globe side by side at `lg` and
+  stacked below it; the location card is no longer inside the "more details"
+  disclosure.
+- Verified in the preview at desktop (1265 px) and mobile (375 px): the map
+  frame, tiles and attribution render, the denied-permission path works from the
+  real button, the globe draws its continents and its empty state, and there is
+  no sideways scroll. NOT verified: any granted location fix (the preview
+  browser denies geolocation), so marker/accuracy/follow/copy/share and the
+  globe's pins were not driven end to end; their maths is unit-tested.

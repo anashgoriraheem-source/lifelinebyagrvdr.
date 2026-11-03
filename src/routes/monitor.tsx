@@ -5,6 +5,7 @@ import { VitalCard } from "@/components/VitalCard";
 import { DevicePairing } from "@/components/DevicePairing";
 import { ReadingMonthsChart } from "@/components/ReadingMonthsChart";
 import { LocationCard } from "@/components/LocationCard";
+import { LocationGlobe } from "@/components/LocationGlobe";
 import { useApp } from "@/hooks/useApp";
 import { useNow } from "@/hooks/useNow";
 import { isStale } from "@/lib/detection";
@@ -64,6 +65,10 @@ function Monitor() {
       <div className="mt-8">
         <ReadingMonthsChart />
       </div>
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start">
+        <LocationCard />
+        <LocationGlobe />
+      </div>
       <div className="mt-5 flex flex-wrap gap-3">
         <Button variant="outline" onClick={toggleDemo}>
           {t(demo ? "release.demoStop" : "release.demoStart")}
@@ -76,10 +81,7 @@ function Monitor() {
         <summary className="min-h-11 cursor-pointer py-2 font-semibold">
           {t("release.more")}
         </summary>
-        <div className="mt-4">
-          <LocationCard />
-        </div>
-        <p className="mt-4 text-sm">{t("release.profileNote")}</p>
+        <p className="text-sm">{t("release.profileNote")}</p>
         <Button asChild variant="outline" className="mt-3 h-auto min-h-12 whitespace-normal">
           <Link to="/account">{t("release.account")}</Link>
         </Button>

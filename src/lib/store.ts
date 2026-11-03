@@ -2,6 +2,7 @@ import { Store } from "@tanstack/react-store";
 import { DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY } from "./fixtures";
 import { persistedSettingsSchema } from "./settings";
 import { loadReadingDays, mergeDay, saveReadingDays, type ReadingDays } from "./readingDays";
+import type { RecordedPlace } from "./places";
 import type { AlertRecordState } from "./alertPlan";
 import type { LocaleCode } from "@/i18n/locales";
 import type { DispatchView } from "./dispatch.functions";
@@ -33,6 +34,8 @@ export interface AppState {
   alarm: AlarmState;
   log: LogEntry[];
   location: { status: LocationStatus; fix: LocationFix | null; error: string | null };
+  /** Places recorded in this tab, newest first. In memory only — see `places.ts`. */
+  places: RecordedPlace[];
   assistantOpen: boolean;
   device: DeviceState;
   profile: Profile;
@@ -95,6 +98,7 @@ const initial: AppState = {
   alarm: { phase: "idle", reason: null, startedAt: null, demo: false },
   log: [],
   location: { status: "idle", fix: null, error: null },
+  places: [],
   assistantOpen: false,
   device: { status: "idle", name: null, vitals: [] },
   profile: { name: "", age: null, bloodType: "", conditions: [], allergies: [], medications: [] },
@@ -277,6 +281,7 @@ export function deleteDeviceLocalData() {
     vitals: {},
     history: { hr: [], spo2: [], bp: [], glucose: [] },
     location: { status: "idle", fix: null, error: null },
+    places: [],
     incident: null,
     shareLocation: false,
     dispatchConsent: false,
