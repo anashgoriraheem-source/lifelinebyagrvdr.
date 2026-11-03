@@ -1,5 +1,15 @@
 export type VitalKey = 'bp' | 'glucose' | 'hr' | 'spo2'
 export type Quality = 'good' | 'uncertain' | 'stale'
+
+/**
+ * A supported health service the device exposed but could not deliver readings
+ * from. A device that simply lacks a service is described by `missing` instead:
+ * this is only for "the service is there and still nothing came out".
+ */
+export interface DeviceIssue {
+  key: VitalKey
+  reason: 'notifications-failed' | 'characteristic-missing'
+}
 export type VitalStatus = 'normal' | 'warning' | 'critical' | 'unknown'
 export type SourceBadge = 'live' | 'last-measured' | 'not-provided' | 'demo'
 

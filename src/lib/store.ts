@@ -8,6 +8,7 @@ import type { LocaleCode } from "@/i18n/locales";
 import type { DispatchView } from "./dispatch.functions";
 import type {
   AlarmReason,
+  DeviceIssue,
   AlarmState,
   Profile,
   Contact,
@@ -80,6 +81,10 @@ export interface DeviceState {
   missing?: VitalKey[];
   /** Time of the newest rejected packet, for "device is sending something unusable". */
   lastInvalidAt?: number | null;
+  /** Services the device exposed but could not start sending from (see DeviceIssue). */
+  issues?: DeviceIssue[];
+  /** 1-based attempt of an automatic reconnect that is in progress. */
+  recoveryAttempt?: number | null;
 }
 
 const SETTINGS_KEY = "lifeline:settings:v1";

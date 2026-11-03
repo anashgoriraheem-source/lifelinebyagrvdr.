@@ -34,6 +34,8 @@ export function LocationCard() {
           unavailable:
             "इस ब्राउज़र में स्थान सुविधा नहीं है। फोन पर अपना पता बताएँ — ऐप अनुमान नहीं लगाएगा।",
           error: "स्थान नहीं मिल पाया। बाहर खुली जगह में फिर कोशिश करें या अपना पता फोन पर बताएँ।",
+          searching:
+            "अभी भी आपका स्थान खोज रहे हैं। खुली जगह में जाएँ, या फोन पर अपना पता बताएँ।",
           stale: "पिछला स्थान दिख रहा है — यह अभी का नहीं है।",
           live: "स्थान चालू है और इसी टैब में अपडेट हो रहा है।",
           accuracy: "सटीकता",
@@ -52,12 +54,16 @@ export function LocationCard() {
             "This browser has no location support. Give your address by phone — the app will not guess.",
           error:
             "Location could not be found. Try again in an open area or give your address by phone.",
+          searching:
+            "Still looking for your location. Move somewhere more open, or give your address by phone.",
           stale: "Showing the last known place — it is not current.",
           live: "Location is on and updating in this tab.",
           accuracy: "Accuracy",
           privacy: "Your location is not sent to anyone without your permission.",
         };
 
+  // Order matters: a current fix wins over an older timeout message, and a
+  // last-known place is described as out of date rather than as a failure.
   const status =
     loc.status === "requesting"
       ? copy.waiting
@@ -65,12 +71,12 @@ export function LocationCard() {
         ? copy.denied
         : loc.status === "unavailable"
           ? copy.unavailable
-          : loc.error
-            ? copy.error
-            : fix
-              ? stale
-                ? copy.stale
-                : copy.live
+          : fix
+            ? stale
+              ? copy.stale
+              : copy.live
+            : loc.status === "tracking" || loc.status === "error"
+              ? copy.searching
               : copy.off;
 
   return (

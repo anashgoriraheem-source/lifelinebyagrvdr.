@@ -30,6 +30,8 @@ export const releaseEn = {
   "release.receiving": "Readings received — measurement accuracy and timing unverified",
   "release.noDevice": "No device connected",
   "release.lost": "Device disconnected — connect again to receive readings",
+  "release.reconnecting": "Reconnecting to your device — keep it switched on and nearby",
+  "release.deviceStale": "Device connected — the last reading is out of date",
   "release.demo":
     "Demo mode — synthetic readings only. All call and message links in the demo emergency screen are disabled.",
   "release.demoStart": "Try synthetic demo readings",
@@ -103,7 +105,7 @@ export const releaseHi: Record<keyof typeof releaseEn, string> = {
   "release.urgent":
     "यदि किसी की जान को तुरंत खतरा हो सकता है, तो स्थानीय आपातकालीन सेवाओं को अभी कॉल करें और पास के किसी सक्षम व्यक्ति से मदद माँगें। इस सॉफ़्टवेयर या रीडिंग का इंतज़ार न करें।",
   "release.noDelivery":
-    "आपदा सेतु एक सॉफ़्टवेयर है, डॉक्टर या आपातकालीन सेवा नहीं। कुछ भी अपने आप नहीं भेजा जाता। कॉल या संदेश के मसौदे के लिए फोन ऐप में आपकी कार्रवाई चाहिए। यहाँ संदेश पहुँचने या मदद की पुष्टि नहीं होती।",
+    "लाइफलाइन एक सॉफ़्टवेयर है, डॉक्टर या आपातकालीन सेवा नहीं। कुछ भी अपने आप नहीं भेजा जाता। कॉल या संदेश के मसौदे के लिए फोन ऐप में आपकी कार्रवाई चाहिए। यहाँ संदेश पहुँचने या मदद की पुष्टि नहीं होती।",
   "release.steps": "यहाँ से शुरू करें",
   "release.step1": "अपना देश जाँचें और उन लोगों को सहेजें जिन्हें आप आपातकाल में संपर्क करेंगे।",
   "release.step2": "डिवाइस हो तो जोड़ें। उसे पास और चालू रखें। संगतता की पुष्टि अभी नहीं हुई है।",
@@ -116,6 +118,8 @@ export const releaseHi: Record<keyof typeof releaseEn, string> = {
   "release.receiving": "रीडिंग मिली — माप की सटीकता और समय की पुष्टि नहीं है",
   "release.noDevice": "कोई डिवाइस नहीं जुड़ा है",
   "release.lost": "कनेक्शन टूट गया — रीडिंग के लिए फिर जोड़ें",
+  "release.reconnecting": "आपके डिवाइस से दोबारा जुड़ रहे हैं — उसे चालू और पास रखें",
+  "release.deviceStale": "डिवाइस जुड़ा है — पिछली रीडिंग अब ताज़ा नहीं है",
   "release.demo":
     "डेमो मोड — केवल नकली रीडिंग। डेमो आपातकालीन स्क्रीन में सभी कॉल और संदेश लिंक बंद हैं।",
   "release.demoStart": "नकली डेमो रीडिंग आज़माएँ",
@@ -146,9 +150,9 @@ export const releaseHi: Record<keyof typeof releaseEn, string> = {
   "release.dismiss": "आपातकालीन विकल्प बंद करें",
   "release.country": "आपातकालीन नंबरों का देश — कॉल से पहले जाँचें",
   "release.call": "{number} पर कॉल के लिए फोन खोलें",
-  "release.notSent": "आपदा सेतु से कोई कॉल या संदेश नहीं भेजा गया। मदद की पुष्टि नहीं है।",
+  "release.notSent": "लाइफलाइन से कोई कॉल या संदेश नहीं भेजा गया। मदद की पुष्टि नहीं है।",
   "release.linkSelected":
-    "फोन या संदेश लिंक चुना गया। फोन ऐप में जाँचकर खुद पुष्टि करें। आपदा सेतु खुलने या भेजे जाने की पुष्टि नहीं कर सकता।",
+    "फोन या संदेश लिंक चुना गया। फोन ऐप में जाँचकर खुद पुष्टि करें। लाइफलाइन खुलने या भेजे जाने की पुष्टि नहीं कर सकता।",
   "release.nearby":
     "पास के किसी सक्षम व्यक्ति से साथ रहने और मदद करने को कहें। आपातकालीन ऑपरेटर के निर्देश मानें।",
   "release.message": "संदेश के मसौदे का पूर्वावलोकन",
@@ -163,7 +167,7 @@ export const releaseHi: Record<keyof typeof releaseEn, string> = {
   "release.privacyNote":
     "मसौदा खोलने से पहले जाँचें। फोन ऐप यह जानकारी अपनी सेवा और चुने व्यक्ति को दे सकता है। भेजें बटन आपको खुद दबाना होगा।",
   "release.draftBody":
-    "मुझे मदद चाहिए। कृपया मुझे कॉल करें या सुरक्षित हो तो मेरे पास आएँ। यह आपदा सेतु में तैयार मसौदा है; ऐप ने आपातकालीन सेवा से संपर्क नहीं किया है।",
+    "मुझे मदद चाहिए। कृपया मुझे कॉल करें या सुरक्षित हो तो मेरे पास आएँ। यह लाइफलाइन में तैयार मसौदा है; ऐप ने आपातकालीन सेवा से संपर्क नहीं किया है।",
   "release.guidanceLanguage":
     "नीचे प्राथमिक चिकित्सा के निर्देश अंग्रेज़ी के मसौदे हैं। हिन्दी चिकित्सा अनुवाद स्वीकृत नहीं है। अपनी भाषा में निर्देश के लिए आपातकालीन ऑपरेटर से बात करें।",
   "release.cloudBlocked":

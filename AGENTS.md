@@ -116,10 +116,12 @@ and the publishable/service keys; all of them are supplied by compose.
   `/monitor`. It derives its state from `connectionPhase()` in
   `src/core/ble/support.ts` (never from GATT alone), translates device and
   browser errors into plain-language next steps, announces state through a
-  `role="status"` region, and keeps "Continue without a device". SOS and
-  first-aid stay outside it. Web Bluetooth cannot run in the headless preview
-  browser: pairing, cancellation, denied permission and connection loss are
-  manually verified only.
+  `role="status"` region, and keeps "Continue without a device". The monitor's
+  own status line calls the same `connectionPhase()`, so a quiet or stale
+  connection can never read as "receiving" on one surface and not the other.
+  SOS and first-aid stay outside it. Web Bluetooth cannot run in the headless
+  preview browser: pairing, cancellation, denied permission and connection loss
+  are manually verified only.
 
 ## Device readings and the readings dashboard
 
@@ -133,6 +135,25 @@ and the publishable/service keys; all of them are supplied by compose.
   as `unsupported-services` instead of a false "connected". Do not add vendor
   UUIDs speculatively — see `docs/device-support.md` for what a web page cannot
   read (HealthKit, Health Connect, vendor clouds).
+- A dropped link is retried by the adapter while the page stays open: at most
+  `MAX_RECOVERY_ATTEMPTS` (3) attempts at `RECOVERY_BACKOFF_MS` (1.5 s, 4 s,
+  9 s), one attempt in flight, no retry while `pairing`, and `device.status`
+  goes `reconnecting` with `device.recoveryAttempt`. `disconnectWearable()` is
+  the stop signal: it cancels the timer, resets the count and sets
+  `stoppedByUser`, so a person's disconnect is never undone by a timer. After
+  the last attempt the status returns to `disconnected` with
+  `device.error = "recovery-stopped"` and the card offers a manual reconnect.
+  Coming back to the tab (`visibilitychange`) resets the counter and tries
+  once, because a phone browser usually drops GATT while the tab is hidden.
+  The browser may still refuse a grant-less `connect()`; that is what the
+  manual button is for. Do not add a fourth silent attempt.
+- `subscribe()` reports why a service did not start instead of swallowing it:
+  `device.issues` holds `{ key, reason }` for `notifications-failed` (the
+  service and characteristic exist but `startNotifications()` failed with no
+  read fallback) and `characteristic-missing` (the service is there, the
+  measurement is not). A missing service is *not* an issue — that is the
+  ordinary "this device does not measure that" case, carried by `device.missing`.
+  Notification clean-up removes the listener **and** calls `stopNotifications()`.
 - Notifications are preferred, plus one read of the current value at connection
   when the device allows reads (`characteristic.properties.read`), so a stored
   measurement shows without waiting for the next push. A readable-only
@@ -166,14 +187,14 @@ and the publishable/service keys; all of them are supplied by compose.
   the contact channel columns and `safety_preferences` that the account code
   already read. `src/integrations/supabase/types.ts` is hand-maintained to match
   the migrations — update both together, then run `tsc --noEmit`.
-- Verified here: `npm test` (118 tests), `tsc --noEmit`, `npm run build`, and the
+- Verified here: `npm test` (159 tests), `tsc --noEmit`, `npm run build`, and the
   home/monitor screens in the preview at desktop and mobile widths, including the
-  disc chart's empty state and its phone layout. Not verified: any physical
-  device, Web Bluetooth in a real browser, the disc chart rendered from a
-  populated reading record in the browser (its maths is unit-tested;
-  `readingDays` in the preview browser is re-seeded on every load), iOS/Safari,
-  screen-reader output. `npm run lint` already fails repo-wide on older
-  unformatted files; only new files were formatted.
+  disc chart's empty state and its phone layout, and the session board at both
+  widths. Not verified: any physical device, Web Bluetooth in a real browser,
+  the disc chart rendered from a populated reading record in the browser (its
+  maths is unit-tested; `readingDays` in the preview browser is re-seeded on
+  every load), iOS/Safari, screen-reader output. `npm run lint` already fails
+  repo-wide on older unformatted files; only new files were formatted.
 
 ## Location map and the location globe
 
@@ -190,6 +211,14 @@ and the publishable/service keys; all of them are supplied by compose.
   states. `fixIsStale` (re-exported there) is the one place "current" is decided
   together with `STALE_FIX_MS` in `sos.ts`. Provider choice, terms and the steps
   to swap it are in `docs/maps.md`.
+- The map's starting zoom comes from `zoomForAccuracy()` in `src/lib/mapView.ts`
+  (the accuracy circle spans about half the map), not a fixed street zoom: a
+  1 km network fix used to open at zoom 16 with the circle far off screen. After
+  the first fix the map pans and keeps the zoom the person chose, zooming out
+  only if they are tighter than the accuracy supports; dragging turns follow
+  off; recentring restores the accuracy-aware zoom. Zoom is the app's own 40 px
+  buttons (Leaflet's control is not added), and a fix worse than 150 m
+  (`accuracyIsCoarse`) gets a sentence naming the uncertainty.
 - `src/components/LocationGlobe.tsx` + `src/styles/location-globe.css` are the
   adapted "Map Infographic 3" board: a canvas sphere drawn from the
   `MI3_LAND_RLE` land grid (copy it byte for byte; the engine verifies 16200
@@ -201,6 +230,20 @@ and the publishable/service keys; all of them are supplied by compose.
 - `/monitor` puts the location card and the globe side by side at `lg` and
   stacked below it; the location card is no longer inside the "more details"
   disclosure.
+- `src/components/SessionMapInfographic.tsx` + `src/styles/session-map-infographic.css`
+  are the adapted "Map Infographic" board under that row: the original card
+  shape, 920 × 518 geometry, entrance sequence, count-up and pulsing pins are
+  untouched; the content is the app's own. Pins come from `sessionPins()`
+  (`src/lib/sessionMap.ts`) over `places` — at world scale fixes within
+  `PIN_MERGE_M` (800 km) share one pin that says how many it stands for, and no
+  pin is ever nudged off its coordinate. The two tickers are
+  `device.readingCount` and the newest fix's accuracy. All copy is English +
+  Hindi inline. The dot map is drawn from `src/lib/landGrid.ts`, the same
+  verified 2° land grid the globe uses (the original artwork was decorative and
+  did not follow a projection, so real coordinates could not be plotted on it);
+  the shimmer keeps its dither and motion, tinted with the theme's primary.
+  `worldDots.test.ts` is the projection test: known cities must be on land and
+  known oceans on sea.
 - Verified in the preview at desktop (1265 px) and mobile (375 px): the map
   frame, tiles and attribution render, the denied-permission path works from the
   real button, the globe draws its continents and its empty state, and there is

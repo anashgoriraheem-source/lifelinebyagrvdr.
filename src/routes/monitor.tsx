@@ -6,11 +6,12 @@ import { DevicePairing } from "@/components/DevicePairing";
 import { ReadingMonthsChart } from "@/components/ReadingMonthsChart";
 import { LocationCard } from "@/components/LocationCard";
 import { LocationGlobe } from "@/components/LocationGlobe";
+import { SessionMapInfographic } from "@/components/SessionMapInfographic";
 import { useApp } from "@/hooks/useApp";
 import { useNow } from "@/hooks/useNow";
-import { isStale } from "@/lib/detection";
 import { set } from "@/lib/store";
 import { disconnectWearable } from "@/core/ble/connect";
+import { connectionPhase } from "@/core/ble/support";
 import { useI18n } from "@/i18n";
 export const Route = createFileRoute("/monitor")({ ssr: false, component: Monitor });
 function Monitor() {
@@ -19,17 +20,21 @@ function Monitor() {
   const demo = useApp((s) => s.demoMode);
   const vitals = useApp((s) => s.vitals);
   const now = useNow();
-  const fresh = (["hr", "spo2", "bp", "glucose"] as const).some(
-    (k) => vitals[k] && !isStale(k, vitals[k], now),
-  );
+  // The device status line uses the same rule as the pairing card, so "connected"
+  // never means "monitoring" and a connection that has gone quiet says so.
+  const phase = connectionPhase({ device, vitals, now });
   const status =
-    device.status === "connected"
-      ? fresh
-        ? "release.receiving"
-        : "release.connected"
-      : device.status === "disconnected"
-        ? "release.lost"
-        : "release.noDevice";
+    phase === "receiving"
+      ? "release.receiving"
+      : phase === "connected"
+        ? "release.connected"
+        : phase === "stale"
+          ? "release.deviceStale"
+          : phase === "reconnecting"
+            ? "release.reconnecting"
+            : phase === "disconnected" || phase === "error"
+              ? "release.lost"
+              : "release.noDevice";
   const toggleDemo = () => {
     disconnectWearable();
     set({
@@ -68,6 +73,9 @@ function Monitor() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start">
         <LocationCard />
         <LocationGlobe />
+      </div>
+      <div className="mt-8">
+        <SessionMapInfographic />
       </div>
       <div className="mt-5 flex flex-wrap gap-3">
         <Button variant="outline" onClick={toggleDemo}>

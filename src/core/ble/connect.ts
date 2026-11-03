@@ -16,12 +16,17 @@
  * A GATT connection is never treated as monitoring: only parsed, plausible
  * packets become readings.
  *
- * Reconnection requires a new deliberate action (the button, not a timer).
+ * A drop is recovered by the adapter itself while this page stays open: at most
+ * three attempts with a growing delay, and never a fourth (the browser may also
+ * refuse, in which case the attempt fails and the person is asked to reconnect
+ * by hand). A disconnect the person asked for cancels all of that immediately,
+ * and one connection attempt is ever in flight.
+ *
  * Session guards prevent old devices/notifications from overwriting a newer
  * connection or demo session.
  */
-import { addLog, set } from "@/lib/store";
-import type { Reading, VitalKey } from "@/lib/types";
+import { addLog, appStore, set } from "@/lib/store";
+import type { DeviceIssue, Reading, VitalKey } from "@/lib/types";
 import {
   parseBloodPressureMeasurement,
   parseGlucoseMeasurement,
@@ -102,6 +107,13 @@ const SERVICES: {
 /** How often a readable-only characteristic is re-read. */
 const READ_POLL_MS = 5_000;
 
+/** Automatic recovery stays bounded: three attempts, then the person decides. */
+export const MAX_RECOVERY_ATTEMPTS = 3;
+/** Wait before attempt 1, 2 and 3. Growing, so a device that is off is not hammered. */
+export const RECOVERY_BACKOFF_MS = [1_500, 4_000, 9_000];
+
+const deviceName = (selected: Device) => selected.name ?? "Bluetooth device";
+
 let device: Device | null = null;
 /** Kept after a loss so "Connect again" can reuse the grant without the chooser. */
 let lastDevice: Device | null = null;
@@ -111,7 +123,17 @@ let generation = 0;
 let pairing = false;
 let cleanups: (() => void)[] = [];
 
+let recoveryTimer: ReturnType<typeof setTimeout> | null = null;
+let recoveryAttempts = 0;
+let recovering = false;
+/** Set by an explicit disconnect. It stops every pending and future retry. */
+let stoppedByUser = false;
+
 export type PairMode = "standard" | "any";
+
+type Subscription =
+  | { ok: true; transport: "notify" | "read" }
+  | { ok: false; reason: "service-missing" | DeviceIssue["reason"] };
 
 const clearListeners = () => {
   cleanups.forEach((f) => f());
@@ -130,6 +152,18 @@ function release() {
   } catch {
     /* already gone */
   }
+}
+
+/** Stops any pending or running automatic recovery. */
+function cancelRecovery() {
+  if (recoveryTimer != null) clearTimeout(recoveryTimer);
+  recoveryTimer = null;
+  recovering = false;
+  recoveryAttempts = 0;
+}
+
+function publishRecoveryAttempt(attempt: number | null) {
+  set((state) => ({ device: { ...state.device, recoveryAttempt: attempt } }));
 }
 
 function applyMeasurement(
@@ -188,18 +222,31 @@ function applyMeasurement(
 
 /**
  * Subscribes to one standard service. Notifications are used when offered; a
- * readable-only characteristic is polled. Returns how readings arrive, or null
- * when the device has nothing usable for this service.
+ * readable-only characteristic is polled. A failure is reported back so the
+ * device page can say which reading did not start, instead of looking connected
+ * and silent for no stated reason.
  */
 async function subscribe(
   server: Server,
   s: (typeof SERVICES)[number],
   session: number,
   name: string,
-): Promise<"notify" | "read" | null> {
-  const service = await server.getPrimaryService(s.service);
-  const characteristic = await service.getCharacteristic(s.char);
-  if (session !== generation) return null;
+): Promise<Subscription> {
+  let service: Service;
+  try {
+    service = await server.getPrimaryService(s.service);
+  } catch {
+    return { ok: false, reason: "service-missing" };
+  }
+  if (session !== generation) return { ok: false, reason: "service-missing" };
+
+  let characteristic: Char;
+  try {
+    characteristic = await service.getCharacteristic(s.char);
+  } catch {
+    return { ok: false, reason: "characteristic-missing" };
+  }
+  if (session !== generation) return { ok: false, reason: "service-missing" };
 
   const onValue = () => {
     if (characteristic.value) applyMeasurement(s, characteristic.value, session, name);
@@ -214,11 +261,16 @@ async function subscribe(
       await characteristic.startNotifications();
       if (session !== generation) {
         characteristic.removeEventListener("characteristicvaluechanged", onValue);
-        return null;
+        return { ok: false, reason: "service-missing" };
       }
-      cleanups.push(() =>
-        characteristic.removeEventListener("characteristicvaluechanged", onValue),
-      );
+      cleanups.push(() => {
+        characteristic.removeEventListener("characteristicvaluechanged", onValue);
+        // Stop the stream as well as the listener: a device that is switched to
+        // another connection should not keep pushing into this page.
+        void characteristic.stopNotifications?.().catch(() => {
+          /* The link is usually already gone; nothing left to stop. */
+        });
+      });
       // A device that also allows reads usually holds its latest measurement.
       // Reading it once means a stored value shows up immediately instead of
       // waiting for the device to push the next one.
@@ -234,16 +286,16 @@ async function subscribe(
             /* The notification stream is still the primary path. */
           });
       }
-      return "notify";
+      return { ok: true, transport: "notify" };
     } catch {
       characteristic.removeEventListener("characteristicvaluechanged", onValue);
-      if (!characteristic.readValue) return null;
+      if (!characteristic.readValue) return { ok: false, reason: "notifications-failed" };
     }
   }
 
   // Read-only fallback: one immediate read, then a slow poll while connected.
   const readValue = characteristic.readValue;
-  if (!readValue) return null;
+  if (!readValue) return { ok: false, reason: "notifications-failed" };
   let stopped = false;
   const poll = async () => {
     if (stopped || session !== generation) return;
@@ -260,21 +312,27 @@ async function subscribe(
     stopped = true;
     clearInterval(id);
   });
-  return "read";
+  return { ok: true, transport: "read" };
 }
 
-async function startConnection(selected: Device, session: number, mode: PairMode) {
+async function startConnection(
+  selected: Device,
+  session: number,
+  mode: PairMode,
+  options: { auto?: boolean } = {},
+) {
+  const automatic = options.auto === true;
+  const name = deviceName(selected);
   device = selected;
   lastDevice = selected;
   lastMode = mode;
-  const name = selected.name ?? "Bluetooth device";
   set({
     demoMode: false,
     scenario: "stable",
     vitals: {},
     history: { hr: [], spo2: [], bp: [], glucose: [] },
     device: {
-      status: "connecting",
+      status: automatic ? "reconnecting" : "connecting",
       name: selected.name ?? null,
       vitals: [],
       mode,
@@ -282,6 +340,8 @@ async function startConnection(selected: Device, session: number, mode: PairMode
       lastReadingAt: null,
       readingCount: 0,
       error: undefined,
+      issues: [],
+      recoveryAttempt: automatic ? recoveryAttempts : null,
     },
   });
 
@@ -296,10 +356,16 @@ async function startConnection(selected: Device, session: number, mode: PairMode
         vitals: [],
         mode,
         connectedAt: null,
+        recoveryAttempt: null,
       },
       vitals: {},
     });
-    addLog("device", "Connection lost. Keep the device nearby and connect again.");
+    if (stoppedByUser) {
+      addLog("device", "Device disconnected. No readings are being received.");
+      return;
+    }
+    addLog("device", "Connection lost. Lifeline is trying to reconnect.");
+    scheduleRecovery();
   };
   selected.addEventListener("gattserverdisconnected", lost);
   cleanups.push(() => selected.removeEventListener("gattserverdisconnected", lost));
@@ -312,17 +378,19 @@ async function startConnection(selected: Device, session: number, mode: PairMode
   }
 
   const found: VitalKey[] = [];
+  const issues: DeviceIssue[] = [];
   for (const s of SERVICES) {
     // One subscription per vital: a device offering both pulse-oximetry
     // characteristics is read once, through the first one that works.
     if (found.includes(s.key)) continue;
-    try {
-      const transport = await subscribe(server, s, session, name);
-      if (session !== generation) return;
-      if (transport) found.push(s.key);
-    } catch {
-      /* Service or characteristic absent — this device simply does not offer it. */
-    }
+    const result = await subscribe(server, s, session, name);
+    if (session !== generation) return;
+    if (result.ok) found.push(s.key);
+    // "service-missing" is the ordinary case: this device simply does not offer
+    // that measurement. Only a service it does offer but cannot stream is worth
+    // telling the person about.
+    else if (result.reason !== "service-missing")
+      issues.push({ key: s.key, reason: result.reason });
   }
   if (session !== generation) return;
 
@@ -337,6 +405,8 @@ async function startConnection(selected: Device, session: number, mode: PairMode
         mode,
         connectedAt: null,
         error: "unsupported-services",
+        issues,
+        recoveryAttempt: null,
       },
       vitals: {},
     });
@@ -357,12 +427,99 @@ async function startConnection(selected: Device, session: number, mode: PairMode
       mode,
       connectedAt: Date.now(),
       error: undefined,
+      issues,
+      recoveryAttempt: null,
     },
   }));
   addLog(
     "device",
-    `Device connected · ${found.join(", ")} subscribed. A connection is not a measurement.`,
+    issues.length
+      ? `Device connected · ${found.join(", ")} subscribed. ${issues
+          .map((i) => i.key)
+          .join(", ")} would not start. A connection is not a measurement.`
+      : `Device connected · ${found.join(", ")} subscribed. A connection is not a measurement.`,
   );
+}
+
+/**
+ * Retries the last granted device without the chooser. Bounded, sequential and
+ * cancellable: `disconnectWearable` ends it, and a retry never starts while one
+ * is already running.
+ */
+function scheduleRecovery() {
+  if (stoppedByUser || recovering || recoveryTimer != null) return;
+  if (!lastDevice?.gatt) return;
+  if (recoveryAttempts >= MAX_RECOVERY_ATTEMPTS) {
+    set((state) => ({
+      device: { ...state.device, status: "disconnected", error: "recovery-stopped" },
+    }));
+    addLog(
+      "device",
+      "Stopped trying to reconnect. Open the device list again when the device is nearby.",
+    );
+    return;
+  }
+  const delay =
+    RECOVERY_BACKOFF_MS[Math.min(recoveryAttempts, RECOVERY_BACKOFF_MS.length - 1)] ??
+    RECOVERY_BACKOFF_MS[0];
+  recoveryTimer = setTimeout(() => {
+    recoveryTimer = null;
+    void attemptRecovery();
+  }, delay);
+}
+
+async function attemptRecovery() {
+  if (stoppedByUser || pairing) return;
+  const target = lastDevice;
+  if (!target?.gatt) return;
+  recovering = true;
+  recoveryAttempts += 1;
+  publishRecoveryAttempt(recoveryAttempts);
+  const session = ++generation;
+  release();
+  try {
+    await startConnection(target, session, lastMode, { auto: true });
+    recoveryAttempts = 0;
+  } catch (error) {
+    const name = (error as Error)?.name;
+    if (name === "UnsupportedServicesError") {
+      // A precise, non-transient state: the device connected but has nothing for
+      // us. Retrying would produce the same answer.
+      cancelRecovery();
+      return;
+    }
+    if (session === generation) {
+      release();
+      set({
+        device: {
+          status: "disconnected",
+          name: target.name ?? null,
+          vitals: [],
+          mode: lastMode,
+          connectedAt: null,
+          recoveryAttempt: null,
+        },
+        vitals: {},
+      });
+    }
+  } finally {
+    recovering = false;
+  }
+  if (!stoppedByUser && appStore.state.device.status !== "connected") scheduleRecovery();
+}
+
+// Coming back to the page is the usual moment a phone has dropped the link
+// (the browser suspends Bluetooth while the tab is in the background).
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    if (stoppedByUser || !lastDevice) return;
+    const { status } = appStore.state.device;
+    if (status === "disconnected" || status === "error") {
+      recoveryAttempts = 0;
+      scheduleRecovery();
+    }
+  });
 }
 
 export async function pairWearable(mode: PairMode = "standard") {
@@ -370,6 +527,9 @@ export async function pairWearable(mode: PairMode = "standard") {
   if (typeof window !== "undefined" && !window.isSecureContext)
     throw namedError("SecurityError", "Secure page required");
   if (!bluetoothSupported()) throw namedError("NotSupportedError", "Bluetooth is not available");
+  // A deliberate action always wins over an automatic retry.
+  stoppedByUser = false;
+  cancelRecovery();
   pairing = true;
   const session = ++generation;
   release();
@@ -430,6 +590,8 @@ export async function reconnectWearable() {
   if (typeof window !== "undefined" && !window.isSecureContext)
     throw namedError("SecurityError", "Secure page required");
   if (!bluetoothSupported()) throw namedError("NotSupportedError", "Bluetooth is not available");
+  stoppedByUser = false;
+  cancelRecovery();
   pairing = true;
   const session = ++generation;
   // Drop the previous GATT link (and its listeners) before reconnecting, so a
@@ -458,6 +620,8 @@ export async function reconnectWearable() {
 }
 
 export function disconnectWearable() {
+  stoppedByUser = true;
+  cancelRecovery();
   ++generation;
   release();
   lastDevice = null;

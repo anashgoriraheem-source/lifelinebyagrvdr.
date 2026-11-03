@@ -6,17 +6,14 @@ import { useApp } from "@/hooks/useApp";
 import { useNow } from "@/hooks/useNow";
 import { useI18n } from "@/i18n";
 import {
+  MAX_RECOVERY_ATTEMPTS,
   bluetoothSupported,
   disconnectWearable,
   pairWearable,
   reconnectWearable,
   type PairMode,
 } from "@/core/ble/connect";
-import {
-  NO_MEASUREMENT_MS,
-  connectionPhase,
-  waitingWithoutMeasurement,
-} from "@/core/ble/support";
+import { NO_MEASUREMENT_MS, connectionPhase, waitingWithoutMeasurement } from "@/core/ble/support";
 
 /**
  * Guided Bluetooth pairing.
@@ -59,7 +56,8 @@ export function DevicePairing() {
     if (errorName === "NotAllowedError") return t("device.connect.denied");
     if (errorName === "SecurityError")
       return t(caps?.secure ? "device.connect.denied" : "device.connect.insecure");
-    if (errorName === "UnsupportedServicesError") return t("device.connect.unsupportedServices", { name });
+    if (errorName === "UnsupportedServicesError")
+      return t("device.connect.unsupportedServices", { name });
     if (errorName === "IncompatibleDeviceError") return t("device.connect.incompatible");
     if (errorName === "NetworkError") return t("device.connect.rangeError");
     if (errorName === "InvalidStateError" || errorName === "NotSupportedError")
@@ -88,18 +86,24 @@ export function DevicePairing() {
     if (device.error === "no-contact") return t("device.connect.noContact", { name });
     if (device.error === "unsupported-services")
       return t("device.connect.unsupportedServices", { name });
+    if (device.error === "recovery-stopped") return t("device.connect.recoveryStopped", { name });
     if (notice) return notice.text;
+    if (device.status === "reconnecting")
+      return t("device.connect.statusReconnecting", {
+        name,
+        attempt: device.recoveryAttempt ?? 1,
+        total: MAX_RECOVERY_ATTEMPTS,
+      });
     if (device.status === "connecting") return t("device.connect.statusConnecting", { name });
     if (phase === "receiving") return t("device.connect.statusReceiving", { name });
     if (phase === "stale") return t("device.connect.statusStale", { name });
     if (phase === "connected") return t("device.connect.statusConnected", { name });
-    if (device.status === "reconnecting" || device.status === "disconnected")
-      return t("device.connect.statusLost", { name });
+    if (device.status === "disconnected") return t("device.connect.statusLost", { name });
     if (device.status === "error") return t("device.connect.failed");
     return t("device.connect.statusIdle");
   })();
 
-  const busyState = busy || device.status === "connecting";
+  const busyState = busy || device.status === "connecting" || device.status === "reconnecting";
   const connected = device.status === "connected";
 
   return (
@@ -195,6 +199,22 @@ export function DevicePairing() {
                 })}
               </p>
             ) : null}
+            {/* A service the device has but will not send from is a failure worth
+                naming: silence here is what "connected but no readings" looks like. */}
+            {device.issues?.length ? (
+              <ul className="mt-3 space-y-1.5 rounded-lg bg-warning-soft px-3 py-2 text-sm leading-relaxed text-foreground">
+                {device.issues.map((issue) => (
+                  <li key={`${issue.key}-${issue.reason}`}>
+                    {t(
+                      issue.reason === "notifications-failed"
+                        ? "device.connect.issueNotifications"
+                        : "device.connect.issueCharacteristic",
+                      { reading: t(`reading.${issue.key}`), name },
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {waitingTooLong || phase === "stale" ? (
@@ -261,7 +281,11 @@ export function DevicePairing() {
               <Bluetooth aria-hidden="true" />
               {t("device.connect.action")}
             </Button>
-            <Button variant="outline" onClick={() => start("any")} disabled={busyState || !canConnect}>
+            <Button
+              variant="outline"
+              onClick={() => start("any")}
+              disabled={busyState || !canConnect}
+            >
               {t("device.connect.findAny")}
             </Button>
             <Button

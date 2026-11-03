@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LocateFixed, Navigation, Share2 } from "lucide-react";
+import { LocateFixed, Minus, Navigation, Plus, Share2 } from "lucide-react";
 import type { LocationFix } from "@/lib/types";
 import { formatCoordinates } from "@/lib/places";
+import { accuracyIsCoarse, zoomForAccuracy } from "@/lib/mapView";
 import "../styles/location-map.css";
 
 /**
@@ -41,6 +42,8 @@ export function LocationMap({
   const markerRef = useRef<import("leaflet").CircleMarker | null>(null);
   const accuracyRef = useRef<import("leaflet").Circle | null>(null);
   const followRef = useRef(true);
+  /** False until the first fix has set the view; later fixes must not re-zoom. */
+  const framedRef = useRef(false);
   const [follow, setFollow] = useState(true);
   const [tileError, setTileError] = useState(false);
   const [offline, setOffline] = useState(
@@ -52,6 +55,12 @@ export function LocationMap({
   const hi = locale === "hi";
   const copy = {
     recenter: hi ? "मेरे स्थान पर लौटें" : "Recenter on my location",
+    zoomIn: hi ? "नक्शा ज़ूम इन करें" : "Zoom in",
+    zoomOut: hi ? "नक्शा ज़ूम आउट करें" : "Zoom out",
+    coarse: (metres: number) =>
+      hi
+        ? `आपका डिवाइस आपको लगभग ${metres} मीटर के भीतर बताता है। छायांकित वृत्त उतनी जगह दिखाता है — निशान उससे ज़्यादा सटीक नहीं है।`
+        : `Your device places you within about ${metres} m. The shaded circle shows that area — the marker is not more precise than that.`,
     follow: hi ? "मेरे साथ चलें" : "Follow me",
     following: hi ? "मेरे साथ चल रहा है" : "Following you",
     copied: hi ? "नकल हो गया" : "Copied",
@@ -111,9 +120,14 @@ export function LocationMap({
       tiles.on("load", () => setTileError(false));
       tiles.addTo(map);
 
-      // Zoom controls live under our own buttons so they match the app's touch
-      // targets; Leaflet's default control stays available for keyboards too.
-      L.control.zoom({ position: "bottomright" }).addTo(map);
+      // Leaflet's own zoom control is left out: the app draws its own 44 px
+      // buttons over the map so the targets work for mouse and touch alike.
+      // Keyboard zoom still works on the focused map (+ / -).
+      // Dragging the map is the person choosing where to look, so follow stops.
+      map.on("dragstart", () => {
+        followRef.current = false;
+        setFollow(false);
+      });
 
       // Keep the map honest about its shape: a container that changes size
       // (rotate, split view, watch width) needs a fresh projection.
@@ -172,9 +186,17 @@ export function LocationMap({
         accuracyRef.current.setLatLng(point);
         accuracyRef.current.setRadius(Math.max(1, fix.accuracy));
       }
-      if (followRef.current) {
-        const zoom = Math.max(map.getZoom(), fix.accuracy > 500 ? 14 : 16);
-        map.setView(point, zoom, { animate: true });
+      // A coarse fix gets a wider view: the circle has to fit on the map, or the
+      // marker looks far more precise than the device actually reported.
+      const fit = zoomForAccuracy(fix.accuracy, box?.clientWidth ?? 320, fix.lat);
+      if (!framedRef.current) {
+        framedRef.current = true;
+        map.setView(point, fit, { animate: false });
+      } else if (followRef.current) {
+        // Pan with the fix but keep the zoom the person chose, unless they are
+        // zoomed in past what the accuracy supports.
+        if (map.getZoom() > fit + 1) map.setView(point, fit, { animate: true });
+        else map.panTo(point, { animate: true });
       }
     })();
   }, [fix, mapReady]);
@@ -184,8 +206,20 @@ export function LocationMap({
     setFollow(true);
     const map = mapRef.current;
     if (!map || !fix) return;
-    map.setView([fix.lat, fix.lng], Math.max(map.getZoom(), 16), { animate: true });
+    // Recentring also restores a zoom that shows the whole accuracy circle.
+    map.setView(
+      [fix.lat, fix.lng],
+      zoomForAccuracy(fix.accuracy, boxRef.current?.clientWidth ?? 320, fix.lat),
+      { animate: true },
+    );
   }, [fix]);
+
+  const zoomBy = (direction: 1 | -1) => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (direction === 1) map.zoomIn();
+    else map.zoomOut();
+  };
 
   const toggleFollow = () => {
     const next = !follow;
@@ -255,6 +289,24 @@ export function LocationMap({
           <button
             type="button"
             className="lmap-btn"
+            onClick={() => zoomBy(1)}
+            aria-label={copy.zoomIn}
+            title={copy.zoomIn}
+          >
+            <Plus aria-hidden="true" strokeWidth={2} />
+          </button>
+          <button
+            type="button"
+            className="lmap-btn"
+            onClick={() => zoomBy(-1)}
+            aria-label={copy.zoomOut}
+            title={copy.zoomOut}
+          >
+            <Minus aria-hidden="true" strokeWidth={2} />
+          </button>
+          <button
+            type="button"
+            className="lmap-btn"
             onClick={recenter}
             disabled={!fix}
             aria-label={copy.recenter}
@@ -308,6 +360,9 @@ export function LocationMap({
               {copy.share}
             </button>
           </div>
+          {accuracyIsCoarse(fix.accuracy) ? (
+            <p className="lmap-note">{copy.coarse(Math.round(fix.accuracy))}</p>
+          ) : null}
           <p className="lmap-hint">{copy.copyHint}</p>
         </div>
       ) : (

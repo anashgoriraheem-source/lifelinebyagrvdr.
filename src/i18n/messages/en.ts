@@ -234,7 +234,7 @@ export const en = {
     "Connected to {name}. Waiting for a reading. Take a measurement on the device if needed. Another app using the device may prevent sharing.",
   "device.connect.statusReceiving": "Receiving readings from {name}.",
   "device.connect.statusLost":
-    "The connection to {name} was lost. Keep it close and switched on, then open the device list again. No new readings are available.",
+    "The connection to {name} was lost. Lifeline is trying to reconnect, so keep the device close and switched on. You can also open the device list again. No new readings are available until it reconnects.",
   "device.connect.cancelled":
     "No device was chosen, so nothing has changed. Try again whenever you are ready.",
   "device.connect.denied":
@@ -257,13 +257,21 @@ export const en = {
   "device.connect.limitManual":
     "Some blood pressure cuffs and glucose meters send a reading only after you take a measurement.",
   "device.connect.limitBackground":
-    "Lifeline cannot reconnect by itself, measure in the background, or reach anyone after this page is closed.",
+    "Lifeline cannot measure in the background or reach anyone after this page is closed. If the link drops while this page stays open, it retries a few times and then asks you to reconnect.",
   "device.connect.technicalTitle": "Technical details",
   "device.connect.technicalBody":
-    "The filtered list asks the browser for these standard Bluetooth services: Heart Rate (0x180D), Pulse Oximeter (0x1822), Blood Pressure (0x1810) and Glucose (0x1808). The full list can show any nearby device, but only those four services are read. Within the pulse-oximeter service both the continuous (0x2A5F) and spot-check (0x2A5E) measurements are understood. Notifications are used where a device offers them, and a device that also allows reads has its current value read once at connection; a read-only value is re-read every 5 seconds. No device list leaves your device.",
+    "The filtered list asks the browser for these standard Bluetooth services: Heart Rate (0x180D), Pulse Oximeter (0x1822), Blood Pressure (0x1810) and Glucose (0x1808). The full list can show any nearby device, but only those four services are read. Within the pulse-oximeter service both the continuous (0x2A5F) and spot-check (0x2A5E) measurements are understood. Notifications are used where a device offers them, and a device that also allows reads has its current value read once at connection; a read-only value is re-read every 5 seconds. A service the device offers but will not start sending from is named above instead of being ignored. If the link drops, Lifeline retries up to three times, 1.5, 4 and 9 seconds apart, and stops when you disconnect. No device list leaves your device.",
   "device.connect.findAny": "Show all nearby devices",
   "device.connect.findAnyHint":
     "Use the full device list when your watch or band does not appear above. A watch that keeps its data in the manufacturer’s app will connect here but send no readings.",
+  "device.connect.statusReconnecting":
+    "Trying to reconnect to {name} (attempt {attempt} of {total}). Keep the device switched on and nearby.",
+  "device.connect.recoveryStopped":
+    "Lifeline stopped trying to reconnect to {name}. Open the device list again when the device is nearby and switched on.",
+  "device.connect.issueNotifications":
+    "{reading} was found on {name}, but it would not start sending measurements. Close any other app that is using the device, then connect again.",
+  "device.connect.issueCharacteristic":
+    "{name} offers the {reading} service but not the measurement Lifeline can read.",
   "device.connect.statusStale":
     "Readings from {name} are no longer current. Move the device, take a new measurement, or connect again.",
   "device.connect.noMeasurementYet":

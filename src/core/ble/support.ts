@@ -69,6 +69,7 @@ export type ConnectionPhase =
   | "unsupported"
   | "idle"
   | "connecting"
+  | "reconnecting"
   | "connected"
   | "receiving"
   | "stale"
@@ -78,6 +79,8 @@ export type ConnectionPhase =
 /**
  * The single answer to "what is happening with the device right now".
  *
+ * `reconnecting` is an automatic retry of a device the browser already
+ * granted, so the person can see that the drop is being handled.
  * `connected` deliberately means GATT is up but no measurement has arrived:
  * a connection is not a reading, so it must never be shown as monitoring.
  * `stale` means readings arrived but none is inside its freshness window.
@@ -95,6 +98,7 @@ export function connectionPhase({
 }): ConnectionPhase {
   if (!supported) return "unsupported";
   if (device.status === "connecting") return "connecting";
+  if (device.status === "reconnecting") return "reconnecting";
   if (device.status === "error") return "error";
   if (device.status === "disconnected") return "disconnected";
   if (device.status === "idle") return "idle";

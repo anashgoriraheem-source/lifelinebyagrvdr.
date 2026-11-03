@@ -79,6 +79,12 @@ describe("connection phase — a connection is not a measurement", () => {
     ).toBe("stale");
   });
 
+  it("reports an automatic reconnect as its own state", () => {
+    expect(connectionPhase({ device: { status: "reconnecting" }, vitals: {}, now })).toBe(
+      "reconnecting",
+    );
+  });
+
   it("keeps loss, error and browser support distinct", () => {
     expect(connectionPhase({ device: { status: "disconnected" }, vitals: {}, now })).toBe(
       "disconnected",

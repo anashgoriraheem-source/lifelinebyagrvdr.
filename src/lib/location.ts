@@ -30,6 +30,8 @@ export function startTracking() {
         at: pos.timestamp,
       };
       set((s) => ({
+        // A fresh fix clears an older timeout message: the map and the status
+        // line must never say "not found" while showing a current position.
         location: { status: "tracking", error: null, fix },
         // The map and the globe draw from the same in-memory record.
         places: recordPlace(s.places, fix),
@@ -38,7 +40,11 @@ export function startTracking() {
     },
     (err) => {
       if (session !== generation) return;
-      const denied = err.code === err.PERMISSION_DENIED;
+      // Numeric codes are the spec's own values; some browsers do not expose the
+      // named constants on the error object, which silently downgraded a denial
+      // to a generic error and left the watch running.
+      const denied = err.code === 1; // PERMISSION_DENIED
+      const timedOut = err.code === 3; // TIMEOUT
       if (denied && watchId != null) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
@@ -49,7 +55,7 @@ export function startTracking() {
           status: denied ? "denied" : s.location.fix ? "tracking" : "error",
           error: denied
             ? "Location permission was denied."
-            : err.code === err.TIMEOUT
+            : timedOut
               ? "Waiting for a GPS fix…"
               : "Location unavailable right now.",
         },

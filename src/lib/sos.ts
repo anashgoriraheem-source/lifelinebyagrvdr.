@@ -33,7 +33,7 @@ export function buildSosMessage(
         ? "मुझे मदद चाहिए। कृपया मुझे कॉल करें।"
         : "I need help. Please call me.",
     hi
-      ? "आपदा सेतु में तैयार मसौदा। ऐप ने आपातकालीन सेवा से संपर्क नहीं किया है।"
+      ? "लाइफलाइन में तैयार मसौदा। ऐप ने आपातकालीन सेवा से संपर्क नहीं किया है।"
       : "Draft prepared with Lifeline. The app has not contacted emergency services.",
   ];
   if (opts.includeMedical) {

@@ -13,17 +13,23 @@ record of location fixes, and neither invents a place.
   control kept visible and complete
   (`© OpenStreetMap contributors`, linked to the copyright page).
 - **What is drawn:** one marker at the fix, and a circle whose radius is the
-  accuracy the browser reported. The zoom starts at 16 for a tight fix and 14
-  when the accuracy is worse than 500 m — the map never pretends to be more
-  precise than the fix.
+  accuracy the browser reported. The starting zoom comes from
+  `zoomForAccuracy()` (`src/lib/mapView.ts`): the circle spans about half the
+  map whatever the accuracy is, so a 1 km cell-tower fix opens at a
+  neighbourhood zoom instead of at street level with the error circle off the
+  screen. The map never pretends to be more precise than the fix.
 - **States on screen:** loading, permission-denied, browser without location
   support, no fix yet, a current fix, and a fix older than the freshness window
   (`STALE_FIX_MS`, 2 minutes) which is labelled "Not current" in both the map
   pill and the card. Offline and tile failures show a plain-language banner; the
   coordinates stay readable underneath.
-- **Controls:** recenter, follow-me (pans with each new fix), Leaflet's own
-  zoom control, and explicit "Copy coordinates" / "Share location" buttons. The
-  copy explains that copying only fills the clipboard — nothing is sent.
+- **Controls:** zoom in/out and recenter (the app's own 40 px buttons — the
+  Leaflet control is not added), follow-me, and explicit "Copy coordinates" /
+  "Share location" buttons. Follow pans with each new fix and keeps the zoom the
+  person chose; dragging the map turns follow off (that is the person choosing
+  where to look), and recentring restores the accuracy-aware zoom. A fix worse
+  than 150 m also gets a sentence naming the uncertainty. The copy explains
+  that copying only fills the clipboard — nothing is sent.
 
 ### Before a production deployment
 
@@ -51,11 +57,12 @@ No map key is required for the current setup, and none is configured.
 Adapted from the "Map Infographic 3" Figma board (3511:1587).
 
 - **The sphere is drawn, not photographed.** The canvas is painted from
-  `MI3_LAND_RLE`, a run-length encoded 2° land/sea grid built from Natural Earth
-  110m (public domain). Copy that string byte for byte; the engine verifies the
-  run lengths (16200 cells, 5392 land) on first paint and logs a clear error if
-  they do not add up. The canvas backing store is kept in sync with its CSS size
-  at device pixel ratio.
+  `LAND_RLE` in `src/lib/landGrid.ts`, a run-length encoded 2° land/sea grid
+  built from Natural Earth 110m (public domain) and shared with the session
+  board below. Copy that string byte for byte; the grid verifies the run lengths
+  (16200 cells, 5392 land) on first use and logs a clear error if they do not
+  add up. The canvas backing store is kept in sync with its CSS size at device
+  pixel ratio.
 - **The pins are real.** Each pin is a location fix this tab recorded, read from
   `places` in the store (`src/lib/places.ts`). Newest first, at most five, and a
   fix within 250 m of the leading one replaces it instead of adding a pin. With
@@ -84,6 +91,27 @@ Adapted from the "Map Infographic 3" Figma board (3511:1587).
   system asks for reduced motion. The third control is a pause/resume toggle
   whose icon, `aria-pressed` and label all follow the same state.
 
+## 3. The session board (`src/components/SessionMapInfographic.tsx`)
+
+The adapted "Map Infographic" board, below the location card and the globe.
+
+- **Geometry and motion are the original design's:** the 920 × 518 card, the
+  offset gold plate, the entrance sequence, the count-up and the pulsing pins.
+- **Content is the app's:** the pins are `sessionPins()` over the same in-memory
+  `places` record (`src/lib/sessionMap.ts`); the two tickers are the connected
+  device's accepted reading count and the newest fix's accuracy. With no fix,
+  there are no pins and the plate says how a pin appears.
+- **The dot world is projected, not decorative.** The original artwork's dots
+  did not follow a geographic projection, so a real fix could not be plotted on
+  them honestly. The board now draws the shared `LAND_RLE` grid, and
+  `src/lib/worldDots.ts` maps latitude/longitude onto it linearly (row 0 = the
+  north pole). `src/lib/worldDots.test.ts` asserts that known cities are on land
+  cells and known oceans are sea, which is what keeps a pin on its place.
+- **Pins are merged, never moved:** at 651 px across the world one pixel is
+  about 200 km, so fixes within `PIN_MERGE_M` (800 km) share one pin and the
+  tooltip says how many it stands for. A pin is always exactly at the
+  coordinate it describes.
+
 ## Verified here
 
 - Denied-permission state: driven through the real button in the preview
@@ -91,7 +119,13 @@ Adapted from the "Map Infographic 3" Figma board (3511:1587).
 - Empty globe: sphere drawn, no pins, legend explains how a pin appears.
 - Map tiles: OpenStreetMap tiles loaded in the preview (4 tiles at world zoom)
   with the attribution rendered.
+- Session board: renders on `/monitor` at desktop and mobile widths with the
+  dot continents drawn, the gold plate and its copy, both live tickers and no
+  sideways scroll; the denied-permission empty state is what the preview shows.
 - Not automatically verified: a granted location fix (the preview browser
   denies geolocation by default), so the marker, accuracy circle, follow, copy
-  and share paths and the globe's pins were not driven end to end. Their maths
-  is unit-tested in `src/lib/places.test.ts`.
+  and share paths, the globe's pins and the session board's pins and tooltips
+  were not driven end to end. Their maths is unit-tested in
+  `src/lib/places.test.ts`, `src/lib/mapView.test.ts`,
+  `src/lib/sessionMap.test.ts`, `src/lib/worldDots.test.ts` and
+  `src/lib/location.test.ts`.
