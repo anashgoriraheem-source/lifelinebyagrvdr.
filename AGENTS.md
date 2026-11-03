@@ -116,7 +116,7 @@ and the publishable/service keys; all of them are supplied by compose.
   manually verified only.
 
 ## Device readings and the readings dashboard
-- The app is **AAPDA SETU**. User-visible strings, page titles, the manifest and
+- The app is **Lifeline**. User-visible strings, page titles, the manifest and
   the offline page use that name. Internal identifiers deliberately keep their
   old `lifeline` prefix (`lifeline:settings:v1`, `lifeline:reading-days:v1`,
   `lifeline:locale`) so existing device-local data is not orphaned.
@@ -126,9 +126,14 @@ and the publishable/service keys; all of them are supplied by compose.
   as `unsupported-services` instead of a false "connected". Do not add vendor
   UUIDs speculatively — see `docs/device-support.md` for what a web page cannot
   read (HealthKit, Health Connect, vendor clouds).
-- Notifications are preferred; a readable-only characteristic is polled every
-  5 s (`READ_POLL_MS`). One malformed or implausible packet clears that vital's
-  reading and sets `device.error`; it is never replaced by a previous value.
+- Notifications are preferred, plus one read of the current value at connection
+  when the device allows reads (`characteristic.properties.read`), so a stored
+  measurement shows without waiting for the next push. A readable-only
+  characteristic is polled every 5 s (`READ_POLL_MS`). Pulse oximeters may
+  expose the continuous (`0x2A5F`) or spot-check (`0x2A5E`) characteristic;
+  each vital is subscribed once, through the first one that works. One malformed
+  or implausible packet clears that vital's reading and sets `device.error`; it
+  is never replaced by a previous value.
 - `src/core/ble/support.ts` is the single place that decides plausibility bounds,
   freshness, the connection phase and missing services. `DeviceState` carries
   `connectedAt`, `lastReadingAt`, `readingCount`, `servicesFound`, `missing`,
@@ -141,13 +146,25 @@ and the publishable/service keys; all of them are supplied by compose.
   `src/lib/readingsOverview.ts` builds 12 month buckets from `readingDays`, which
   stores *which vitals were seen on a day* and no values. `KEEP_DAYS` is 400 so
   the 12-month timeline has data; keep it value-free if you extend it.
+- `src/components/ReadingMonthsChart.tsx` (on `/monitor`) is the isometric
+  oval-disc "reading days by month" chart. Its shape is fixed (five tilted discs
+  on a dashed 100% ring) and it must stay that shape. Values come from
+  `src/lib/readingMonths.ts` over the same `readingDays` record — coverage of the
+  month's *elapsed* days, disc width relative to the dataset maximum, average
+  across the five months. Colours are mixed from the theme tokens; no Google
+  Fonts or third-party chart library. An empty record shows zeros, never a sample,
+  and the caption says so; demo mode is labelled because the simulator writes to
+  `readingDays` too.
 - `supabase/migrations/20261101151559_contact_channels_and_preferences.sql` adds
   the contact channel columns and `safety_preferences` that the account code
   already read. `src/integrations/supabase/types.ts` is hand-maintained to match
   the migrations — update both together, then run `tsc --noEmit`.
-- Verified here: `npm test` (108 tests), `tsc --noEmit`, `npm run build`, and the
-  home/monitor screens in the preview at desktop and mobile widths. Not verified:
-  any physical device, Web Bluetooth in a real browser, iOS/Safari, screen-reader
-  output. `npm run lint` already fails repo-wide on older unformatted files;
-  only new files were formatted.
+- Verified here: `npm test` (118 tests), `tsc --noEmit`, `npm run build`, and the
+  home/monitor screens in the preview at desktop and mobile widths, including the
+  disc chart's empty state and its phone layout. Not verified: any physical
+  device, Web Bluetooth in a real browser, the disc chart rendered from a
+  populated reading record in the browser (its maths is unit-tested;
+  `readingDays` in the preview browser is re-seeded on every load), iOS/Safari,
+  screen-reader output. `npm run lint` already fails repo-wide on older
+  unformatted files; only new files were formatted.
 

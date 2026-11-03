@@ -34,7 +34,7 @@ export interface Contact {
   emailAlerts?: boolean
   /**
    * When the person explicitly confirmed these details are correct. This is a
-   * self-confirmation, not provider verification: AAPDA SETU has no OTP provider
+   * self-confirmation, not provider verification: Lifeline has no OTP provider
    * configured yet.
    */
   confirmedAt?: number | null

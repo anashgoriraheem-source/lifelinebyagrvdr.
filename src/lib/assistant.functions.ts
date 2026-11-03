@@ -208,7 +208,7 @@ export const askAssistant = createServerFn({ method: "POST" })
           ...library,
           limitation: [
             library.limitation,
-            "No language model is configured on this deployment. This answer comes from AAPDA SETU’s curated first-aid library and your own records, not from generative AI.",
+            "No language model is configured on this deployment. This answer comes from Lifeline’s curated first-aid library and your own records, not from generative AI.",
           ]
             .filter(Boolean)
             .join(" "),
@@ -257,7 +257,7 @@ export const askAssistant = createServerFn({ method: "POST" })
             library.limitation,
             result.error ??
               "The model answer was rejected because it contained unsupported placeholders.",
-            "Showing AAPDA SETU’s curated library answer instead.",
+            "Showing Lifeline’s curated library answer instead.",
           ]
             .filter(Boolean)
             .join(" "),

@@ -70,7 +70,7 @@ export const accountEn = {
 
   "account.privacyHeading": "Privacy centre",
   "account.privacyBody":
-    "Signed-out contacts and profile stay in this browser. Signed-in profiles and explicitly saved contacts stay in your private cloud account. Location is held in memory, not uploaded. Your timeline lasts for this session. Shared texts leave AAPDA SETU and follow the recipient’s privacy practices.",
+    "Signed-out contacts and profile stay in this browser. Signed-in profiles and explicitly saved contacts stay in your private cloud account. Location is held in memory, not uploaded. Your timeline lasts for this session. Shared texts leave Lifeline and follow the recipient’s privacy practices.",
   "account.exportAccount": "Export my account data",
   "account.exportLocal": "Export current data",
   "account.exportDoneAccount": "Your account data was exported.",

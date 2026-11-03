@@ -1,6 +1,6 @@
 # Device support, in plain words
 
-This page describes exactly what AAPDA SETU can read from a health device in a
+This page describes exactly what Lifeline can read from a health device in a
 web browser, what it cannot read, and how to tell the difference. It is written
 from the code in `src/core/ble/` — not from a vendor compatibility list.
 
@@ -13,13 +13,16 @@ produced.
 ## What the app can read
 
 Only the four standard Bluetooth SIG health services. Readings arrive as
-notifications where the device offers them; if a characteristic is readable but
-not notifiable, the app re-reads it every 5 seconds.
+notifications where the device offers them; a device that also allows reads has
+its current value read once at connection (so a stored measurement appears
+without waiting for the next one), and a characteristic that is readable but not
+notifiable is re-read every 5 seconds. Each vital is subscribed once, through the
+first characteristic that works.
 
 | Reading | Service | Characteristic | Notes |
 | --- | --- | --- | --- |
 | Heart rate | Heart Rate `0x180D` | Heart Rate Measurement `0x2A37` | 8- and 16-bit values, energy expended and RR intervals are skipped correctly. If the device says it supports contact detection and reports no contact, the packet is rejected. |
-| Blood oxygen | Pulse Oximeter `0x1822` | PLX Continuous Measurement `0x2A5F` | SpO₂ and pulse rate. Spot-check-only devices (`0x2A5E`) are **not** read yet. |
+| Blood oxygen | Pulse Oximeter `0x1822` | PLX Continuous `0x2A5F` **or** PLX Spot-check `0x2A5E` | SpO₂ and pulse rate. Both the streaming and the one-shot forms used by finger oximeters are decoded; whichever the device exposes is subscribed (never both at once). |
 | Blood pressure | Blood Pressure `0x1810` | Blood Pressure Measurement `0x2A35` | Systolic/diastolic; kPa is converted to mmHg. The cuff's own timestamp is used when it is present and sane (last 7 days, not in the future); otherwise the browser's receipt time is used. |
 | Blood glucose | Glucose `0x1808` | Glucose Measurement `0x2A18` | kg/L and mol/L values are converted to mg/dL. Historical record retrieval (RACP) is **not** implemented. |
 
@@ -56,7 +59,7 @@ These are platform limits, not unfinished work:
 
 If your device keeps its data in a manufacturer app, the honest paths are: use
 that app for its history, use a device that broadcasts a standard profile, or
-keep using AAPDA SETU without a device (contacts, SOS, first aid and location all
+keep using Lifeline without a device (contacts, SOS, first aid and location all
 work).
 
 ## Browser and platform requirements
@@ -103,12 +106,14 @@ periods.
 
 - Unit tests with synthetic `EventTarget` devices cover: connection without
   fabricating measurements, chooser cancellation, denied permission, unsupported
-  services, read-only characteristics, invalid and implausible packets, loss
-  handling, listener cleanup and the "all nearby devices" discovery mode
-  (`src/core/ble/connect.test.ts`, `support.test.ts`, `parsers.test.ts`).
+  services, read-only characteristics, the spot-check oximetry characteristic,
+  the single read of a notifiable-and-readable value, invalid and implausible
+  packets, loss handling, listener cleanup and the "all nearby devices"
+  discovery mode (`src/core/ble/connect.test.ts`, `support.test.ts`,
+  `parsers.test.ts`).
 - Parser tests cover 8/16-bit heart rate, RR conversion, SFLOAT/FLOAT decoding,
-  kPa→mmHg, conditional PLX fields, glucose unit conversion, truncated packets,
-  sentinel values and BP timestamps.
+  kPa→mmHg, conditional PLX fields (continuous and spot-check), glucose unit
+  conversion, truncated packets, sentinel values and BP timestamps.
 - The headless preview browser has no Web Bluetooth, so the pairing UI renders
   its "browser cannot connect" state there. Real chooser, permission, radio and
   device behaviour remain **not automatically verified**.

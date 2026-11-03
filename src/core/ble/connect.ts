@@ -8,9 +8,13 @@
  *    vendor service can be selected and is reported as unsupported instead of
  *    silently missing from the chooser.
  *
- * Notifications are preferred; a characteristic that is only readable is polled
- * instead of being reported as incompatible. A GATT connection is never treated
- * as monitoring: only parsed, plausible packets become readings.
+ * Notifications are preferred, plus one read of the current value when the
+ * characteristic allows it (a stored measurement then appears at once). A
+ * characteristic that is only readable is polled instead of being reported as
+ * incompatible. Pulse oximeters may expose either the continuous (0x2a5f) or
+ * the spot-check (0x2a5e) characteristic; each vital is subscribed once.
+ * A GATT connection is never treated as monitoring: only parsed, plausible
+ * packets become readings.
  *
  * Reconnection requires a new deliberate action (the button, not a timer).
  * Session guards prevent old devices/notifications from overwriting a newer
@@ -23,6 +27,7 @@ import {
   parseGlucoseMeasurement,
   parseHeartRateMeasurement,
   parsePulseOxMeasurement,
+  parsePulseOxSpotCheck,
 } from "./parsers";
 import { missingServices, plausibleReading, validMeasurementTime } from "./support";
 
@@ -71,6 +76,13 @@ const SERVICES: {
     parse: (d) => ({ value: Math.round(parsePulseOxMeasurement(d).value), unit: "%" }),
   },
   {
+    // Many finger oximeters only expose the one-shot spot-check characteristic.
+    service: 0x1822,
+    char: 0x2a5e,
+    key: "spo2",
+    parse: (d) => ({ value: Math.round(parsePulseOxSpotCheck(d).value), unit: "%" }),
+  },
+  {
     service: 0x1810,
     char: 0x2a35,
     key: "bp",
@@ -93,6 +105,8 @@ const READ_POLL_MS = 5_000;
 let device: Device | null = null;
 /** Kept after a loss so "Connect again" can reuse the grant without the chooser. */
 let lastDevice: Device | null = null;
+/** How the current/last device was discovered, so a retry reports the same mode. */
+let lastMode: PairMode = "standard";
 let generation = 0;
 let pairing = false;
 let cleanups: (() => void)[] = [];
@@ -205,6 +219,21 @@ async function subscribe(
       cleanups.push(() =>
         characteristic.removeEventListener("characteristicvaluechanged", onValue),
       );
+      // A device that also allows reads usually holds its latest measurement.
+      // Reading it once means a stored value shows up immediately instead of
+      // waiting for the device to push the next one.
+      if (characteristic.properties?.read && characteristic.readValue) {
+        void characteristic
+          .readValue()
+          .then((fresh) => {
+            if (fresh?.value && session === generation) {
+              applyMeasurement(s, fresh.value, session, name);
+            }
+          })
+          .catch(() => {
+            /* The notification stream is still the primary path. */
+          });
+      }
       return "notify";
     } catch {
       characteristic.removeEventListener("characteristicvaluechanged", onValue);
@@ -237,6 +266,7 @@ async function subscribe(
 async function startConnection(selected: Device, session: number, mode: PairMode) {
   device = selected;
   lastDevice = selected;
+  lastMode = mode;
   const name = selected.name ?? "Bluetooth device";
   set({
     demoMode: false,
@@ -283,6 +313,9 @@ async function startConnection(selected: Device, session: number, mode: PairMode
 
   const found: VitalKey[] = [];
   for (const s of SERVICES) {
+    // One subscription per vital: a device offering both pulse-oximetry
+    // characteristics is read once, through the first one that works.
+    if (found.includes(s.key)) continue;
     try {
       const transport = await subscribe(server, s, session, name);
       if (session !== generation) return;
@@ -346,12 +379,15 @@ export async function pairWearable(mode: PairMode = "standard") {
     const bt = (
       navigator as unknown as { bluetooth: { requestDevice(o: unknown): Promise<Device> } }
     ).bluetooth;
-    const optionalServices = SERVICES.map((s) => s.service);
+    // Two pulse-oximetry characteristics share one service, so the UUID list is
+    // de-duplicated before it reaches the browser chooser.
+    const serviceIds = [...new Set(SERVICES.map((s) => s.service))];
+    const optionalServices = serviceIds;
     const selected = await bt.requestDevice(
       mode === "any"
         ? { acceptAllDevices: true, optionalServices }
         : {
-            filters: SERVICES.map((s) => ({ services: [s.service] })),
+            filters: serviceIds.map((service) => ({ services: [service] })),
             optionalServices,
           },
     );
@@ -396,9 +432,11 @@ export async function reconnectWearable() {
   if (!bluetoothSupported()) throw namedError("NotSupportedError", "Bluetooth is not available");
   pairing = true;
   const session = ++generation;
-  clearListeners();
+  // Drop the previous GATT link (and its listeners) before reconnecting, so a
+  // retry from a still-connected-but-silent device never leaves two links open.
+  release();
   try {
-    await startConnection(target, session, "standard");
+    await startConnection(target, session, lastMode);
   } catch (error) {
     if (session === generation) {
       release();

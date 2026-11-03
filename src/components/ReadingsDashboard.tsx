@@ -174,7 +174,7 @@ export function ReadingsDashboard() {
           </h2>
           <div className="rd-head-row">
             <p className="rd-code">{month.code}</p>
-            <p className="rd-head-right">AAPDA SETU · HEALTH LOG</p>
+            <p className="rd-head-right">Lifeline · HEALTH LOG</p>
           </div>
         </header>
 

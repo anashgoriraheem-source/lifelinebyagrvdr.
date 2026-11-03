@@ -24,12 +24,12 @@ import { useI18n } from "@/i18n";
 export const Route = createFileRoute("/account")({
   head: () => ({
     meta: [
-      { title: "Private safety account · AAPDA SETU" },
+      { title: "Private safety account · Lifeline" },
       {
         name: "description",
-        content: "Sign in, manage your private medical profile and control your AAPDA SETU data.",
+        content: "Sign in, manage your private medical profile and control your Lifeline data.",
       },
-      { property: "og:title", content: "Private safety account · AAPDA SETU" },
+      { property: "og:title", content: "Private safety account · Lifeline" },
       {
         property: "og:description",
         content: "Manage private safety information and account permissions.",

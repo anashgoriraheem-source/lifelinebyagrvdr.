@@ -96,13 +96,13 @@ export function Assistant() {
       )}
       {open && alarmPhase !== 'countdown' && (
         <section
-          aria-label="AAPDA SETU assistant"
+          aria-label="Lifeline assistant"
           className={`assistant-panel fixed inset-x-2 bottom-2 z-50 flex flex-col ${alarmPhase !== 'idle' ? 'max-h-[46dvh] sm:h-[min(720px,calc(100dvh-1rem))]' : 'h-[min(720px,calc(100dvh-1rem))]'} overflow-hidden rounded-lg border bg-card shadow-sm sm:inset-x-auto sm:bottom-5 sm:right-5 sm:w-[420px] ${alarmPhase !== 'idle' ? 'border-destructive ring-4 ring-destructive/30' : 'border-border'}`}
         >
           <header className={`flex items-center gap-2 px-4 py-3 ${alarmPhase !== 'idle' ? 'bg-destructive text-destructive-foreground' : 'bg-secondary text-foreground'}`}>
             <HeartPulse className="size-5" />
             <div className="mr-auto leading-tight">
-              <p className="font-display font-bold">{alarmPhase !== 'idle' ? 'Emergency guidance' : 'AAPDA SETU assistant'}</p>
+              <p className="font-display font-bold">{alarmPhase !== 'idle' ? 'Emergency guidance' : 'Lifeline assistant'}</p>
               <p className="text-[11px] opacity-75">On-device guidance · not generative AI</p>
             </div>
             <Button variant="ghost"

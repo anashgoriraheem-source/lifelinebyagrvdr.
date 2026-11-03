@@ -31,7 +31,7 @@ export const HEALTH_SOURCES: HealthSource[] = [
     jurisdiction: "Global",
     published: "2020",
     reviewed: null,
-    rights: "Linked only; lay-rescuer steps in AAPDA SETU are paraphrased, not reproduced.",
+    rights: "Linked only; lay-rescuer steps in Lifeline are paraphrased, not reproduced.",
   },
   {
     id: "who-cvd",

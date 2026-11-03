@@ -130,6 +130,49 @@ describe("Bluetooth adapter with synthetic EventTarget devices — no physical h
     expect(appStore.state.vitals.hr?.value).toBe(66);
   });
 
+  it("subscribes to the spot-check oximetry characteristic used by finger oximeters", async () => {
+    const ch = new Characteristic();
+    const device = Object.assign(new EventTarget(), {
+      name: "Synthetic spot-check oximeter",
+      id: "synthetic-spot-check",
+      gatt: { connected: false, connect: vi.fn(), disconnect: vi.fn() },
+    });
+    const server = {
+      connected: true,
+      getPrimaryService: vi.fn(async (uuid: number) => {
+        if (uuid !== 0x1822) throw new Error("Service absent");
+        return {
+          getCharacteristic: async (char: number) => {
+            if (char !== 0x2a5e) throw new Error("Characteristic absent");
+            return ch;
+          },
+        };
+      }),
+    };
+    device.gatt.connect.mockImplementation(async () => server);
+    requestDevice.mockResolvedValue(device);
+
+    await pairWearable();
+    expect(appStore.state.device.vitals).toEqual(["spo2"]);
+    ch.emit([0, 98, 0, 64, 0]);
+    expect(appStore.state.vitals.spo2).toMatchObject({ value: 98, unit: "%" });
+  });
+
+  it("reads the current value once when notifications are also offered", async () => {
+    const { device, ch } = fakeDevice();
+    ch.properties = { notify: true, read: true };
+    ch.readValue = vi.fn(async () => {
+      ch.value = new DataView(new Uint8Array([0, 81]).buffer);
+      return ch;
+    });
+    requestDevice.mockResolvedValue(device);
+
+    await pairWearable();
+    expect(ch.startNotifications).toHaveBeenCalledTimes(1);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(appStore.state.vitals.hr?.value).toBe(81);
+  });
+
   it("records when a measurement arrived and how many were accepted", async () => {
     const { device, ch } = fakeDevice();
     requestDevice.mockResolvedValue(device);

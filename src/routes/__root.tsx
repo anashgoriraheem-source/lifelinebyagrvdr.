@@ -10,9 +10,9 @@ import { AccountSync } from "@/components/AccountSync";
 
 import { I18nProvider } from "@/i18n";
 
-const siteName = "AAPDA SETU — personal safety and first aid";
+const siteName = "Lifeline — personal safety and first aid";
 const siteDescription =
-  "AAPDA SETU displays readings from compatible Bluetooth health devices and helps you prepare emergency calls, location messages and first-aid guidance.";
+  "Lifeline displays readings from compatible Bluetooth health devices and helps you prepare emergency calls, location messages and first-aid guidance.";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({

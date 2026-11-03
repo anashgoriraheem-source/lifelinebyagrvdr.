@@ -21,7 +21,7 @@ export const contactsEn = {
   "contacts.ambulance": "Ambulance",
   "contacts.fire": "Fire",
   "contacts.emergencyNote":
-    "AAPDA SETU never auto-dials or auto-sends to emergency services. During an alert you get one-tap call buttons{extra}. You place every call and press Send yourself.",
+    "Lifeline never auto-dials or auto-sends to emergency services. During an alert you get one-tap call buttons{extra}. You place every call and press Send yourself.",
   "contacts.emergencyNoteSms":
     " and an SMS draft to {number} pre-filled with your location and medical details",
   "contacts.emergencySmsUnverified":
@@ -55,11 +55,11 @@ export const contactsEn = {
     "Opens a labelled test in your messaging app. You must press Send; delivery is not confirmed here.",
   "contacts.testAction": "Prepare test message",
   "contacts.testReason": "Test alert",
-  "contacts.testReading": "checking AAPDA SETU works",
+  "contacts.testReading": "checking Lifeline works",
 
   "contacts.autoHeading": "Automatic emergency contact",
   "contacts.autoIntro":
-    "After you deliberately raise an SOS, AAPDA SETU contacts the confirmed people below on the channels they enabled. It never calls emergency services for you.",
+    "After you deliberately raise an SOS, Lifeline contacts the confirmed people below on the channels they enabled. It never calls emergency services for you.",
   "contacts.consent": "I consent to automatic contact after I raise SOS",
   "contacts.consentBody":
     "SMS and email go to everyone who enabled them. Automated calls follow the order above. You can withdraw consent here at any time.",
@@ -120,7 +120,7 @@ export const contactsEn = {
   "contacts.formEmailError": "Enter a valid email address.",
   "contacts.formConfirm": "I have checked these details are correct",
   "contacts.formConfirmBody":
-    "Self-confirmation only. Provider verification (OTP) is not configured, so AAPDA SETU cannot prove this address belongs to the contact.",
+    "Self-confirmation only. Provider verification (OTP) is not configured, so Lifeline cannot prove this address belongs to the contact.",
   "contacts.formTest": "Test destination",
   "contacts.formTestBody":
     "Recommended. A test destination never receives a live provider message, even when live dispatch is on.",

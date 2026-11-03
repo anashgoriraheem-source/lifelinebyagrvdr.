@@ -75,6 +75,24 @@ export function parsePulseOxMeasurement(data: Uint8Array): PulseOxMeasurement {
   if(value<=0||value>100||pulseRate<0)throw new Error('Invalid oxygen measurement')
   return {value,pulseRate,unit:'%'}
 }
+/**
+ * PLX Spot-check Measurement characteristic 0x2a5e — the one-shot form many
+ * finger oximeters use instead of the continuous characteristic. Same SFLOAT
+ * pair, different optional-field layout.
+ */
+export function parsePulseOxSpotCheck(data: Uint8Array): PulseOxMeasurement {
+  requireBytes(data, 5)
+  let required = 5
+  if (data[0] & 1) required += 7
+  if (data[0] & 2) required += 2
+  if (data[0] & 4) required += 3
+  if (data[0] & 8) required += 2
+  requireBytes(data, required)
+  const value = decodeIEEE11073SFloat(data.subarray(1, 3))
+  const pulseRate = decodeIEEE11073SFloat(data.subarray(3, 5))
+  if (value <= 0 || value > 100 || pulseRate < 0) throw new Error('Invalid oxygen measurement')
+  return { value, pulseRate, unit: '%' }
+}
 export function parseGlucoseMeasurement(data: Uint8Array): GlucoseMeasurement {
   requireBytes(data,10)
   const flags=data[0]

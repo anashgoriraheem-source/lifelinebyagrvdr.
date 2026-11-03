@@ -197,6 +197,17 @@ export function DevicePairing() {
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            {waitingTooLong || phase === "stale" ? (
+              <>
+                <Button onClick={again} disabled={busyState} className="min-h-12 rounded-full px-5">
+                  <Bluetooth aria-hidden="true" />
+                  {t("device.connect.reconnect")}
+                </Button>
+                <Button variant="outline" onClick={() => start("standard")} disabled={busyState}>
+                  {t("device.connect.action")}
+                </Button>
+              </>
+            ) : null}
             <Button variant="outline" onClick={disconnectWearable} className="min-h-11">
               {t("device.connect.disconnect")}
             </Button>

@@ -59,7 +59,7 @@ export function SetupChecklist() {
     <section className="mt-8" aria-label="Emergency setup checklist">
       <div className="flex items-baseline justify-between">
         <h2 className="font-display text-lg font-semibold">Emergency setup</h2>
-        <span className="text-xs text-muted-foreground">AAPDA SETU never contacts anyone automatically</span>
+        <span className="text-xs text-muted-foreground">Lifeline never contacts anyone automatically</span>
       </div>
       <ul className="mt-3 divide-y divide-border border-y border-border">
         {items.map((x) => (

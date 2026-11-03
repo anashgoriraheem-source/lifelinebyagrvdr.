@@ -16,7 +16,7 @@ export const releaseEn = {
   "release.urgent":
     "If someone may be in immediate danger, contact local emergency services now and ask a nearby capable person to help. Do not wait for this software or a sensor reading.",
   "release.noDelivery":
-    "AAPDA SETU is software, not a clinician or an emergency service. Nothing is sent automatically. A call or message draft still needs your action in your phone app. Delivery and help are not confirmed here.",
+    "Lifeline is software, not a clinician or an emergency service. Nothing is sent automatically. A call or message draft still needs your action in your phone app. Delivery and help are not confirmed here.",
   "release.steps": "Start here",
   "release.step1": "Check your country and save the people you would contact in an emergency.",
   "release.step2":
@@ -59,9 +59,9 @@ export const releaseEn = {
   "release.dismiss": "Close emergency options",
   "release.country": "Country for emergency numbers — check before calling",
   "release.call": "Open phone to call {number}",
-  "release.notSent": "No call or message has been sent by AAPDA SETU. Help is not confirmed.",
+  "release.notSent": "No call or message has been sent by Lifeline. Help is not confirmed.",
   "release.linkSelected":
-    "Phone or messaging link selected. Check your phone app and confirm the action there. AAPDA SETU cannot confirm whether it opened or was sent.",
+    "Phone or messaging link selected. Check your phone app and confirm the action there. Lifeline cannot confirm whether it opened or was sent.",
   "release.nearby":
     "Ask a nearby capable person to stay with you and help. Follow the emergency operator’s instructions.",
   "release.message": "Message draft preview",
@@ -76,7 +76,7 @@ export const releaseEn = {
   "release.privacyNote":
     "Check the preview before opening a draft. Your phone’s app may share this information with its provider and the person you choose. You must press Send yourself.",
   "release.draftBody":
-    "I need help. Please call me or come to me if you can do so safely. This is a draft prepared with AAPDA SETU; no emergency service has been contacted by the app.",
+    "I need help. Please call me or come to me if you can do so safely. This is a draft prepared with Lifeline; no emergency service has been contacted by the app.",
   "release.guidanceLanguage":
     "First-aid instructions below are English-only drafts. Hindi clinical translation has not been approved. Ask the emergency operator for guidance in your language.",
   "release.cloudBlocked":

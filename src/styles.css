@@ -154,9 +154,9 @@ select:focus-visible {
   color: var(--primary);
   border-bottom-color: var(--primary);
 }
-/* AAPDA SETU assistant composer — compact obsidian glass that expands on focus.
+/* Lifeline assistant composer — compact obsidian glass that expands on focus.
    Colours come only from the app's semantic tokens (obsidian surfaces, warm
-   text, restrained gold accent) so the control reads as part of AAPDA SETU. */
+   text, restrained gold accent) so the control reads as part of Lifeline. */
 .lc-box {
   width: 100%;
   max-width: 390px;
@@ -473,7 +473,7 @@ select:focus-visible {
   transform: none;
 }
 /* Rising tile hero — the status readout and button use semantic tokens so the
-   section reads as part of AAPDA SETU. The glow marks the lifted tile only. */
+   section reads as part of Lifeline. The glow marks the lifted tile only. */
 .rising-status {
   color: var(--muted-foreground);
 }

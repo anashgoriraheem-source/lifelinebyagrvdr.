@@ -34,7 +34,7 @@ export function buildSosMessage(
         : "I need help. Please call me.",
     hi
       ? "आपदा सेतु में तैयार मसौदा। ऐप ने आपातकालीन सेवा से संपर्क नहीं किया है।"
-      : "Draft prepared with AAPDA SETU. The app has not contacted emergency services.",
+      : "Draft prepared with Lifeline. The app has not contacted emergency services.",
   ];
   if (opts.includeMedical) {
     lines.push(`${p.name || "—"} · ${p.age ?? "—"} · ${p.bloodType || "—"}`);

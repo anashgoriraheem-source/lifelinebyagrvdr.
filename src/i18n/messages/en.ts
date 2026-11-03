@@ -42,17 +42,17 @@ export const en = {
 
   "safety.callEmergency": "Call emergency services",
   "safety.notMedicalDevice":
-    "AAPDA SETU is an emergency-support tool, not a medical device or a replacement for professional care.",
+    "Lifeline is an emergency-support tool, not a medical device or a replacement for professional care.",
   "safety.demoData": "Demo data — not your health readings",
-  "safety.noAutoDispatch": "AAPDA SETU never calls emergency services for you.",
+  "safety.noAutoDispatch": "Lifeline never calls emergency services for you.",
   "safety.alertActive": "Alert active",
 
-  "chat.title": "AAPDA SETU assistant",
+  "chat.title": "Lifeline assistant",
   "chat.subtitle":
-    "Health information and first aid, grounded in AAPDA SETU’s sources and your own records.",
+    "Health information and first aid, grounded in Lifeline’s sources and your own records.",
   "chat.placeholder": "Ask about first aid, your readings or your setup",
   "chat.send": "Send message",
-  "chat.thinking": "Looking through your AAPDA SETU records and sources…",
+  "chat.thinking": "Looking through your Lifeline records and sources…",
   "chat.empty": "Ask a question, or choose a starting point below.",
   "chat.unavailable":
     "The language model is not configured on this deployment. Showing vetted first-aid guidance and your own records instead.",
@@ -68,8 +68,8 @@ export const en = {
   "chat.languageOverride": "Answer language",
   "chat.attach": "Attach an image",
   "chat.edit": "Edit my last question",
-  "chat.library": "Search AAPDA SETU’s health library",
-  "chat.libraryOn": "Searching AAPDA SETU’s health library",
+  "chat.library": "Search Lifeline’s health library",
+  "chat.libraryOn": "Searching Lifeline’s health library",
   "chat.attached": "Image attached",
   "chat.removeImage": "Remove image",
   "chat.imageTooLarge": "Choose a PNG, JPEG or WebP image under 2 MB.",
@@ -118,7 +118,7 @@ export const en = {
 
   "med.title": "Non-prescription medicine information",
   "med.subtitle":
-    "Generic information only. AAPDA SETU never states a dose, never suggests a prescription medicine, and is not a diagnosis.",
+    "Generic information only. Lifeline never states a dose, never suggests a prescription medicine, and is not a diagnosis.",
   "med.disabledHeading": "Medicine suggestions are not enabled",
   "med.emergencyHeading": "Emergency help comes first",
   "med.refusedHeading": "Not offered for this situation",
@@ -137,7 +137,7 @@ export const en = {
   "med.commaHint": "Separate entries with commas",
   "med.check": "Check safety factors",
   "med.labelOnly":
-    "Dosing: follow your product label or a pharmacist. AAPDA SETU does not calculate a dose.",
+    "Dosing: follow your product label or a pharmacist. Lifeline does not calculate a dose.",
   "med.genericOnly": "generic name only, no brands",
   "med.factorsChecked": "Safety factors checked",
   "med.referenceSummary": "Reference catalogue · version {version}",
@@ -191,8 +191,8 @@ export const en = {
 
   "a11y.languageChanged": "Interface language changed to {language}.",
 
-  "hero.specsLabel": "What AAPDA SETU shows",
-  "hero.eyebrow": "AAPDA SETU",
+  "hero.specsLabel": "What Lifeline shows",
+  "hero.eyebrow": "Lifeline",
   "hero.tagline": "Personal safety companion",
   "hero.statusIdle": "Standing by · nothing is sent automatically",
   "hero.statusActive": "Tile {id} · standing by",
@@ -208,7 +208,7 @@ export const en = {
 
   "device.connect.title": "Connect a health device",
   "device.connect.intro":
-    "AAPDA SETU can show readings from some Bluetooth health devices. Nothing on this page is sent to anyone, and you can use every other feature without a device.",
+    "Lifeline can show readings from some Bluetooth health devices. Nothing on this page is sent to anyone, and you can use every other feature without a device.",
   "device.connect.stepsHeading": "Before you start",
   "device.connect.step1":
     "Try a browser with device pairing, such as Chrome on Android or a computer. Pairing is not available in Safari on iPhone or iPad. Availability depends on this browser and your device.",
@@ -223,7 +223,7 @@ export const en = {
   "device.connect.unsupported":
     "This browser cannot connect to health devices. Everything else on this page still works — you can add contacts and open first-aid guidance.",
   "device.connect.insecure":
-    "Bluetooth needs a secure page. Open AAPDA SETU again with https:// at the start of the address.",
+    "Bluetooth needs a secure page. Open Lifeline again with https:// at the start of the address.",
   "device.connect.action": "Open the device list",
   "device.connect.actionHint":
     "Your browser will open its own list of nearby devices. Choose your device there and allow Bluetooth if you are asked.",
@@ -242,13 +242,13 @@ export const en = {
   "device.connect.rangeError":
     "The device could not be reached. Move it closer, make sure it is switched on, and try again.",
   "device.connect.incompatible":
-    "AAPDA SETU could not receive a supported reading from this device. Its sharing method may be different. You can try again or continue without it.",
+    "Lifeline could not receive a supported reading from this device. Its sharing method may be different. You can try again or continue without it.",
   "device.connect.failed":
     "The connection did not work. Check that the device is switched on and nearby, then try again.",
   "device.connect.disconnect": "Disconnect device",
   "device.connect.without": "Continue without a device",
   "device.connect.skipped":
-    "You can keep using AAPDA SETU without a device. Your emergency contacts and the first-aid guidance stay available.",
+    "You can keep using Lifeline without a device. Your emergency contacts and the first-aid guidance stay available.",
   "device.connect.showSteps": "Show the steps again",
   "device.connect.firstAid": "Open first-aid guidance",
   "device.connect.limitsTitle": "What a connection can and cannot do",
@@ -257,10 +257,10 @@ export const en = {
   "device.connect.limitManual":
     "Some blood pressure cuffs and glucose meters send a reading only after you take a measurement.",
   "device.connect.limitBackground":
-    "AAPDA SETU cannot reconnect by itself, measure in the background, or reach anyone after this page is closed.",
+    "Lifeline cannot reconnect by itself, measure in the background, or reach anyone after this page is closed.",
   "device.connect.technicalTitle": "Technical details",
   "device.connect.technicalBody":
-    "The filtered list asks the browser for these standard Bluetooth services: Heart Rate (0x180D), Pulse Oximeter (0x1822), Blood Pressure (0x1810) and Glucose (0x1808). The full list can show any nearby device, but only those four services are read. Notifications are used where a device offers them; a read-only value is re-read every 5 seconds. No device list leaves your device.",
+    "The filtered list asks the browser for these standard Bluetooth services: Heart Rate (0x180D), Pulse Oximeter (0x1822), Blood Pressure (0x1810) and Glucose (0x1808). The full list can show any nearby device, but only those four services are read. Within the pulse-oximeter service both the continuous (0x2A5F) and spot-check (0x2A5E) measurements are understood. Notifications are used where a device offers them, and a device that also allows reads has its current value read once at connection; a read-only value is re-read every 5 seconds. No device list leaves your device.",
   "device.connect.findAny": "Show all nearby devices",
   "device.connect.findAnyHint":
     "Use the full device list when your watch or band does not appear above. A watch that keeps its data in the manufacturer’s app will connect here but send no readings.",

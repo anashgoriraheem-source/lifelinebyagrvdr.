@@ -33,12 +33,12 @@ export const Route = createFileRoute("/contacts")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Contacts and alerts · AAPDA SETU" },
+      { title: "Contacts and alerts · Lifeline" },
       {
         name: "description",
         content: "Manage your personal emergency contacts and alert preferences.",
       },
-      { property: "og:title", content: "Contacts and alerts · AAPDA SETU" },
+      { property: "og:title", content: "Contacts and alerts · Lifeline" },
       {
         property: "og:description",
         content: "Manage your personal emergency contacts and alert preferences.",

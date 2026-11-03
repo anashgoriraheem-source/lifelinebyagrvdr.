@@ -1,6 +1,6 @@
 {
-  "name": "AAPDA SETU — emergency support",
-  "short_name": "AAPDA SETU",
+  "name": "Lifeline — emergency support",
+  "short_name": "Lifeline",
   "description": "Readings from compatible Bluetooth health devices, emergency contacts and first-aid guidance. Nothing is sent automatically.",
   "start_url": "/monitor",
   "display": "standalone",

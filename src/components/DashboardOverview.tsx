@@ -297,7 +297,7 @@ export function DashboardOverview() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="dash-notif-text">All four setup steps are done. AAPDA SETU still never contacts anyone automatically.</p>
+                  <p className="dash-notif-text">All four setup steps are done. Lifeline still never contacts anyone automatically.</p>
                 )}
               </div>
             )}

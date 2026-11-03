@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { SosButton } from "@/components/SosButton";
 import { VitalCard } from "@/components/VitalCard";
 import { DevicePairing } from "@/components/DevicePairing";
+import { ReadingMonthsChart } from "@/components/ReadingMonthsChart";
 import { LocationCard } from "@/components/LocationCard";
 import { useApp } from "@/hooks/useApp";
 import { useNow } from "@/hooks/useNow";
@@ -60,6 +61,9 @@ function Monitor() {
           <VitalCard key={k} k={k} />
         ))}
       </section>
+      <div className="mt-8">
+        <ReadingMonthsChart />
+      </div>
       <div className="mt-5 flex flex-wrap gap-3">
         <Button variant="outline" onClick={toggleDemo}>
           {t(demo ? "release.demoStop" : "release.demoStart")}

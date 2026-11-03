@@ -11,7 +11,7 @@ function Home() {
   const { t } = useI18n();
   return (
     <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-32 pt-8 sm:px-6">
-      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">AAPDA SETU</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Lifeline</p>
       <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">{t("release.title")}</h1>
       <p className="mt-4 max-w-3xl text-lg">{t("release.intro")}</p>
       <LanguageOnboarding />
