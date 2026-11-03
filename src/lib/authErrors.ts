@@ -64,7 +64,7 @@ export function classifyAuthFailure(error: unknown): AuthFailure {
   if (/for security purposes|rate limit|too many requests|over_.*rate_limit/i.test(text)) {
     return { kind: "rate-limited", providerMessage, action: "retry" };
   }
-  if (/should be different from the old password/i.test(text)) {
+  if (/should be different from the old/i.test(text)) {
     return { kind: "same-password", providerMessage, action: null };
   }
   if (/password should be at least|weak password|password is too short/i.test(text)) {

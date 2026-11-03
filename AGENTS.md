@@ -389,8 +389,8 @@ and the publishable/service keys; all of them are supplied by compose.
 - The panel uses its own wider padding (`--fg-panel-pad`) than the hero
   (`--fg-pad`, which lines the hero and shelf up with the page container); the
   three-column catalogue squeezed the handbook when both shared one width.
-- Verified: `tsc --noEmit`, `npm run build`, `npm test` (200 pass, one
-  pre-existing `authErrors.test.ts` failure unrelated to this work) and a
+- Verified: `tsc --noEmit`, `npm run build`, `npm test` (213 pass; the
+  `authErrors.test.ts` failure seen at the time was fixed later in this branch) and a
   Playwright pass over `/guide` at 1440/1265/390 px — no horizontal overflow,
   panel and handbook sized from their tiles, department hover and keyboard focus
   opening the panel, Escape closing it, the spine hover card inside the content
@@ -462,7 +462,8 @@ and the publishable/service keys; all of them are supplied by compose.
   real sign-in form (row `review-needed`, `best_safe` 2), anon read returned 0
   rows, Reset progress removed the row, and the throwaway account was deleted.
   `npm run typecheck`, `npm run build` and `practice.test.ts` (12 tests) pass; the
-  full suite is 209 passing with the pre-existing `authErrors.test.ts` failure.
+  full suite is 213 passing (the earlier `authErrors.test.ts` fixture mismatch is
+  fixed in `classifyAuthFailure`).
   NOT verified: every one of the 100 scenarios was not played end to end in the
   browser (the data and its required fields are unit-tested), the
   withholding path has no withheld id to exercise, the level-complete panel
