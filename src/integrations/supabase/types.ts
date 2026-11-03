@@ -315,6 +315,50 @@ export type Database = {
         }
         Relationships: []
       }
+      practice_progress: {
+        Row: {
+          attempts: number
+          best_safe: number
+          created_at: string
+          last_practised_at: string
+          scenario_id: string
+          status: string
+          total_decisions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          best_safe?: number
+          created_at?: string
+          last_practised_at?: string
+          scenario_id: string
+          status: string
+          total_decisions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          attempts?: number
+          best_safe?: number
+          created_at?: string
+          last_practised_at?: string
+          scenario_id?: string
+          status?: string
+          total_decisions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age: number | null

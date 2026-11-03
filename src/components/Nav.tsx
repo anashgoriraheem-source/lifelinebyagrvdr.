@@ -3,6 +3,7 @@ import {
   Activity,
   BellRing,
   BookOpen,
+  GraduationCap,
   HeartPulse,
   House,
   Languages,
@@ -68,6 +69,10 @@ export function Nav() {
           <Link to="/guide" className="app-nav-link">
             <BookOpen className="size-4" aria-hidden="true" />
             Field guide
+          </Link>
+          <Link to="/practice" className="app-nav-link app-nav-link--practice">
+            <GraduationCap className="size-4" aria-hidden="true" />
+            Practice
           </Link>
           <Link to="/contacts" className="app-nav-link">
             <Users className="size-4" aria-hidden="true" />

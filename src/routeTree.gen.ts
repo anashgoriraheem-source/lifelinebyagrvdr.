@@ -16,6 +16,7 @@ import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as MonitorRouteImport } from './routes/monitor'
+import { Route as PracticeRouteImport } from './routes/practice'
 import { Route as SaathRouteImport } from './routes/saath'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as TranslateRouteImport } from './routes/translate'
@@ -58,6 +59,11 @@ const GuideRoute = GuideRouteImport.update({
 const MonitorRoute = MonitorRouteImport.update({
   id: '/monitor',
   path: '/monitor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PracticeRoute = PracticeRouteImport.update({
+  id: '/practice',
+  path: '/practice',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SaathRoute = SaathRouteImport.update({
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/contacts': typeof ContactsRoute
   '/guide': typeof GuideRoute
   '/monitor': typeof MonitorRoute
+  '/practice': typeof PracticeRoute
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
   '/translate': typeof TranslateRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/contacts': typeof ContactsRoute
   '/guide': typeof GuideRoute
   '/monitor': typeof MonitorRoute
+  '/practice': typeof PracticeRoute
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
   '/translate': typeof TranslateRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/contacts': typeof ContactsRoute
   '/guide': typeof GuideRoute
   '/monitor': typeof MonitorRoute
+  '/practice': typeof PracticeRoute
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
   '/translate': typeof TranslateRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/guide'
     | '/monitor'
+    | '/practice'
     | '/saath'
     | '/schedule'
     | '/translate'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/guide'
     | '/monitor'
+    | '/practice'
     | '/saath'
     | '/schedule'
     | '/translate'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/guide'
     | '/monitor'
+    | '/practice'
     | '/saath'
     | '/schedule'
     | '/translate'
@@ -215,6 +227,7 @@ export interface RootRouteChildren {
   ContactsRoute: typeof ContactsRoute
   GuideRoute: typeof GuideRoute
   MonitorRoute: typeof MonitorRoute
+  PracticeRoute: typeof PracticeRoute
   SaathRoute: typeof SaathRoute
   ScheduleRoute: typeof ScheduleRoute
   TranslateRoute: typeof TranslateRoute
@@ -274,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: '/monitor'
       fullPath: '/monitor'
       preLoaderRoute: typeof MonitorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/practice': {
+      id: '/practice'
+      path: '/practice'
+      fullPath: '/practice'
+      preLoaderRoute: typeof PracticeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/saath': {
@@ -343,6 +363,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactsRoute: ContactsRoute,
   GuideRoute: GuideRoute,
   MonitorRoute: MonitorRoute,
+  PracticeRoute: PracticeRoute,
   SaathRoute: SaathRoute,
   ScheduleRoute: ScheduleRoute,
   TranslateRoute: TranslateRoute,

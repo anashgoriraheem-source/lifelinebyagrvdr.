@@ -397,3 +397,74 @@ and the publishable/service keys; all of them are supplied by compose.
   edge, a spine click opening the right guide, the phone drawer in the portal
   with page scroll locked, and axe reporting no new violations. Not visually
   inspected in the preview in that session.
+
+## Practice mode (`/practice`)
+
+- `src/data/practice/` is the curriculum. `model.ts` defines the scenario shape
+  and `buildLevel()`; `sources.ts` is the curriculum source register; `level1.ts`
+  … `level10.ts` each hold ten scenarios; `index.ts` assembles exactly 10 levels
+  × 10 scenarios (100 unique ids and titles). `practice.test.ts` enforces the
+  counts, the 3–6 decision points, exactly one safe option per decision, the
+  safe order, unsafe actions, emergency guidance, dispatcher report, sources and
+  review status. Editing a level without keeping ten scenarios fails the suite.
+- **Review status is deliberate.** Every scenario is `awaiting-clinical-review`
+  with a null review date and `PRACTICE_GUIDANCE_VERSION` (2026.11.1). Do not
+  change that, or remove the “Awaiting clinical review” labels, without a named
+  clinician or recognised first-aid educator signing the content off. The
+  curriculum is written in Lifeline's own words from the American Red Cross
+  guidelines, WHO community first-aid resources, IFRC 2020 guidelines and, for
+  India, the official ERSS 112 information. No source text is reproduced.
+- `WITHHELD_SCENARIO_IDS` in `src/data/practice/index.ts` removes a scenario from
+  the player and shows it as “Withheld” in the progress table. Withholding is
+  separate from review status; an unreviewed scenario is still shown, labelled.
+- `src/routes/practice.tsx` owns the level overview, the selected level, the
+  progress table and the completion/reset summary. It renders
+  `src/components/practice/ScenarioPlayer.tsx` for `?scenario=<id>` and
+  `PracticeProgressTable.tsx` for the table. Both `level` and `scenario` search
+  params are validated against the data.
+- The player is a decision exercise, not a quiz: no timer and no speed score.
+  Each answered decision reveals the consequence; `safeChoiceCount` marks the
+  scenario `completed` only when every decision chose the safe option, otherwise
+  `review-needed`. Progress is best-of: a later clean run completes a scenario
+  and a later poor run never downgrades it. Pause keeps the session
+  (`lifeline:practice:session:v1`), so the summary shows “You paused …” and the
+  player resumes on the same decision with its explanation.
+- **Safety boundary.** Practice code must not import `@/lib/sos`,
+  `@/lib/alerts*`, `@/lib/dispatch*`, `@/lib/store` or `@/core/ble`, and must not
+  call `raiseAlarm`, `dispatchEmergency`, `navigator.share` or geolocation.
+  `practice.test.ts` scans the route and both components for those. The only
+  emergency action is a user-initiated `tel:` link in the debrief, under “This is
+  not the simulation”. Never add an SOS, automatic call/text, location share or
+  Bluetooth action to practice.
+- Progress: signed in, `public.practice_progress` is one owner-only row per
+  scenario (RLS `user_id = auth.uid()`, `anon` has no grant) through
+  `src/lib/practice.functions.ts`; `clear_my_safety_data()` deletes it. Signed
+  out, the same record shape is kept in `lifeline:practice:v1` in this browser
+  only. Do not add answers, patient details or free text to either store.
+- The progress table is the adapted “data-table-1” design
+  (`src/styles/practice-progress-table.css`, `.dt1-*`): keep the five filter
+  pills with their travelling flood, the Export beam, the travelling row band,
+  the entrance stagger, the 8-per-page pager and the phone card mode. Rows keep
+  `data-order`/`data-customer`/`data-email`/`data-total`/`data-status`, and the
+  pill counts are computed from the records. “Export CSV” and “Export selected”
+  build a real CSV and download it (server rows when signed in, browser rows when
+  signed out); they are not a toast-only stub.
+- Emergency numbers come from the country selected in Contacts
+  (`EMERGENCY_BY_COUNTRY`), so the copy stays configurable per jurisdiction.
+- Verified with a scripted Chromium run against the dev server (not the preview
+  pane): 10 levels, 10 scenarios per level, 100 rows, 8 per page, live pill
+  counts; a full playthrough with feedback, debrief score, safe priority order,
+  three source links, awaiting-review and review-date labels, `tel:112`, repeat,
+  and no alarm dialog or `/api/alerts` call; guest progress persisted across a
+  reload; table filter, empty state, pagination and both CSV downloads (101-line
+  and 2-line files); 390 px player, debrief and table with no horizontal
+  overflow; pause → reload → resume on the same decision; signed-in save via the
+  real sign-in form (row `review-needed`, `best_safe` 2), anon read returned 0
+  rows, Reset progress removed the row, and the throwaway account was deleted.
+  `npm run typecheck`, `npm run build` and `practice.test.ts` (12 tests) pass; the
+  full suite is 209 passing with the pre-existing `authErrors.test.ts` failure.
+  NOT verified: every one of the 100 scenarios was not played end to end in the
+  browser (the data and its required fields are unit-tested), the
+  withholding path has no withheld id to exercise, the level-complete panel
+  appears only after all ten scenarios in a level, and no screen-reader or
+  physical-device pass was done. Nothing here has clinical review.
