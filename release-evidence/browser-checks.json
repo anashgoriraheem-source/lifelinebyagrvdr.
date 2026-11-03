@@ -1,0 +1,472 @@
+{
+  "browser": "156.0.8078.4",
+  "platform": "linux",
+  "hardware": "None; synthetic browser fixtures only",
+  "matrix": [
+    {
+      "route": "/",
+      "width": 320,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/monitor",
+      "width": 320,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/contacts",
+      "width": 320,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/account",
+      "width": 320,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/assistant",
+      "width": 320,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/translate",
+      "width": 320,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/saath",
+      "width": 320,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/",
+      "width": 320,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/monitor",
+      "width": 320,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/contacts",
+      "width": 320,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/account",
+      "width": 320,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/assistant",
+      "width": 320,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/translate",
+      "width": 320,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/saath",
+      "width": 320,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/",
+      "width": 390,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/monitor",
+      "width": 390,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/contacts",
+      "width": 390,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/account",
+      "width": 390,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/assistant",
+      "width": 390,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/translate",
+      "width": 390,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/saath",
+      "width": 390,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/",
+      "width": 390,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/monitor",
+      "width": 390,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/contacts",
+      "width": 390,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/account",
+      "width": 390,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/assistant",
+      "width": 390,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/translate",
+      "width": 390,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/saath",
+      "width": 390,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/",
+      "width": 768,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/monitor",
+      "width": 768,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/contacts",
+      "width": 768,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/account",
+      "width": 768,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/assistant",
+      "width": 768,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/translate",
+      "width": 768,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/saath",
+      "width": 768,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/",
+      "width": 768,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/monitor",
+      "width": 768,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/contacts",
+      "width": 768,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/account",
+      "width": 768,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/assistant",
+      "width": 768,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/translate",
+      "width": 768,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/saath",
+      "width": 768,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/",
+      "width": 1280,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/monitor",
+      "width": 1280,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/contacts",
+      "width": 1280,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/account",
+      "width": 1280,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/assistant",
+      "width": 1280,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/translate",
+      "width": 1280,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/saath",
+      "width": 1280,
+      "locale": "en",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/",
+      "width": 1280,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/monitor",
+      "width": 1280,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/contacts",
+      "width": 1280,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/account",
+      "width": 1280,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/assistant",
+      "width": 1280,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/translate",
+      "width": 1280,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "route": "/saath",
+      "width": 1280,
+      "locale": "hi",
+      "overflow": false,
+      "violations": []
+    }
+  ],
+  "journeys": [
+    {
+      "name": "Guided pairing does not open chooser before user action",
+      "result": "passed"
+    },
+    {
+      "name": "Valid synthetic reading is visibly unverified, not medically normal",
+      "result": "passed"
+    },
+    {
+      "name": "Malformed reading is rejected and announced",
+      "result": "passed"
+    },
+    {
+      "name": "Connection loss clears readings and has a manual retry",
+      "result": "passed"
+    },
+    {
+      "name": "Synthetic pairing recovery: cancel",
+      "result": "passed"
+    },
+    {
+      "name": "Synthetic pairing recovery: denied",
+      "result": "passed"
+    },
+    {
+      "name": "Synthetic pairing recovery: range",
+      "result": "passed"
+    },
+    {
+      "name": "Synthetic pairing recovery: incompatible",
+      "result": "passed"
+    },
+    {
+      "name": "Unsupported browser retains no-device and first-aid paths",
+      "result": "passed"
+    },
+    {
+      "name": "Keyboard opens emergency dialog; focus is contained; drafts exclude private data by default",
+      "result": "passed"
+    },
+    {
+      "name": "Missing translation provider stays unavailable; public-phrase consent required",
+      "result": "passed"
+    },
+    {
+      "name": "Local first aid works with provider requests blocked; urgent text does not wait for chat",
+      "result": "passed"
+    },
+    {
+      "name": "Language selection persists and changes document language",
+      "result": "passed"
+    },
+    {
+      "name": "Skip link receives keyboard focus and reaches main",
+      "result": "passed"
+    },
+    {
+      "name": "200% text resizing reflows monitor at 390px",
+      "result": "passed"
+    },
+    {
+      "name": "Offline page saves public content only and reopens without network",
+      "result": "passed"
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "limitations": [
+    "No NVDA, JAWS, VoiceOver or TalkBack testing",
+    "No physical Bluetooth hardware",
+    "No live provider or backend testing"
+  ]
+}

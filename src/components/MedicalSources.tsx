@@ -43,7 +43,7 @@ export function MedicalSources({ className }: { className?: string }) {
       </h2>
       <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
         {t("sources.version", { version: data.version })} ·{" "}
-        {t("sources.lastChecked", { date: data.lastChecked })} ·{" "}
+        {t("sources.lastChecked", { date: data.lastChecked ?? t("common.notAvailable") })} ·{" "}
         {String(data.reviewStatus) === "clinically-reviewed"
           ? t("med.reviewed")
           : t("med.notReviewed")}

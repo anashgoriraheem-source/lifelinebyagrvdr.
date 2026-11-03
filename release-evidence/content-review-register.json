@@ -1,0 +1,301 @@
+{
+  "version": "2026.11-rc1",
+  "clinicalApproval": false,
+  "languageApproval": false,
+  "sourceMappingStatus": "Unverified: listed links are background references, not proof of endorsement or clause-level support",
+  "declaredReferences": [
+    "https://www.globalfirstaidcentre.org/international-first-aid-resuscitation-and-education-guidelines/",
+    "https://www.indianredcross.org/",
+    "https://www.nhs.uk/conditions/"
+  ],
+  "guides": [
+    {
+      "id": "cpr",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "choking",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "chest-pain",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "stroke",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "low-sugar",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "high-sugar",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "high-bp",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "heart-racing",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "breathing",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "bleeding",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "burns",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "fall",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "fainting",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "seizure",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "allergy",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "heat",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "poisoning",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    },
+    {
+      "id": "shock",
+      "scope": "adult lay-rescuer draft, not paediatric instructions",
+      "jurisdiction": "local adaptation pending; existing Global/UK references are not India-specific approval",
+      "sourceVersion": "not verified",
+      "implementationVersion": "2026.11-rc1",
+      "language": "en-IN",
+      "reviewer": null,
+      "reviewDate": null,
+      "reviewStatus": "blocked-pending-clinical-source-and-jurisdiction-review",
+      "hindiSafetyTranslation": {
+        "status": "not-approved",
+        "reviewer": null,
+        "reviewDate": null
+      }
+    }
+  ]
+}

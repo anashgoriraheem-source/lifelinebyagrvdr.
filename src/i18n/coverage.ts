@@ -16,6 +16,13 @@ import { LOCALES, type LocaleCode, type PackStatus } from "./locales";
  * is what turns "looks translated" into a verifiable claim.
  */
 export const REQUIRED_SURFACES = {
+  release: Object.keys(en).filter(
+    (k) =>
+      k.startsWith("release.") ||
+      k.startsWith("reading.") ||
+      k.startsWith("privacy.") ||
+      k.startsWith("translation."),
+  ) as MessageKey[],
   navigation: [
     "nav.home",
     "nav.monitor",
@@ -174,8 +181,7 @@ const REFERENCE_KEYS = Object.keys(en) as MessageKey[];
 export function auditLocale(code: LocaleCode): LocaleAudit {
   const definition = LOCALES.find((l) => l.code === code) ?? LOCALES[0];
   const pack = packs[code] ?? {};
-  const missingKeys =
-    code === "en" ? [] : REFERENCE_KEYS.filter((key) => !(key in pack));
+  const missingKeys = code === "en" ? [] : REFERENCE_KEYS.filter((key) => !(key in pack));
   const missingBySurface = (Object.keys(REQUIRED_SURFACES) as Surface[])
     .map((surface) => ({
       surface,

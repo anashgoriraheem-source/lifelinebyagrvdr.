@@ -8,7 +8,8 @@
  * `reviewed` is deliberately null where this build has not re-checked the
  * source. The assistant UI must show that state rather than inventing a date.
  */
-export interface HealthSource {  id: string;
+export interface HealthSource {
+  id: string;
   title: string;
   publisher: string;
   url: string;
@@ -114,7 +115,7 @@ export const sourceById = (id: string) => HEALTH_SOURCES.find((s) => s.id === id
  */
 export const KNOWLEDGE_BASE = {
   version: "2026.11",
-  lastChecked: "2026-11-02",
+  lastChecked: null,
   reviewStatus: "not-clinically-reviewed" as const,
   note: "Health-library entries are paraphrased from the listed public-health sources and versioned with the app. They have not been clinically reviewed in this build.",
 };

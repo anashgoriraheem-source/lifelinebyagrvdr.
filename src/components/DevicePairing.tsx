@@ -21,7 +21,7 @@ const VITAL_KEYS: VitalKey[] = ["hr", "spo2", "bp", "glucose"];
  * Device errors are translated here, never shown as browser exceptions.
  */
 export function DevicePairing() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const device = useApp((s) => s.device);
   const vitals = useApp((s) => s.vitals);
   const now = useNow();
@@ -42,7 +42,7 @@ export function DevicePairing() {
   const receiving =
     device.status === "connected" &&
     VITAL_KEYS.some((k) => vitals[k] && !isStale(k, vitals[k], now));
-  const name = device.name ?? "device";
+  const name = device.name ?? (locale === "hi" ? "डिवाइस" : "device");
   const canConnect = Boolean(caps?.supported && caps.secure);
 
   const describe = (error: unknown) => {
@@ -50,7 +50,9 @@ export function DevicePairing() {
     const errorName = err?.name ?? "";
     if (errorName === "NotFoundError") return t("device.connect.cancelled");
     if (errorName === "NotAllowedError") return t("device.connect.denied");
-    if (errorName === "SecurityError") return t("device.connect.insecure");
+    if (errorName === "SecurityError")
+      return t(caps?.secure ? "device.connect.denied" : "device.connect.insecure");
+    if (errorName === "IncompatibleDeviceError") return t("device.connect.incompatible");
     if (errorName === "NetworkError") return t("device.connect.rangeError");
     if (errorName === "InvalidStateError" || errorName === "NotSupportedError")
       return t("device.connect.failed");
@@ -73,14 +75,16 @@ export function DevicePairing() {
   };
 
   const statusText = (() => {
-    if (busy) return t("device.connect.statusOpening");
+    if (busy && device.status !== "connecting") return t("device.connect.statusOpening");
+    if (device.error === "invalid-reading") return t("device.connect.invalidReading");
     if (notice) return notice.text;
     if (device.status === "connecting") return t("device.connect.statusConnecting", { name });
     if (device.status === "connected")
       return receiving
         ? t("device.connect.statusReceiving", { name })
         : t("device.connect.statusConnected", { name });
-    if (device.status === "reconnecting") return t("device.connect.statusLost", { name });
+    if (device.status === "reconnecting" || device.status === "disconnected")
+      return t("device.connect.statusLost", { name });
     if (device.status === "error") return t("device.connect.failed");
     return t("device.connect.statusIdle");
   })();
@@ -136,6 +140,8 @@ export function DevicePairing() {
 
       {caps === null ? (
         <p className="mt-4 text-sm text-muted-foreground">{t("common.loading")}</p>
+      ) : !caps.secure ? (
+        <p className="mt-4 text-sm">{t("device.connect.insecure")}</p>
       ) : !caps.supported ? (
         <div className="mt-4">
           <p className="text-sm leading-relaxed text-muted-foreground">
@@ -150,7 +156,7 @@ export function DevicePairing() {
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
             {device.vitals.map((k) => (
-              <li key={k}>{VITAL_META[k].label}</li>
+              <li key={k}>{t(`reading.${k}`)}</li>
             ))}
           </ul>
           <Button variant="outline" onClick={disconnectWearable} className="min-h-11">
@@ -209,6 +215,14 @@ export function DevicePairing() {
         </div>
       )}
 
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button asChild variant="outline">
+          <Link to="/assistant">{t("device.connect.firstAid")}</Link>
+        </Button>
+        <Button asChild variant="ghost">
+          <Link to="/contacts">{t("device.connect.without")}</Link>
+        </Button>
+      </div>
       <div className="mt-5 border-t border-border pt-4">
         <h3 className="text-sm font-semibold text-foreground">{t("device.connect.limitsTitle")}</h3>
         <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-muted-foreground">

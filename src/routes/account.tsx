@@ -16,6 +16,7 @@ import {
   saveSafetyContacts,
   saveSafetyProfile,
 } from "@/lib/account.functions";
+import { DevicePrivacy } from "@/components/DevicePrivacy";
 import { persistedSettingsSchema } from "@/lib/settings";
 import { useI18n } from "@/i18n";
 
@@ -58,6 +59,8 @@ function Account() {
   const read = useServerFn(readSafetyAccount);
   const exportAccount = useServerFn(exportSafetyAccount);
   useEffect(() => {
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)
+      return;
     const hash = new URLSearchParams(window.location.hash.slice(1));
     if (hash.get("type") === "recovery") setRecovery(true);
     const { data } = supabase.auth.onAuthStateChange((event) => {
@@ -144,6 +147,7 @@ function Account() {
         <h1 className="font-display text-3xl font-bold">{t("account.title")}</h1>
       </div>
       <p className="mt-2 text-muted-foreground">{t("account.subtitle")}</p>
+      <DevicePrivacy />
       <section className="mt-6 rounded-xl border border-border bg-card p-4">
         <h2 className="font-display text-lg font-bold">{t("account.langHeading")}</h2>
         <LanguagePicker variant="full" className="mt-3" />
@@ -157,105 +161,113 @@ function Account() {
           {t("account.manageContacts")}
         </Link>
       </section>
-      {(!userId || recovery) && (
-        <section className="mt-8 max-w-md border-t border-border py-6">
-          <h2 className="text-xl font-bold">
-            {recovery
-              ? t("account.passwordTitle")
-              : mode === "signup"
-                ? t("account.createTitle")
-                : mode === "reset"
-                  ? t("account.recoverTitle")
-                  : t("account.signInTitle")}
-          </h2>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void run(auth);
-            }}
-            className="mt-4 space-y-4"
-          >
-            {!recovery && (
-              <label className="block text-sm">
-                {t("account.email")}
-                <input
-                  className={input}
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={loginEmail}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </label>
-            )}
-            {(recovery || mode !== "reset") && (
-              <label className="block text-sm">
-                {t("account.password")}
-                <input
-                  className={input}
-                  type="password"
-                  minLength={8}
-                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </label>
-            )}
-            <Button disabled={busy} type="submit" className="w-full">
-              {busy
-                ? t("account.wait")
-                : recovery
-                  ? t("account.updatePassword")
-                  : mode === "signup"
-                    ? t("account.createAccount")
-                    : mode === "reset"
-                      ? t("account.sendRecovery")
-                      : t("account.signInEmail")}
-            </Button>
-          </form>
-          {!recovery && (
-            <>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {(["google", "lovable"] as const).map((provider) => (
-                  <Button
-                    variant="outline"
-                    disabled={busy}
-                    key={provider}
-                    onClick={() =>
-                      void run(async () => {
-                        const result = await lovable.auth.signInWithOAuth(provider, {
-                          redirect_uri: `${window.location.origin}/account`,
-                        });
-                        if (result.error) throw result.error;
-                      })
-                    }
-                  >
-                    {t("account.signInWith", {
-                      provider: provider === "google" ? "Google" : "Lovable",
-                    })}
-                  </Button>
-                ))}
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-                >
-                  {mode === "signup" ? t("account.haveAccount") : t("account.noAccount")}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setMode(mode === "reset" ? "signin" : "reset")}
-                >
-                  {mode === "reset" ? t("account.backToSignIn") : t("account.forgotPassword")}
-                </Button>
-              </div>
-            </>
-          )}
-          <p className="mt-4 text-sm text-muted-foreground">{t("account.phoneNote")}</p>
-        </section>
+      {(!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) && (
+        <p role="status" className="mt-5 rounded-lg border border-border p-4">
+          {t("release.cloudBlocked")}
+        </p>
       )}
+      {Boolean(
+        import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      ) &&
+        (!userId || recovery) && (
+          <section className="mt-8 max-w-md border-t border-border py-6">
+            <h2 className="text-xl font-bold">
+              {recovery
+                ? t("account.passwordTitle")
+                : mode === "signup"
+                  ? t("account.createTitle")
+                  : mode === "reset"
+                    ? t("account.recoverTitle")
+                    : t("account.signInTitle")}
+            </h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void run(auth);
+              }}
+              className="mt-4 space-y-4"
+            >
+              {!recovery && (
+                <label className="block text-sm">
+                  {t("account.email")}
+                  <input
+                    className={input}
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={loginEmail}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </label>
+              )}
+              {(recovery || mode !== "reset") && (
+                <label className="block text-sm">
+                  {t("account.password")}
+                  <input
+                    className={input}
+                    type="password"
+                    minLength={8}
+                    autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </label>
+              )}
+              <Button disabled={busy} type="submit" className="w-full">
+                {busy
+                  ? t("account.wait")
+                  : recovery
+                    ? t("account.updatePassword")
+                    : mode === "signup"
+                      ? t("account.createAccount")
+                      : mode === "reset"
+                        ? t("account.sendRecovery")
+                        : t("account.signInEmail")}
+              </Button>
+            </form>
+            {!recovery && (
+              <>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(["google", "lovable"] as const).map((provider) => (
+                    <Button
+                      variant="outline"
+                      disabled={busy}
+                      key={provider}
+                      onClick={() =>
+                        void run(async () => {
+                          const result = await lovable.auth.signInWithOAuth(provider, {
+                            redirect_uri: `${window.location.origin}/account`,
+                          });
+                          if (result.error) throw result.error;
+                        })
+                      }
+                    >
+                      {t("account.signInWith", {
+                        provider: provider === "google" ? "Google" : "Lovable",
+                      })}
+                    </Button>
+                  ))}
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+                  >
+                    {mode === "signup" ? t("account.haveAccount") : t("account.noAccount")}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setMode(mode === "reset" ? "signin" : "reset")}
+                  >
+                    {mode === "reset" ? t("account.backToSignIn") : t("account.forgotPassword")}
+                  </Button>
+                </div>
+              </>
+            )}
+            <p className="mt-4 text-sm text-muted-foreground">{t("account.phoneNote")}</p>
+          </section>
+        )}
       {userId && !recovery && (
         <>
           <section className="mt-8 flex flex-wrap items-center gap-3 border-y border-border py-4">
@@ -324,8 +336,7 @@ function Account() {
                   );
                   if (!parsed.success || !parsed.data.contacts?.length)
                     throw new Error(t("account.importNone"));
-                  if (!confirm(t("account.importConfirm")))
-                    return;
+                  if (!confirm(t("account.importConfirm"))) return;
                   const contacts = parsed.data.contacts;
                   await saveContacts({
                     data: contacts.map((c) => ({ ...c, phone: c.phone.replace(/[^\d+]/g, "") })),
@@ -447,10 +458,7 @@ function Account() {
                 disabled={busy}
                 onClick={() =>
                   void run(async () => {
-                    if (
-                      !confirm(t("account.deleteDataConfirm"))
-                    )
-                      return;
+                    if (!confirm(t("account.deleteDataConfirm"))) return;
                     if (userId) await clear();
                     localStorage.removeItem("lifeline:settings:v1");
                     set({
