@@ -7,8 +7,12 @@
 import type { VitalKey } from './types'
 
 const STORAGE_KEY = 'lifeline:reading-days:v1'
-/** Older days are pruned; the dashboard only shows the current week. */
-const KEEP_DAYS = 21
+/**
+ * Older days are pruned. The dashboard shows the last 12 months, so a little
+ * over a year is kept — still only *which* vitals were seen on a day, never a
+ * measured value, and only in this browser.
+ */
+const KEEP_DAYS = 400
 
 export const VITAL_KEYS: VitalKey[] = ['bp', 'glucose', 'hr', 'spo2']
 

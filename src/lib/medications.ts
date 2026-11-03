@@ -1,5 +1,5 @@
 /**
- * Non-prescription medicine information for the Lifeline assistant.
+ * Non-prescription medicine information for the AAPDA SETU assistant.
  *
  * Scope, deliberately narrow:
  *  - generic names only, never brands;
@@ -346,7 +346,7 @@ export function evaluateMedicationRequest(
       reason: "not-in-reference",
       checks,
       message:
-        "Lifeline's non-prescription reference does not cover that medicine, so it will not suggest anything. Read the product label and ask a pharmacist or clinician.",
+        "AAPDA SETU's non-prescription reference does not cover that medicine, so it will not suggest anything. Read the product label and ask a pharmacist or clinician.",
     };
   }
   const { entry, sources } = match;
@@ -358,7 +358,7 @@ export function evaluateMedicationRequest(
       reason: "prescription",
       checks,
       message:
-        "Lifeline does not discuss prescription medicines, substitutions or stopping a prescribed medicine. Ask the prescriber or a pharmacist.",
+        "AAPDA SETU does not discuss prescription medicines, substitutions or stopping a prescribed medicine. Ask the prescriber or a pharmacist.",
     };
   }
   if (SUBSTITUTION.test(question)) {
@@ -368,7 +368,7 @@ export function evaluateMedicationRequest(
       reason: "substitution",
       checks,
       message:
-        "Lifeline never suggests swapping, combining or stopping medicines. That decision belongs to your prescriber or pharmacist.",
+        "AAPDA SETU never suggests swapping, combining or stopping medicines. That decision belongs to your prescriber or pharmacist.",
     };
   }
   if (DOSE.test(question)) {
@@ -377,7 +377,7 @@ export function evaluateMedicationRequest(
       entry: { entry, sources },
       reason: "dose",
       checks,
-      message: `Lifeline does not state or calculate a dose. Follow the dose printed on the product you have${
+      message: `AAPDA SETU does not state or calculate a dose. Follow the dose printed on the product you have${
         entry.id === "paracetamol" ? " and check no other product you are taking already contains paracetamol" : ""
       }. Ask a pharmacist if the label is unclear.`,
     };
@@ -389,7 +389,7 @@ export function evaluateMedicationRequest(
       reason: "age-unknown",
       checks,
       message:
-        "Lifeline will not suggest a medicine without the person's age, because many are unsafe for children. Read the label and ask a pharmacist or clinician.",
+        "AAPDA SETU will not suggest a medicine without the person's age, because many are unsafe for children. Read the label and ask a pharmacist or clinician.",
     };
   }
   if (factors.ageYears < entry.minimumAgeYears) {
@@ -408,7 +408,7 @@ export function evaluateMedicationRequest(
       reason: "older-adult",
       checks,
       message:
-        "For someone aged 75 or over, medicine choices need a pharmacist or clinician who can weigh other conditions and medicines. Lifeline will not suggest one.",
+        "For someone aged 75 or over, medicine choices need a pharmacist or clinician who can weigh other conditions and medicines. AAPDA SETU will not suggest one.",
     };
   }
   if (factors.pregnancy === "unknown") {
@@ -418,7 +418,7 @@ export function evaluateMedicationRequest(
       reason: "pregnancy",
       checks,
       message:
-        "Lifeline will not suggest a medicine before knowing whether the person is pregnant or breastfeeding. Ask a pharmacist or clinician.",
+        "AAPDA SETU will not suggest a medicine before knowing whether the person is pregnant or breastfeeding. Ask a pharmacist or clinician.",
     };
   }
   if (factors.pregnancy !== "no" && (entry.pregnancy === "avoid" || entry.breastfeeding === "avoid")) {
@@ -437,7 +437,7 @@ export function evaluateMedicationRequest(
       reason: "allergy",
       checks,
       message:
-        "Lifeline will not suggest a medicine without knowing the person's allergies. Read the label's ingredients and check with a pharmacist.",
+        "AAPDA SETU will not suggest a medicine without knowing the person's allergies. Read the label's ingredients and check with a pharmacist.",
     };
   }
   if (has(factors.allergies, entry.ingredient) || has(factors.allergies, entry.genericName)) {
@@ -456,7 +456,7 @@ export function evaluateMedicationRequest(
       reason: "current-medicines-unknown",
       checks,
       message:
-        "Lifeline will not suggest a medicine without knowing what else the person takes. List every medicine, including anything bought without a prescription, for a pharmacist.",
+        "AAPDA SETU will not suggest a medicine without knowing what else the person takes. List every medicine, including anything bought without a prescription, for a pharmacist.",
     };
   }
   const clash = entry.interactions.find((i) => has(factors.currentMedicines!, i));
@@ -476,7 +476,7 @@ export function evaluateMedicationRequest(
       reason: "condition",
       checks,
       message:
-        "Lifeline will not suggest a medicine without knowing the person's health conditions. Read the label's warnings and ask a pharmacist.",
+        "AAPDA SETU will not suggest a medicine without knowing the person's health conditions. Read the label's warnings and ask a pharmacist.",
     };
   }
   const condition = entry.conditionsToCheck.find((c) => has(factors.conditions!, c));
@@ -496,7 +496,7 @@ export function evaluateMedicationRequest(
       blocker: state.blocker ?? "Medicine guidance is switched off on this deployment.",
       checks,
       message:
-        "The reference entry and its warnings are shown below, but Lifeline is not suggesting this medicine. Read the product label and ask a pharmacist or clinician.",
+        "The reference entry and its warnings are shown below, but AAPDA SETU is not suggesting this medicine. Read the product label and ask a pharmacist or clinician.",
     };
   }
 

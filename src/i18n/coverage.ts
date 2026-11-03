@@ -109,6 +109,12 @@ export const REQUIRED_SURFACES = {
     "device.connect.failed",
     "device.connect.without",
     "device.connect.limitBackground",
+    "device.connect.findAny",
+    "device.connect.findAnyHint",
+    "device.connect.statusStale",
+    "device.connect.noMeasurementYet",
+    "device.connect.unsupportedServices",
+    "device.connect.servicesHeading",
   ],
   contacts: [
     "contacts.title",

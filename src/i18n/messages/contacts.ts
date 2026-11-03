@@ -21,7 +21,7 @@ export const contactsEn = {
   "contacts.ambulance": "Ambulance",
   "contacts.fire": "Fire",
   "contacts.emergencyNote":
-    "Lifeline never auto-dials or auto-sends to emergency services. During an alert you get one-tap call buttons{extra}. You place every call and press Send yourself.",
+    "AAPDA SETU never auto-dials or auto-sends to emergency services. During an alert you get one-tap call buttons{extra}. You place every call and press Send yourself.",
   "contacts.emergencyNoteSms":
     " and an SMS draft to {number} pre-filled with your location and medical details",
   "contacts.emergencySmsUnverified":
@@ -55,11 +55,11 @@ export const contactsEn = {
     "Opens a labelled test in your messaging app. You must press Send; delivery is not confirmed here.",
   "contacts.testAction": "Prepare test message",
   "contacts.testReason": "Test alert",
-  "contacts.testReading": "checking Lifeline works",
+  "contacts.testReading": "checking AAPDA SETU works",
 
   "contacts.autoHeading": "Automatic emergency contact",
   "contacts.autoIntro":
-    "After you deliberately raise an SOS, Lifeline contacts the confirmed people below on the channels they enabled. It never calls emergency services for you.",
+    "After you deliberately raise an SOS, AAPDA SETU contacts the confirmed people below on the channels they enabled. It never calls emergency services for you.",
   "contacts.consent": "I consent to automatic contact after I raise SOS",
   "contacts.consentBody":
     "SMS and email go to everyone who enabled them. Automated calls follow the order above. You can withdraw consent here at any time.",
@@ -120,7 +120,7 @@ export const contactsEn = {
   "contacts.formEmailError": "Enter a valid email address.",
   "contacts.formConfirm": "I have checked these details are correct",
   "contacts.formConfirmBody":
-    "Self-confirmation only. Provider verification (OTP) is not configured, so Lifeline cannot prove this address belongs to the contact.",
+    "Self-confirmation only. Provider verification (OTP) is not configured, so AAPDA SETU cannot prove this address belongs to the contact.",
   "contacts.formTest": "Test destination",
   "contacts.formTestBody":
     "Recommended. A test destination never receives a live provider message, even when live dispatch is on.",
@@ -152,7 +152,7 @@ export const contactsHi: Record<ContactsKey, string> = {
   "contacts.ambulance": "एम्बुलेंस",
   "contacts.fire": "फायर",
   "contacts.emergencyNote":
-    "लाइफलाइन कभी अपने आप आपातकालीन सेवाओं को कॉल या संदेश नहीं भेजता। अलर्ट के दौरान आपको एक-टैप कॉल बटन मिलते हैं{extra}। हर कॉल आप करते हैं और भेजें आप दबाते हैं।",
+    "आपदा सेतु कभी अपने आप आपातकालीन सेवाओं को कॉल या संदेश नहीं भेजता। अलर्ट के दौरान आपको एक-टैप कॉल बटन मिलते हैं{extra}। हर कॉल आप करते हैं और भेजें आप दबाते हैं।",
   "contacts.emergencyNoteSms":
     " और {number} पर एक SMS का मसौदा, जिसमें आपकी लोकेशन और चिकित्सीय जानकारी पहले से भरी होती है",
   "contacts.emergencySmsUnverified":
@@ -186,11 +186,11 @@ export const contactsHi: Record<ContactsKey, string> = {
     "यह आपके मैसेजिंग ऐप में लेबल किया गया परीक्षण खोलता है। भेजें आपको दबाना है; यहाँ डिलीवरी की पुष्टि नहीं होती।",
   "contacts.testAction": "परीक्षण संदेश तैयार करें",
   "contacts.testReason": "परीक्षण अलर्ट",
-  "contacts.testReading": "लाइफलाइन काम कर रहा है या नहीं, यह जाँचा जा रहा है",
+  "contacts.testReading": "आपदा सेतु काम कर रहा है या नहीं, यह जाँचा जा रहा है",
 
   "contacts.autoHeading": "स्वतः आपातकालीन संपर्क",
   "contacts.autoIntro":
-    "आपके जानबूझकर SOS उठाने के बाद लाइफलाइन नीचे दिए पुष्ट संपर्कों से उनके चुने हुए चैनलों पर संपर्क करता है। यह आपकी ओर से कभी आपातकालीन सेवाओं को कॉल नहीं करता।",
+    "आपके जानबूझकर SOS उठाने के बाद आपदा सेतु नीचे दिए पुष्ट संपर्कों से उनके चुने हुए चैनलों पर संपर्क करता है। यह आपकी ओर से कभी आपातकालीन सेवाओं को कॉल नहीं करता।",
   "contacts.consent": "SOS उठाने के बाद स्वतः संपर्क के लिए मैं सहमत हूँ",
   "contacts.consentBody":
     "SMS और ईमेल उन सभी को जाते हैं जिन्होंने इन्हें चालू किया है। स्वतः कॉल ऊपर दिए क्रम से होते हैं। आप यहाँ कभी भी सहमति वापस ले सकते हैं।",
@@ -250,7 +250,7 @@ export const contactsHi: Record<ContactsKey, string> = {
   "contacts.formEmailError": "मान्य ईमेल पता दर्ज करें।",
   "contacts.formConfirm": "मैंने जाँच लिया है कि ये विवरण सही हैं",
   "contacts.formConfirmBody":
-    "केवल स्वयं-पुष्टि। प्रदाता सत्यापन (OTP) कॉन्फ़िगर नहीं है, इसलिए लाइफलाइन यह सिद्ध नहीं कर सकता कि यह पता उसी संपर्क का है।",
+    "केवल स्वयं-पुष्टि। प्रदाता सत्यापन (OTP) कॉन्फ़िगर नहीं है, इसलिए आपदा सेतु यह सिद्ध नहीं कर सकता कि यह पता उसी संपर्क का है।",
   "contacts.formTest": "परीक्षण गंतव्य",
   "contacts.formTestBody":
     "सुझाया गया। परीक्षण गंतव्य को लाइव प्रदाता संदेश कभी नहीं जाता, भले ही लाइव डिस्पैच चालू हो।",

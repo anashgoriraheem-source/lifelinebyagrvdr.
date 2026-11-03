@@ -107,10 +107,47 @@ and the publishable/service keys; all of them are supplied by compose.
   the pairing status and its buttons; first aid stays one tap away in the
   Assistant tab. Keep new full-width forms in mind when adding it to a page.
 - `src/components/DevicePairing.tsx` owns the guided Bluetooth flow on
-  `/monitor`. It reads `useApp(s => s.device.status)`, translates device and
+  `/monitor`. It derives its state from `connectionPhase()` in
+  `src/core/ble/support.ts` (never from GATT alone), translates device and
   browser errors into plain-language next steps, announces state through a
   `role="status"` region, and keeps "Continue without a device". SOS and
   first-aid stay outside it. Web Bluetooth cannot run in the headless preview
   browser: pairing, cancellation, denied permission and connection loss are
   manually verified only.
+
+## Device readings and the readings dashboard
+- The app is **AAPDA SETU**. User-visible strings, page titles, the manifest and
+  the offline page use that name. Internal identifiers deliberately keep their
+  old `lifeline` prefix (`lifeline:settings:v1`, `lifeline:reading-days:v1`,
+  `lifeline:locale`) so existing device-local data is not orphaned.
+- `src/core/ble/connect.ts` has two discovery modes: `standard` filters the
+  browser chooser by the four health services; `any` uses `acceptAllDevices` so
+  a watch with only vendor services can still be selected, and is then reported
+  as `unsupported-services` instead of a false "connected". Do not add vendor
+  UUIDs speculatively — see `docs/device-support.md` for what a web page cannot
+  read (HealthKit, Health Connect, vendor clouds).
+- Notifications are preferred; a readable-only characteristic is polled every
+  5 s (`READ_POLL_MS`). One malformed or implausible packet clears that vital's
+  reading and sets `device.error`; it is never replaced by a previous value.
+- `src/core/ble/support.ts` is the single place that decides plausibility bounds,
+  freshness, the connection phase and missing services. `DeviceState` carries
+  `connectedAt`, `lastReadingAt`, `readingCount`, `servicesFound`, `missing`,
+  `mode` and `lastInvalidAt`; keep them updated rather than recomputing in the UI.
+- Demo readings have `quality: "good"`; Bluetooth readings are `uncertain` and
+  are excluded from automatic alarms. Freshness windows in `detection.ts`
+  (`MAX_AGE_MS`) are display rules that cover slow device update intervals, not
+  clinical validity.
+- `src/components/ReadingsDashboard.tsx` (home) renders only real aggregates:
+  `src/lib/readingsOverview.ts` builds 12 month buckets from `readingDays`, which
+  stores *which vitals were seen on a day* and no values. `KEEP_DAYS` is 400 so
+  the 12-month timeline has data; keep it value-free if you extend it.
+- `supabase/migrations/20261101151559_contact_channels_and_preferences.sql` adds
+  the contact channel columns and `safety_preferences` that the account code
+  already read. `src/integrations/supabase/types.ts` is hand-maintained to match
+  the migrations — update both together, then run `tsc --noEmit`.
+- Verified here: `npm test` (108 tests), `tsc --noEmit`, `npm run build`, and the
+  home/monitor screens in the preview at desktop and mobile widths. Not verified:
+  any physical device, Web Bluetooth in a real browser, iOS/Safari, screen-reader
+  output. `npm run lint` already fails repo-wide on older unformatted files;
+  only new files were formatted.
 

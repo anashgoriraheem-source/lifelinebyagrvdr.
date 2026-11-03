@@ -60,8 +60,23 @@ export interface AppState {
 export interface DeviceState {
   status: "idle" | "connecting" | "connected" | "reconnecting" | "disconnected" | "error";
   name: string | null;
+  /** Vitals this connection has a live subscription (or read poll) for. */
   vitals: VitalKey[];
+  /** Machine reason for a failed connection, translated by the UI. */
   error?: string;
+  /** How the device was discovered: filtered by standard services, or any device. */
+  mode?: "standard" | "any";
+  /** When this GATT connection was established; used to explain a missing reading. */
+  connectedAt?: number | null;
+  /** Arrival time of the newest measurement on this connection. */
+  lastReadingAt?: number | null;
+  /** Measurements accepted on this connection (not packets received). */
+  readingCount?: number;
+  /** Vitals a connection actually exposed, and the supported ones it did not. */
+  servicesFound?: VitalKey[];
+  missing?: VitalKey[];
+  /** Time of the newest rejected packet, for "device is sending something unusable". */
+  lastInvalidAt?: number | null;
 }
 
 const SETTINGS_KEY = "lifeline:settings:v1";

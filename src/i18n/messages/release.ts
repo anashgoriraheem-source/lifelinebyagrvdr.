@@ -16,7 +16,7 @@ export const releaseEn = {
   "release.urgent":
     "If someone may be in immediate danger, contact local emergency services now and ask a nearby capable person to help. Do not wait for this software or a sensor reading.",
   "release.noDelivery":
-    "Lifeline is software, not a clinician or an emergency service. Nothing is sent automatically. A call or message draft still needs your action in your phone app. Delivery and help are not confirmed here.",
+    "AAPDA SETU is software, not a clinician or an emergency service. Nothing is sent automatically. A call or message draft still needs your action in your phone app. Delivery and help are not confirmed here.",
   "release.steps": "Start here",
   "release.step1": "Check your country and save the people you would contact in an emergency.",
   "release.step2":
@@ -59,9 +59,9 @@ export const releaseEn = {
   "release.dismiss": "Close emergency options",
   "release.country": "Country for emergency numbers — check before calling",
   "release.call": "Open phone to call {number}",
-  "release.notSent": "No call or message has been sent by Lifeline. Help is not confirmed.",
+  "release.notSent": "No call or message has been sent by AAPDA SETU. Help is not confirmed.",
   "release.linkSelected":
-    "Phone or messaging link selected. Check your phone app and confirm the action there. Lifeline cannot confirm whether it opened or was sent.",
+    "Phone or messaging link selected. Check your phone app and confirm the action there. AAPDA SETU cannot confirm whether it opened or was sent.",
   "release.nearby":
     "Ask a nearby capable person to stay with you and help. Follow the emergency operator’s instructions.",
   "release.message": "Message draft preview",
@@ -76,7 +76,7 @@ export const releaseEn = {
   "release.privacyNote":
     "Check the preview before opening a draft. Your phone’s app may share this information with its provider and the person you choose. You must press Send yourself.",
   "release.draftBody":
-    "I need help. Please call me or come to me if you can do so safely. This is a draft prepared with Lifeline; no emergency service has been contacted by the app.",
+    "I need help. Please call me or come to me if you can do so safely. This is a draft prepared with AAPDA SETU; no emergency service has been contacted by the app.",
   "release.guidanceLanguage":
     "First-aid instructions below are English-only drafts. Hindi clinical translation has not been approved. Ask the emergency operator for guidance in your language.",
   "release.cloudBlocked":
@@ -103,7 +103,7 @@ export const releaseHi: Record<keyof typeof releaseEn, string> = {
   "release.urgent":
     "यदि किसी की जान को तुरंत खतरा हो सकता है, तो स्थानीय आपातकालीन सेवाओं को अभी कॉल करें और पास के किसी सक्षम व्यक्ति से मदद माँगें। इस सॉफ़्टवेयर या रीडिंग का इंतज़ार न करें।",
   "release.noDelivery":
-    "लाइफलाइन एक सॉफ़्टवेयर है, डॉक्टर या आपातकालीन सेवा नहीं। कुछ भी अपने आप नहीं भेजा जाता। कॉल या संदेश के मसौदे के लिए फोन ऐप में आपकी कार्रवाई चाहिए। यहाँ संदेश पहुँचने या मदद की पुष्टि नहीं होती।",
+    "आपदा सेतु एक सॉफ़्टवेयर है, डॉक्टर या आपातकालीन सेवा नहीं। कुछ भी अपने आप नहीं भेजा जाता। कॉल या संदेश के मसौदे के लिए फोन ऐप में आपकी कार्रवाई चाहिए। यहाँ संदेश पहुँचने या मदद की पुष्टि नहीं होती।",
   "release.steps": "यहाँ से शुरू करें",
   "release.step1": "अपना देश जाँचें और उन लोगों को सहेजें जिन्हें आप आपातकाल में संपर्क करेंगे।",
   "release.step2": "डिवाइस हो तो जोड़ें। उसे पास और चालू रखें। संगतता की पुष्टि अभी नहीं हुई है।",
@@ -146,9 +146,9 @@ export const releaseHi: Record<keyof typeof releaseEn, string> = {
   "release.dismiss": "आपातकालीन विकल्प बंद करें",
   "release.country": "आपातकालीन नंबरों का देश — कॉल से पहले जाँचें",
   "release.call": "{number} पर कॉल के लिए फोन खोलें",
-  "release.notSent": "लाइफलाइन से कोई कॉल या संदेश नहीं भेजा गया। मदद की पुष्टि नहीं है।",
+  "release.notSent": "आपदा सेतु से कोई कॉल या संदेश नहीं भेजा गया। मदद की पुष्टि नहीं है।",
   "release.linkSelected":
-    "फोन या संदेश लिंक चुना गया। फोन ऐप में जाँचकर खुद पुष्टि करें। लाइफलाइन खुलने या भेजे जाने की पुष्टि नहीं कर सकता।",
+    "फोन या संदेश लिंक चुना गया। फोन ऐप में जाँचकर खुद पुष्टि करें। आपदा सेतु खुलने या भेजे जाने की पुष्टि नहीं कर सकता।",
   "release.nearby":
     "पास के किसी सक्षम व्यक्ति से साथ रहने और मदद करने को कहें। आपातकालीन ऑपरेटर के निर्देश मानें।",
   "release.message": "संदेश के मसौदे का पूर्वावलोकन",
@@ -163,7 +163,7 @@ export const releaseHi: Record<keyof typeof releaseEn, string> = {
   "release.privacyNote":
     "मसौदा खोलने से पहले जाँचें। फोन ऐप यह जानकारी अपनी सेवा और चुने व्यक्ति को दे सकता है। भेजें बटन आपको खुद दबाना होगा।",
   "release.draftBody":
-    "मुझे मदद चाहिए। कृपया मुझे कॉल करें या सुरक्षित हो तो मेरे पास आएँ। यह लाइफलाइन में तैयार मसौदा है; ऐप ने आपातकालीन सेवा से संपर्क नहीं किया है।",
+    "मुझे मदद चाहिए। कृपया मुझे कॉल करें या सुरक्षित हो तो मेरे पास आएँ। यह आपदा सेतु में तैयार मसौदा है; ऐप ने आपातकालीन सेवा से संपर्क नहीं किया है।",
   "release.guidanceLanguage":
     "नीचे प्राथमिक चिकित्सा के निर्देश अंग्रेज़ी के मसौदे हैं। हिन्दी चिकित्सा अनुवाद स्वीकृत नहीं है। अपनी भाषा में निर्देश के लिए आपातकालीन ऑपरेटर से बात करें।",
   "release.cloudBlocked":

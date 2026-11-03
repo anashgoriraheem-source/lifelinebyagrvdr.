@@ -70,7 +70,7 @@ export const accountEn = {
 
   "account.privacyHeading": "Privacy centre",
   "account.privacyBody":
-    "Signed-out contacts and profile stay in this browser. Signed-in profiles and explicitly saved contacts stay in your private cloud account. Location is held in memory, not uploaded. Your timeline lasts for this session. Shared texts leave Lifeline and follow the recipient’s privacy practices.",
+    "Signed-out contacts and profile stay in this browser. Signed-in profiles and explicitly saved contacts stay in your private cloud account. Location is held in memory, not uploaded. Your timeline lasts for this session. Shared texts leave AAPDA SETU and follow the recipient’s privacy practices.",
   "account.exportAccount": "Export my account data",
   "account.exportLocal": "Export current data",
   "account.exportDoneAccount": "Your account data was exported.",
@@ -150,7 +150,7 @@ export const accountHi: Record<AccountKey, string> = {
 
   "account.privacyHeading": "गोपनीयता केंद्र",
   "account.privacyBody":
-    "साइन-आउट संपर्क और प्रोफ़ाइल इस ब्राउज़र में रहते हैं। साइन-इन प्रोफ़ाइल और स्पष्ट रूप से सहेजे गए संपर्क आपके निजी क्लाउड खाते में रहते हैं। लोकेशन मेमोरी में रहती है, अपलोड नहीं होती। आपकी टाइमलाइन इस सत्र तक रहती है। साझा किए गए संदेश लाइफलाइन से बाहर जाते हैं और प्राप्तकर्ता की गोपनीयता प्रथाओं का पालन करते हैं।",
+    "साइन-आउट संपर्क और प्रोफ़ाइल इस ब्राउज़र में रहते हैं। साइन-इन प्रोफ़ाइल और स्पष्ट रूप से सहेजे गए संपर्क आपके निजी क्लाउड खाते में रहते हैं। लोकेशन मेमोरी में रहती है, अपलोड नहीं होती। आपकी टाइमलाइन इस सत्र तक रहती है। साझा किए गए संदेश आपदा सेतु से बाहर जाते हैं और प्राप्तकर्ता की गोपनीयता प्रथाओं का पालन करते हैं।",
   "account.exportAccount": "मेरा खाता डेटा निर्यात करें",
   "account.exportLocal": "मौजूदा डेटा निर्यात करें",
   "account.exportDoneAccount": "आपका खाता डेटा निर्यात हो गया।",

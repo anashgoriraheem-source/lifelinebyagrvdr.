@@ -133,9 +133,7 @@ export const exportSafetyAccount = createServerFn({ method: "POST" })
         .order("started_at", { ascending: false }),
       context.supabase
         .from("alert_attempts")
-        .select(
-          "event_id, channel, contact_name, status, provider, detail, attempted_at, retry_count, acknowledged_at",
-        )
+        .select("event_id, channel, contact_name, status, provider, created_at, updated_at")
         .eq("user_id", context.userId),
       context.supabase
         .from("safety_preferences")
@@ -163,24 +161,13 @@ export const exportSafetyAccount = createServerFn({ method: "POST" })
         attempts: attemptRows
           .filter((a) => a.event_id === id)
           .map(
-            ({
+            ({ channel, contact_name, status, provider, created_at, updated_at }) => ({
               channel,
               contact_name,
               status,
               provider,
-              detail,
-              attempted_at,
-              retry_count,
-              acknowledged_at,
-            }) => ({
-              channel,
-              contact_name,
-              status,
-              provider,
-              detail,
-              attempted_at,
-              retry_count,
-              acknowledged_at,
+              attempted_at: created_at,
+              updated_at,
             }),
           ),
       })),

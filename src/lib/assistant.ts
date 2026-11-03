@@ -1,5 +1,5 @@
 /**
- * Lifeline assistant — on-device intent engine. Works offline, which matters
+ * AAPDA SETU assistant — on-device intent engine. Works offline, which matters
  * in an emergency. A Claude-backed conversational layer is added in a later
  * milestone (PLAN.md); it must keep these same safety rules:
  * not a doctor, no diagnoses, no dose changes, never discourage emergency care.
@@ -86,7 +86,7 @@ export function respond(input: string, s: AppState): Reply {
   // 4. Alarm explanation and what to do.
   if (has(q, 'explain', 'why did', 'why alert', 'alert fired')) {
     const last = inAlarm ? s.alarm.reason : null
-    if (last) return { text: `The alarm fired because of ${last.label.toLowerCase()}: ${last.reading}. Lifeline alarms when a vital stays beyond your limit for 3 seconds, or on a detected fall, jolt or SOS press.` }
+    if (last) return { text: `The alarm fired because of ${last.label.toLowerCase()}: ${last.reading}. AAPDA SETU alarms when a vital stays beyond your limit for 3 seconds, or on a detected fall, jolt or SOS press.` }
     const lastLog = s.log.find((l) => l.kind === 'alarm' || l.kind === 'sos' || l.kind === 'cancel')
     return { text: lastLog ? `The most recent alert: ${lastLog.text} (${new Date(lastLog.at).toLocaleString()}).` : 'There are no recent alerts.' }
   }
@@ -118,7 +118,7 @@ export function respond(input: string, s: AppState): Reply {
 
   if (has(q, 'connect', 'watch', 'bluetooth', 'pair', 'device', 'band')) {
     return {
-      text: 'Lifeline reads standard Bluetooth health profiles: heart-rate straps, watches in heart-rate broadcast mode, pulse oximeters, BP cuffs and glucometers. Use Chrome or Edge on Android or desktop; iPhone Safari does not support Web Bluetooth, and there is no iOS native app. On Garmin, turn on "Broadcast Heart Rate". On Polar and Coros, enable HR sharing. Apple Watch, Galaxy Watch and Fitbit need their cloud or native connection. Open Monitor and select Connect wearable. Compatibility with specific watch models has not been tested — only measurements your device actually exposes can be read.',
+      text: 'AAPDA SETU reads standard Bluetooth health profiles: heart-rate straps, watches in heart-rate broadcast mode, pulse oximeters, BP cuffs and glucometers. Use Chrome or Edge on Android or desktop; iPhone Safari does not support Web Bluetooth, and there is no iOS native app. On Garmin, turn on "Broadcast Heart Rate". On Polar and Coros, enable HR sharing. Apple Watch, Galaxy Watch and Fitbit need their cloud or native connection. Open Monitor and select Connect wearable. Compatibility with specific watch models has not been tested — only measurements your device actually exposes can be read.',
     }
   }
 
@@ -128,7 +128,7 @@ export function respond(input: string, s: AppState): Reply {
 
   if (has(q, 'thank')) return { text: "You're welcome. I'm here if you need me." }
   if (has(q, 'hello', 'hi ', 'hey') || q === 'hi') {
-    return { text: 'Hi, I\'m the Lifeline assistant. Ask me for first-aid steps, your status, your location, or say "SOS".' }
+    return { text: 'Hi, I\'m the AAPDA SETU assistant. Ask me for first-aid steps, your status, your location, or say "SOS".' }
   }
 
   return {

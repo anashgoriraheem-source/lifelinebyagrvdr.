@@ -10,7 +10,7 @@ import { useI18n } from "@/i18n";
  * pointer (or on its own when nobody is pointing). The art is decorative: the
  * canvas is hidden from assistive technology and every word on screen is real
  * DOM text. Colours are the sRGB equivalents of the app's semantic tokens in
- * `styles.css`, so the section reads as part of Lifeline rather than a pasted
+ * `styles.css`, so the section reads as part of AAPDA SETU rather than a pasted
  * widget.
  */
 const C = {

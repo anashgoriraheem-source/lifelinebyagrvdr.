@@ -27,13 +27,13 @@ export const Route = createFileRoute("/saath")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Saath helpline directory · Lifeline" },
+      { title: "Saath helpline directory · AAPDA SETU" },
       {
         name: "description",
         content:
           "Find Indian helplines with the uploaded on-device multilingual situation matcher.",
       },
-      { property: "og:title", content: "Saath helpline directory · Lifeline" },
+      { property: "og:title", content: "Saath helpline directory · AAPDA SETU" },
       {
         property: "og:description",
         content:
@@ -979,7 +979,7 @@ function Saath() {
           </span>
           <div>
             <p className="text-xs font-bold uppercase tracking-normal text-primary">
-              Lifeline · Help directory
+              AAPDA SETU · Help directory
             </p>
             <h1 className="font-display text-4xl font-extrabold">Saath</h1>
           </div>
@@ -1031,7 +1031,7 @@ function Saath() {
           </div>
         </div>
       </div>
-      <section className="mt-6" aria-label="Lifeline assistant">
+      <section className="mt-6" aria-label="AAPDA SETU assistant">
         <AssistantChat className="min-h-[28rem]" />
       </section>
       {suggestions.length > 0 && (

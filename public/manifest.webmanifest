@@ -1,9 +1,10 @@
 {
-  "name": "Lifeline — emergency response",
-  "short_name": "Lifeline",
+  "name": "AAPDA SETU — emergency support",
+  "short_name": "AAPDA SETU",
+  "description": "Readings from compatible Bluetooth health devices, emergency contacts and first-aid guidance. Nothing is sent automatically.",
   "start_url": "/monitor",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#0f172a",
+  "background_color": "#101114",
+  "theme_color": "#101114",
   "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
 }

@@ -14,38 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_attempts: {
+        Row: {
+          channel: string
+          contact_id: string | null
+          contact_name: string
+          created_at: string
+          event_id: string
+          id: string
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          contact_id?: string | null
+          contact_name: string
+          created_at?: string
+          event_id: string
+          id?: string
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          channel?: string
+          contact_id?: string | null
+          contact_name?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_attempts_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alert_attempts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "alert_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alert_events: {
+        Row: {
+          created_at: string
+          id: string
+          idempotency_key: string
+          is_demo: boolean
+          mode: string
+          reason_label: string
+          reason_reading: string
+          reason_type: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          is_demo?: boolean
+          mode?: string
+          reason_label: string
+          reason_reading?: string
+          reason_type: string
+          started_at: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          is_demo?: boolean
+          mode?: string
+          reason_label?: string
+          reason_reading?: string
+          reason_type?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           call: boolean
+          confirmed_at: string | null
           created_at: string
+          email: string | null
+          email_alerts: boolean
           id: string
           name: string
           phone: string
           position: number
           relationship: string
           sms: boolean
+          test_destination: boolean
           user_id: string
         }
         Insert: {
           call?: boolean
+          confirmed_at?: string | null
           created_at?: string
+          email?: string | null
+          email_alerts?: boolean
           id?: string
           name: string
           phone: string
           position?: number
           relationship?: string
           sms?: boolean
+          test_destination?: boolean
           user_id: string
         }
         Update: {
           call?: boolean
+          confirmed_at?: string | null
           created_at?: string
+          email?: string | null
+          email_alerts?: boolean
           id?: string
           name?: string
           phone?: string
           position?: number
           relationship?: string
           sms?: boolean
+          test_destination?: boolean
           user_id?: string
         }
         Relationships: []
@@ -125,6 +230,33 @@ export type Database = {
           id?: string
           medications?: string[]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      safety_preferences: {
+        Row: {
+          consent_at: string | null
+          dispatch_consent: boolean
+          language: string
+          share_location: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consent_at?: string | null
+          dispatch_consent?: boolean
+          language?: string
+          share_location?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consent_at?: string | null
+          dispatch_consent?: boolean
+          language?: string
+          share_location?: boolean
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

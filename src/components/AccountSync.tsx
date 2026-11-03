@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { readSafetyAccount, saveSafetyPreferences } from "@/lib/account.functions";
+import { contactsFromRows } from "@/lib/accountContacts";
 import { appStore, set } from "@/lib/store";
 import { disconnectWearable } from "@/core/ble/connect";
 import { stopTracking } from "@/lib/location";
@@ -56,18 +57,7 @@ export function AccountSync() {
         const p = safety.profile;
         const prefs = safety.preferences;
         set({
-          contacts: safety.contacts.map((c) => ({
-            id: c.id,
-            name: c.name,
-            relationship: c.relationship,
-            phone: c.phone,
-            call: c.call,
-            sms: c.sms,
-            email: c.email ?? "",
-            emailAlerts: Boolean(c.email_alerts),
-            confirmedAt: c.confirmed_at ? Date.parse(c.confirmed_at) : null,
-            testDestination: c.test_destination !== false,
-          })),
+          contacts: contactsFromRows(safety.contacts),
           profile: p
             ? {
                 name: p.full_name,

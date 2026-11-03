@@ -14,4 +14,16 @@ describe('Standard Bluetooth health measurements',()=>{
  it('rejects truncated BP optional fields',()=>expect(()=>parseBloodPressureMeasurement(new Uint8Array([6,124,0,80,0,90,0]))).toThrow())
  it('rejects truncated PLX fields',()=>expect(()=>parsePulseOxMeasurement(new Uint8Array([6,97,0,72,0]))).toThrow())
  it('rejects invalid SFLOAT sentinel',()=>expect(()=>decodeIEEE11073SFloat([0xff,7])).toThrow())
+ it('reads the cuff timestamp when the packet carries one',()=>{
+  // flags 2 = timestamp present, mmHg; 2026-11-03 10:30:00
+  const packet=new Uint8Array([2,124,0,80,0,90,0,0xea,0x07,11,3,10,30,0])
+  expect(parseBloodPressureMeasurement(packet).measuredAt).toBe(new Date(2026,10,3,10,30,0).getTime())
+ })
+ it('ignores an impossible device timestamp instead of inventing a time',()=>{
+  const packet=new Uint8Array([2,124,0,80,0,90,0,0x10,0x27,13,40,25,61,61])
+  expect(parseBloodPressureMeasurement(packet).measuredAt).toBeUndefined()
+ })
+ it('does not read a timestamp that is not present',()=>{
+  expect(parseBloodPressureMeasurement(new Uint8Array([0,124,0,80,0,90,0])).measuredAt).toBeUndefined()
+ })
 })

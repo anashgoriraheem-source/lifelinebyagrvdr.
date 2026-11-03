@@ -45,8 +45,9 @@ export function Nav() {
           <span className="grid size-10 place-items-center rounded-lg border border-border text-primary">
             <HeartPulse className="size-6" strokeWidth={1.6} />
           </span>
-          <span className="font-display text-xl font-bold">
-            Lifeline<span className="ml-1 text-primary">.</span>
+          <span className="font-display text-lg font-bold leading-none sm:text-xl">
+            <span className="block tracking-[0.02em]">AAPDA</span>
+            <span className="block tracking-[0.02em] text-primary">SETU</span>
           </span>
         </Link>
 

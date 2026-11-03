@@ -125,7 +125,9 @@ async function loadContext(
         .order("position"),
       session.supabase
         .from("alert_events")
-        .select("reason_label, status, started_at")
+        // Alert events are the app's own record of alarms; `mode` is always
+        // 'test' in this build, so nothing is described as delivered.
+        .select("reason_label, is_demo, mode, started_at")
         .eq("user_id", session.userId)
         .order("started_at", { ascending: false })
         .limit(5),
@@ -151,7 +153,7 @@ async function loadContext(
     if (incidents.data?.length) {
       base.incidents = incidents.data.map((i) => ({
         reason: i.reason_label,
-        status: i.status,
+        status: i.is_demo ? "demo (nothing sent)" : "recorded (test mode, nothing sent)",
         startedAt: formatter(tag).format(new Date(i.started_at)),
       }));
     }
@@ -206,7 +208,7 @@ export const askAssistant = createServerFn({ method: "POST" })
           ...library,
           limitation: [
             library.limitation,
-            "No language model is configured on this deployment. This answer comes from Lifeline’s curated first-aid library and your own records, not from generative AI.",
+            "No language model is configured on this deployment. This answer comes from AAPDA SETU’s curated first-aid library and your own records, not from generative AI.",
           ]
             .filter(Boolean)
             .join(" "),
@@ -255,7 +257,7 @@ export const askAssistant = createServerFn({ method: "POST" })
             library.limitation,
             result.error ??
               "The model answer was rejected because it contained unsupported placeholders.",
-            "Showing Lifeline’s curated library answer instead.",
+            "Showing AAPDA SETU’s curated library answer instead.",
           ]
             .filter(Boolean)
             .join(" "),

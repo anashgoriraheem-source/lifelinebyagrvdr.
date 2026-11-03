@@ -18,17 +18,18 @@ import {
 } from "@/lib/account.functions";
 import { DevicePrivacy } from "@/components/DevicePrivacy";
 import { persistedSettingsSchema } from "@/lib/settings";
+import { contactsFromRows } from "@/lib/accountContacts";
 import { useI18n } from "@/i18n";
 
 export const Route = createFileRoute("/account")({
   head: () => ({
     meta: [
-      { title: "Private safety account · Lifeline" },
+      { title: "Private safety account · AAPDA SETU" },
       {
         name: "description",
-        content: "Sign in, manage your private medical profile and control your Lifeline data.",
+        content: "Sign in, manage your private medical profile and control your AAPDA SETU data.",
       },
-      { property: "og:title", content: "Private safety account · Lifeline" },
+      { property: "og:title", content: "Private safety account · AAPDA SETU" },
       {
         property: "og:description",
         content: "Manage private safety information and account permissions.",
@@ -302,7 +303,7 @@ function Account() {
                     const data = await read();
                     const p = data.profile;
                     set({
-                      contacts: data.contacts,
+                      contacts: contactsFromRows(data.contacts),
                       profile: p
                         ? {
                             name: p.full_name,
