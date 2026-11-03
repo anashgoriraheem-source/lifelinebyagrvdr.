@@ -215,6 +215,26 @@ type Persisted = Pick<
 >;
 
 let unsubscribeSettings: { unsubscribe: () => void } | null = null;
+
+/**
+ * The contacts and profile saved on this device, as last written before the
+ * visitor signed in. Used to restore what the person can see when they sign
+ * out, and to offer an explicit import — never uploaded on its own.
+ */
+export function deviceLocalSafetySnapshot(): {
+  contacts: AppState["contacts"];
+  profile: AppState["profile"] | null;
+} | null {
+  try {
+    const parsed = persistedSettingsSchema.safeParse(
+      JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"),
+    );
+    if (!parsed.success) return null;
+    return { contacts: parsed.data.contacts ?? [], profile: parsed.data.profile ?? null };
+  } catch {
+    return null;
+  }
+}
 export function loadSettings() {
   unsubscribeSettings?.unsubscribe();
   const readingDays = loadReadingDays();

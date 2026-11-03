@@ -18,7 +18,9 @@ import { Route as MonitorRouteImport } from './routes/monitor'
 import { Route as SaathRouteImport } from './routes/saath'
 import { Route as ScheduleRouteImport } from './routes/schedule'
 import { Route as TranslateRouteImport } from './routes/translate'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiAlertsTickRouteImport } from './routes/api/alerts/tick'
+import { Route as ApiAuthConfigRouteImport } from './routes/api/auth/config'
 import { Route as ApiAlertsTwilioAckRouteImport } from './routes/api/alerts/twilio/ack'
 import { Route as ApiAlertsTwilioStatusRouteImport } from './routes/api/alerts/twilio/status'
 
@@ -67,9 +69,19 @@ const TranslateRoute = TranslateRouteImport.update({
   path: '/translate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAlertsTickRoute = ApiAlertsTickRouteImport.update({
   id: '/api/alerts/tick',
   path: '/api/alerts/tick',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthConfigRoute = ApiAuthConfigRouteImport.update({
+  id: '/api/auth/config',
+  path: '/api/auth/config',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAlertsTwilioAckRoute = ApiAlertsTwilioAckRouteImport.update({
@@ -93,7 +105,9 @@ export interface FileRoutesByFullPath {
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
   '/translate': typeof TranslateRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/alerts/tick': typeof ApiAlertsTickRoute
+  '/api/auth/config': typeof ApiAuthConfigRoute
   '/api/alerts/twilio/ack': typeof ApiAlertsTwilioAckRoute
   '/api/alerts/twilio/status': typeof ApiAlertsTwilioStatusRoute
 }
@@ -107,7 +121,9 @@ export interface FileRoutesByTo {
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
   '/translate': typeof TranslateRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/alerts/tick': typeof ApiAlertsTickRoute
+  '/api/auth/config': typeof ApiAuthConfigRoute
   '/api/alerts/twilio/ack': typeof ApiAlertsTwilioAckRoute
   '/api/alerts/twilio/status': typeof ApiAlertsTwilioStatusRoute
 }
@@ -122,7 +138,9 @@ export interface FileRoutesById {
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
   '/translate': typeof TranslateRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/alerts/tick': typeof ApiAlertsTickRoute
+  '/api/auth/config': typeof ApiAuthConfigRoute
   '/api/alerts/twilio/ack': typeof ApiAlertsTwilioAckRoute
   '/api/alerts/twilio/status': typeof ApiAlertsTwilioStatusRoute
 }
@@ -138,7 +156,9 @@ export interface FileRouteTypes {
     | '/saath'
     | '/schedule'
     | '/translate'
+    | '/auth/callback'
     | '/api/alerts/tick'
+    | '/api/auth/config'
     | '/api/alerts/twilio/ack'
     | '/api/alerts/twilio/status'
   fileRoutesByTo: FileRoutesByTo
@@ -152,7 +172,9 @@ export interface FileRouteTypes {
     | '/saath'
     | '/schedule'
     | '/translate'
+    | '/auth/callback'
     | '/api/alerts/tick'
+    | '/api/auth/config'
     | '/api/alerts/twilio/ack'
     | '/api/alerts/twilio/status'
   id:
@@ -166,7 +188,9 @@ export interface FileRouteTypes {
     | '/saath'
     | '/schedule'
     | '/translate'
+    | '/auth/callback'
     | '/api/alerts/tick'
+    | '/api/auth/config'
     | '/api/alerts/twilio/ack'
     | '/api/alerts/twilio/status'
   fileRoutesById: FileRoutesById
@@ -181,7 +205,9 @@ export interface RootRouteChildren {
   SaathRoute: typeof SaathRoute
   ScheduleRoute: typeof ScheduleRoute
   TranslateRoute: typeof TranslateRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   ApiAlertsTickRoute: typeof ApiAlertsTickRoute
+  ApiAuthConfigRoute: typeof ApiAuthConfigRoute
   ApiAlertsTwilioAckRoute: typeof ApiAlertsTwilioAckRoute
   ApiAlertsTwilioStatusRoute: typeof ApiAlertsTwilioStatusRoute
 }
@@ -251,11 +277,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TranslateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/alerts/tick': {
       id: '/api/alerts/tick'
       path: '/api/alerts/tick'
       fullPath: '/api/alerts/tick'
       preLoaderRoute: typeof ApiAlertsTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/config': {
+      id: '/api/auth/config'
+      path: '/api/auth/config'
+      fullPath: '/api/auth/config'
+      preLoaderRoute: typeof ApiAuthConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/alerts/twilio/ack': {
@@ -285,7 +325,9 @@ const rootRouteChildren: RootRouteChildren = {
   SaathRoute: SaathRoute,
   ScheduleRoute: ScheduleRoute,
   TranslateRoute: TranslateRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   ApiAlertsTickRoute: ApiAlertsTickRoute,
+  ApiAuthConfigRoute: ApiAuthConfigRoute,
   ApiAlertsTwilioAckRoute: ApiAlertsTwilioAckRoute,
   ApiAlertsTwilioStatusRoute: ApiAlertsTwilioStatusRoute,
 }

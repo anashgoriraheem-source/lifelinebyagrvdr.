@@ -34,12 +34,67 @@ export const accountEn = {
   "account.phoneNote":
     "Phone sign-in is not available until an SMS provider is configured. Emergency calls remain available without signing in.",
   "account.passwordUpdated": "Password updated.",
-  "account.recoverySent": "If this email has an account, a recovery link will arrive shortly.",
+  "account.recoverySent":
+    "If this email has an account, a recovery link is on its way. If nothing arrives within a few minutes, this project's email sender may not be set up yet.",
+  "account.confirmPassword": "Confirm new password",
+  "account.passwordsDiffer": "Both passwords must match.",
+  "account.verifySentPassword":
+    "Choose a new password for your account. You stay signed in on this device.",
   "account.checkEmail": "Check your email and confirm your account before signing in.",
+
+  "account.signInIntro":
+    "Sign in to keep your medical details, contacts and care schedule private to you.",
+  "account.continueGoogle": "Continue with Google",
+  "account.googleUnavailable":
+    "Google sign-in is not set up on this project, so it is switched off. Continue with email below — the account works the same either way.",
+  "account.orEmail": "or continue with email",
+  "account.emailHeading": "Email and password",
+  "account.emailInvalid": "Enter a valid email address.",
+  "account.passwordRequired": "Enter your password.",
+  "account.passwordHint": "At least 8 characters.",
+  "account.passwordShort": "Use at least 8 characters.",
+  "account.showPassword": "Show password",
+  "account.hidePassword": "Hide password",
+  "account.checkingMethods": "Checking the available sign-in methods…",
+  "account.methodsError": "The sign-in service could not be reached.",
+  "account.methodsRetry": "Check again",
+  "account.verifyTitle": "Confirm your email",
+  "account.verifySent":
+    "We sent a confirmation link to {email}. Open it on this device to finish signing in.",
+  "account.resendVerification": "Resend confirmation email",
+  "account.verificationResent":
+    "Confirmation email sent again. Check your inbox and the spam folder.",
+  "account.recoveryIntro": "Enter your account email and we will send a recovery link to it.",
+  "account.googleFailed": "Google sign-in did not send you back to Lifeline.",
+  "account.callbackTitle": "Finishing sign-in",
+  "account.callbackWaiting": "Waiting for the sign-in provider to answer…",
+  "account.callbackSlow": "This is taking longer than usual. Return to sign-in and try again.",
+  "account.callbackFailed": "Sign-in could not be completed.",
+  "account.providerDetail": "Details from the sign-in service",
+  "account.emergencyNote":
+    "An account is optional for emergencies. Calling emergency services and first-aid guidance never need one.",
+  "account.errInvalidCredentials":
+    "That email and password do not match an account. Check them, or reset your password.",
+  "account.errEmailUnconfirmed":
+    "This email is not confirmed yet. Send the confirmation link again below.",
+  "account.errAlreadyRegistered":
+    "An account already exists for this email. Sign in instead, or reset the password.",
+  "account.errWeakPassword": "Choose a password with at least 8 characters.",
+  "account.errSamePassword": "Your new password must be different from the old one.",
+  "account.errRateLimited": "Too many attempts. Wait a minute, then try again.",
+  "account.errSignupDisabled": "New accounts are closed on this project right now.",
+  "account.errProvider": "That sign-in method is not available right now.",
+  "account.errLinkExpired": "That link has expired. Request a new one.",
+  "account.errOffline": "You appear to be offline. Check your connection and try again.",
+  "account.errCancelled": "Sign-in was cancelled before it finished.",
+  "account.errUnknown": "That did not complete. Try again.",
 
   "account.signOut": "Sign out",
   "account.loadingPrivate": "Loading private data…",
   "account.loadError": "Your saved data could not be loaded.",
+  "account.sessionExpiredHint":
+    "This usually means the session expired or the connection dropped. Try again, or sign in again to renew it.",
+  "account.signInAgain": "Sign in again",
 
   "account.importHeading": "Import this device’s contacts",
   "account.importBody":
@@ -114,12 +169,66 @@ export const accountHi: Record<AccountKey, string> = {
   "account.phoneNote":
     "SMS प्रदाता कॉन्फ़िगर होने तक फ़ोन से साइन इन उपलब्ध नहीं है। साइन इन के बिना भी आपातकालीन कॉल उपलब्ध रहते हैं।",
   "account.passwordUpdated": "पासवर्ड बदल गया।",
-  "account.recoverySent": "अगर इस ईमेल पर खाता है, तो रिकवरी लिंक शीघ्र आएगा।",
+  "account.recoverySent":
+    "अगर इस ईमेल पर खाता है, तो रिकवरी लिंक भेजा जा रहा है। अगर कुछ मिनटों में न आए, तो इस प्रोजेक्ट का ईमेल भेजने वाला अभी सेट नहीं है।",
+  "account.confirmPassword": "नया पासवर्ड दोबारा दर्ज करें",
+  "account.passwordsDiffer": "दोनों पासवर्ड मेल खाने चाहिए।",
+  "account.verifySentPassword":
+    "अपने खाते के लिए नया पासवर्ड चुनें। इस डिवाइस पर आप साइन इन रहेंगे।",
   "account.checkEmail": "साइन इन करने से पहले अपना ईमेल जाँचें और खाते की पुष्टि करें।",
+
+  "account.signInIntro":
+    "साइन इन करें ताकि आपकी चिकित्सीय जानकारी, संपर्क और देखभाल कार्यक्रम केवल आपके पास निजी रहें।",
+  "account.continueGoogle": "Google से जारी रखें",
+  "account.googleUnavailable":
+    "इस प्रोजेक्ट पर Google साइन-इन सेट नहीं है, इसलिए वह बंद है। नीचे ईमेल से जारी रखें — खाता दोनों तरह से एक जैसा काम करता है।",
+  "account.orEmail": "या ईमेल से जारी रखें",
+  "account.emailHeading": "ईमेल और पासवर्ड",
+  "account.emailInvalid": "मान्य ईमेल पता दर्ज करें।",
+  "account.passwordRequired": "अपना पासवर्ड दर्ज करें।",
+  "account.passwordHint": "कम से कम 8 अक्षर।",
+  "account.passwordShort": "कम से कम 8 अक्षर इस्तेमाल करें।",
+  "account.showPassword": "पासवर्ड दिखाएँ",
+  "account.hidePassword": "पासवर्ड छिपाएँ",
+  "account.checkingMethods": "उपलब्ध साइन-इन तरीके जाँचे जा रहे हैं…",
+  "account.methodsError": "साइन-इन सेवा से संपर्क नहीं हो सका।",
+  "account.methodsRetry": "फिर से जाँचें",
+  "account.verifyTitle": "अपना ईमेल पुष्टि करें",
+  "account.verifySent":
+    "हमने {email} पर पुष्टि लिंक भेजा है। साइन इन पूरा करने के लिए उसे इसी डिवाइस पर खोलें।",
+  "account.resendVerification": "पुष्टि ईमेल फिर भेजें",
+  "account.verificationResent": "पुष्टि ईमेल फिर भेजा गया। इनबॉक्स और स्पैम फ़ोल्डर देखें।",
+  "account.recoveryIntro": "अपने खाते का ईमेल दर्ज करें, हम उस पर रिकवरी लिंक भेजेंगे।",
+  "account.googleFailed": "Google साइन-इन आपको Lifeline पर वापस नहीं लाया।",
+  "account.callbackTitle": "साइन-इन पूरा हो रहा है",
+  "account.callbackWaiting": "साइन-इन प्रदाता के उत्तर की प्रतीक्षा है…",
+  "account.callbackSlow": "इसमें सामान्य से अधिक समय लग रहा है। साइन-इन पर लौटकर फिर कोशिश करें।",
+  "account.callbackFailed": "साइन-इन पूरा नहीं हो सका।",
+  "account.providerDetail": "साइन-इन सेवा से विवरण",
+  "account.emergencyNote":
+    "आपात स्थिति के लिए खाता ज़रूरी नहीं है। आपातकालीन सेवाओं को कॉल करने और प्राथमिक चिकित्सा मार्गदर्शन के लिए खाते की आवश्यकता कभी नहीं होती।",
+  "account.errInvalidCredentials":
+    "यह ईमेल और पासवर्ड किसी खाते से मेल नहीं खाते। उन्हें जाँचें या पासवर्ड रीसेट करें।",
+  "account.errEmailUnconfirmed":
+    "इस ईमेल की अभी पुष्टि नहीं हुई है। नीचे पुष्टि लिंक फिर भेजें।",
+  "account.errAlreadyRegistered":
+    "इस ईमेल का खाता पहले से है। इसके बजाय साइन इन करें या पासवर्ड रीसेट करें।",
+  "account.errWeakPassword": "कम से कम 8 अक्षरों का पासवर्ड चुनें।",
+  "account.errSamePassword": "नया पासवर्ड पुराने से अलग होना चाहिए।",
+  "account.errRateLimited": "बहुत अधिक प्रयास। एक मिनट रुककर फिर कोशिश करें।",
+  "account.errSignupDisabled": "इस प्रोजेक्ट पर अभी नए खाते बंद हैं।",
+  "account.errProvider": "यह साइन-इन तरीका अभी उपलब्ध नहीं है।",
+  "account.errLinkExpired": "यह लिंक समाप्त हो गया है। नया लिंक माँगें।",
+  "account.errOffline": "आप ऑफ़लाइन लगते हैं। कनेक्शन जाँचकर फिर कोशिश करें।",
+  "account.errCancelled": "साइन-इन पूरा होने से पहले रद्द हो गया।",
+  "account.errUnknown": "यह पूरा नहीं हुआ। फिर कोशिश करें।",
 
   "account.signOut": "साइन आउट",
   "account.loadingPrivate": "निजी डेटा लोड हो रहा है…",
   "account.loadError": "आपका सहेजा हुआ डेटा लोड नहीं हो सका।",
+  "account.sessionExpiredHint":
+    "इसका सामान्य कारण है सत्र समाप्त होना या कनेक्शन टूटना। फिर कोशिश करें, या नया सत्र पाने के लिए दोबारा साइन इन करें।",
+  "account.signInAgain": "दोबारा साइन इन करें",
 
   "account.importHeading": "इस डिवाइस के संपर्क आयात करें",
   "account.importBody":
