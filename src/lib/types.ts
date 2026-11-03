@@ -86,6 +86,7 @@ export type AlarmReason =
   | { type: 'vital'; vital: VitalKey; label: string; reading: string }
   | { type: 'fall'; label: string; reading: string }
   | { type: 'jolt'; label: string; reading: string }
+  | { type: 'stillness'; label: string; reading: string }
   | { type: 'sos'; label: string; reading: string }
 
 export interface AlarmState {

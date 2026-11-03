@@ -41,7 +41,7 @@ export const getProviderStatus = createServerFn({ method: "GET" }).handler(
   },
 );
 
-const triggerSchema = z.enum(["sos", "vital", "fall", "jolt"]);
+const triggerSchema = z.enum(["sos", "vital", "fall", "jolt", "stillness"]);
 
 export const getAlertSetup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -109,7 +109,7 @@ const settingsSchema = z.object({
   identityName: z.string().trim().max(120),
   automationEnabled: z.boolean(),
   testMode: z.boolean(),
-  triggers: z.array(triggerSchema).min(1).max(4),
+  triggers: z.array(triggerSchema).min(1).max(5),
   countdownSeconds: z.number().int().min(0).max(60),
   includeLocation: z.boolean(),
   escalateAfterSeconds: z.number().int().min(15).max(300),

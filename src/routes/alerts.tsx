@@ -51,6 +51,11 @@ const TRIGGERS: { key: string; title: string; help: string }[] = [
   { key: "vital", title: "Vital-sign alarm", help: "Uses a real device reading outside your limits." },
   { key: "fall", title: "Fall detected", help: "Only while the device is connected and the page is open." },
   { key: "jolt", title: "Sudden impact", help: "Uses the phone motion detector in this browser." },
+  {
+    key: "stillness",
+    title: "Stillness detected",
+    help: "Raises an alarm after 60 seconds of confirmed stillness, while movement monitoring is on.",
+  },
 ];
 
 function AutomaticAlerts() {
@@ -168,7 +173,7 @@ function AutomaticAlerts() {
           identityName,
           automationEnabled: enabled,
           testMode,
-          triggers: triggers as ("sos" | "vital" | "fall" | "jolt")[],
+          triggers: triggers as ("sos" | "vital" | "fall" | "jolt" | "stillness")[],
           countdownSeconds: countdown,
           includeLocation,
           escalateAfterSeconds: escalateAfter,

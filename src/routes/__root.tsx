@@ -6,6 +6,7 @@ import { Nav } from "@/components/Nav";
 import { AlarmOverlay } from "@/components/AlarmOverlay";
 import { RuntimeNotices } from "@/components/RuntimeNotices";
 import { VitalsEngine } from "@/components/VitalsEngine";
+import { MovementMonitorRunner } from "@/components/MovementMonitorRunner";
 import { AccountSync } from "@/components/AccountSync";
 // Mounted globally: it is the only bridge from a raised alarm to the durable
 // server incident, so every page can trigger the saved automatic alert rules.
@@ -48,6 +49,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="min-h-screen">
         <I18nProvider>
           <VitalsEngine />
+          {/* The app's single motion listener: fall, stillness and jolt. */}
+          <MovementMonitorRunner />
           <AccountSync />
           <AlertRecorder />
 

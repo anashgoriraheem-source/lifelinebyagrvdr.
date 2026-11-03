@@ -78,7 +78,7 @@ async function timeline(eventId: string, userId: string, kind: string, detail = 
 export interface CreateIncidentInput {
   userId: string;
   idempotencyKey: string;
-  reasonType: "sos" | "vital" | "fall" | "jolt";
+  reasonType: "sos" | "vital" | "fall" | "jolt" | "stillness";
   reasonLabel: string;
   reasonReading: string;
   isDemo: boolean;
@@ -101,7 +101,9 @@ export async function createOrGetIncident(input: CreateIncidentInput) {
   const row = {
     user_id: input.userId,
     idempotency_key: input.idempotencyKey,
-    mode: input.settings.test_mode ? "test" : "live",
+    // A demo/simulated event can never reach a real contact, even when the
+    // saved settings are live: it is stored as a test incident instead.
+    mode: input.settings.test_mode || input.isDemo ? "test" : "live",
     reason_type: input.reasonType,
     reason_label: input.reasonLabel.slice(0, 200),
     reason_reading: input.reasonReading.slice(0, 300),
@@ -121,7 +123,7 @@ export async function createOrGetIncident(input: CreateIncidentInput) {
       escalate_after_seconds: input.settings.escalate_after_seconds,
       max_rounds: input.settings.max_rounds,
       triggers: input.settings.triggers,
-      test_mode: input.settings.test_mode,
+      test_mode: input.settings.test_mode || input.isDemo,
     },
     updated_at: nowIso(),
   };

@@ -469,3 +469,48 @@ and the publishable/service keys; all of them are supplied by compose.
   withholding path has no withheld id to exercise, the level-complete panel
   appears only after all ten scenarios in a level, and no screen-reader or
   physical-device pass was done. Nothing here has clinical review.
+
+## Movement and jolt monitor (`/monitor`)
+
+- `src/lib/movementMonitor.ts` is the pure detector: one `createMovementMonitor()`
+  fed `{x,y,z,t}` accelerometer samples (gravity included) returns
+  `stillness` / `jolt` / `gap` events. Gravity is a slow low-pass of the vector,
+  so stillness is measured on *linear* acceleration and a phone facing any
+  direction (or being turned over) still reads as still. Stillness fires once at
+  `stillnessMs` (60 s) and re-arms only after movement. A silence longer than
+  `sampleGapMs` is a `gap`: the timer resets and it is never counted as
+  stillness. A jolt needs a spike above `joltDynamicMs2` (27 m/s² ≈ 2.75 g) that
+  also arrives fast (`joltJerkMs3`), is rejected when the preceding second shows
+  sustained motion (walking/running mean ≥ 5.5 m/s²) or when it rises slowly
+  (set-down, press), and is debounced for `joltDebounceMs`. `movementAvailability()`
+  is the only place a monitoring phase is decided: unsupported hardware, an
+  insecure page, a denied/absent permission, no stream, a stale stream and a
+  backgrounded tab are all `unavailable` with a stated reason — never "active".
+- `src/lib/movementRuntime.ts` owns the app's **only** `devicemotion` listener
+  (mounted once by `MovementMonitorRunner` in `__root.tsx`), feeds both the
+  existing fall detector and the new monitor from the same samples, and raises
+  the existing alarm through `raiseAlarm`. `src/hooks/useMotion.ts` and the never
+  mounted `MotionCard.tsx` were removed with that move; do not add a second
+  listener. A jolt inside the fall detector's post-impact window is suppressed so
+  one impact cannot raise two alarms, and `raiseAlarm` itself refuses while an
+  alarm is open. Test mode is `runTrace()` over built-in synthetic traces: it
+  never calls `raiseAlarm`, a provider or a contact, and `movementMonitor.test.ts`
+  fails if that path gains an alarm/dispatch import.
+- Alarm reasons gained `stillness`; `alert_settings.triggers` accepts
+  `stillness` alongside `sos|vital|fall|jolt` (checked in `/alerts`). Demo/demo
+  alarms are now stored as `mode: "test"` incidents server-side, so a simulated
+  event can never reach a real contact even with live settings saved.
+- The alarm screen names its source (`This alarm came from …`, sensor caveat for
+  fall/jolt/stillness) and offers “I’m OK — cancel the automatic alert” during the
+  countdown, which clears the alarm and lets `AlertRecorder` cancel the pending
+  incident. No response still escalates through the saved contact workflow.
+- Verified: `npm test` (234 tests, incl. 20 new detector/availability/alarm
+  rules) and `tsc --noEmit`. In the preview at 1265 px and 375 px: the card's
+  setup text, honest "Unavailable / no motion readings yet" state after Start in
+  a headless browser, all five test-mode traces with their verdicts and no alarm
+  dialog, no horizontal overflow, and a demo fall alarm whose dialog named the
+  fall detector and was cleared by “I’m OK”.
+  NOT verified: any real accelerometer, so the 60 s stillness alarm, a real jolt,
+  permission grant/deny on iOS and Android, background suspension behaviour and
+  the countdown → automatic escalation path were not exercised on hardware. The
+  thresholds are conservative starting values, not calibrated on a device.

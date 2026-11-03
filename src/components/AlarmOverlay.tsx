@@ -10,6 +10,17 @@ import { smsHref, telHref, mapsLink, STALE_FIX_MS } from "@/lib/sos";
 import { Button } from "@/components/ui/button";
 import { cancelDispatch } from "@/lib/dispatch.functions";
 import { INCIDENT_STATUS_LABEL } from "@/lib/alertTypes";
+import type { AlarmReason } from "@/lib/types";
+
+/** Which sensor (or person) opened this alarm, said plainly. */
+const ALARM_SOURCE: Record<AlarmReason["type"], string> = {
+  sos: "the SOS button / SOS बटन",
+  vital: "a device reading outside your limits / सीमा से बाहर रीडिंग",
+  fall: "the fall detector / गिरने का पता लगाना",
+  jolt: "a possible impact on the motion sensor / संभावित टक्कर",
+  stillness: "60 seconds without movement on the motion sensor / 60 सेकंड बिना हलचल",
+};
+const SENSOR_SOURCES = new Set<AlarmReason["type"]>(["fall", "jolt", "stillness"]);
 /** Focus-trapped, ordinary click/keyboard controls. Automatic alerts are
  * created by AlertRecorder from the settings the person saved; this screen only
  * reports their stored state and offers a cancel during the countdown. It never
@@ -101,6 +112,21 @@ export function AlarmOverlay() {
           <Dialog.Description id="emergency-description" className="mt-3 text-sm">
             {t("release.urgent")}
           </Dialog.Description>
+          <p
+            className="mt-3 rounded-lg border border-border p-3 text-sm"
+            data-alarm-source={alarm.reason?.type ?? "none"}
+          >
+            <span className="font-semibold">This alarm came from </span>
+            {alarm.reason ? ALARM_SOURCE[alarm.reason.type] : "an unknown source"} —{" "}
+            {alarm.reason?.label}
+            {alarm.reason?.reading ? ` · ${alarm.reason.reading}` : ""}
+            {alarm.reason && SENSOR_SOURCES.has(alarm.reason.type) && (
+              <span className="mt-2 block text-xs text-muted-foreground">
+                A sensor pattern is not proof that someone is unconscious or injured. If you can
+                respond, choose “I’m OK — cancel the automatic alert” while the countdown runs.
+              </span>
+            )}
+          </p>
           <p className="mt-3 rounded-lg bg-critical-soft p-3 text-sm">{t("release.nearby")}</p>
           <p
             role="status"
@@ -117,6 +143,16 @@ export function AlarmOverlay() {
               <p>{t("release.countdown", { count: formatNumber(remaining) })}</p>
               <Button className="mt-3" onClick={openAlarmActions}>
                 {t("release.openNow")}
+              </Button>
+              <Button
+                variant="outline"
+                className="mt-2 min-h-11 w-full"
+                onClick={() => {
+                  cancelAlarm("Acknowledged — the person says they are OK");
+                  set({ assistantOpen: false });
+                }}
+              >
+                I’m OK — cancel the automatic alert / ठीक हूँ — अलर्ट रद्द करें
               </Button>
             </div>
           )}

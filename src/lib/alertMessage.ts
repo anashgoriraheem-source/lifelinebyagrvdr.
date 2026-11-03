@@ -13,7 +13,7 @@
  *   and an answered call is never reported as acknowledged.
  */
 
-export type AlertTriggerType = "sos" | "vital" | "fall" | "jolt";
+export type AlertTriggerType = "sos" | "vital" | "fall" | "jolt" | "stillness";
 
 export interface AlertLocation {
   lat: number;
