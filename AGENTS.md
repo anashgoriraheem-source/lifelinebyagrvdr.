@@ -244,9 +244,20 @@ and the publishable/service keys; all of them are supplied by compose.
   the shimmer keeps its dither and motion, tinted with the theme's primary.
   `worldDots.test.ts` is the projection test: known cities must be on land and
   known oceans on sea.
+- `LocationMap.tsx` MUST import `leaflet/dist/leaflet.css` before
+  `styles/location-map.css`. Leaflet positions every tile and pane from that
+  stylesheet; without it the tiles keep `position: static` and the map paints as
+  broken quadrants in the corner of its frame (the overlays still look fine, so
+  check `.leaflet-tile` computed `position` rather than trusting the frame).
+  `location-map.css` only restyles that DOM; it does not replace it.
 - Verified in the preview at desktop (1265 px) and mobile (375 px): the map
-  frame, tiles and attribution render, the denied-permission path works from the
+  frame and OSM attribution render, the denied-permission path works from the
   real button, the globe draws its continents and its empty state, and there is
-  no sideways scroll. NOT verified: any granted location fix (the preview
-  browser denies geolocation), so marker/accuracy/follow/copy/share and the
-  globe's pins were not driven end to end; their maths is unit-tested.
+  no sideways scroll. A later audit found the tiles were laid out unpositioned
+  (missing Leaflet CSS, now imported); after that fix `tsc --noEmit`,
+  `npm run build` and `npm test` pass and the built CSS carries Leaflet's
+  `position: absolute` rules, but the rendered tile grid was not re-captured in
+  the same session — re-check it on the next `/monitor` pass. NOT verified: any
+  granted location fix (the preview browser denies geolocation), so
+  marker/accuracy/follow/copy/share and the globe's pins were not driven end to
+  end; their maths is unit-tested.

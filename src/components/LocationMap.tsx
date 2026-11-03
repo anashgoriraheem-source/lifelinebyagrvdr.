@@ -3,6 +3,9 @@ import { LocateFixed, Minus, Navigation, Plus, Share2 } from "lucide-react";
 import type { LocationFix } from "@/lib/types";
 import { formatCoordinates } from "@/lib/places";
 import { accuracyIsCoarse, zoomForAccuracy } from "@/lib/mapView";
+// Leaflet positions its tiles and panes from its own stylesheet. Without this
+// import the tiles render unpositioned, so the map shows as broken quadrants.
+import "leaflet/dist/leaflet.css";
 import "../styles/location-map.css";
 
 /**
