@@ -48,7 +48,6 @@ const label = "block text-sm font-semibold";
 
 const TRIGGERS: { key: string; title: string; help: string }[] = [
   { key: "sos", title: "SOS button", help: "Sends immediately. There is no cancellation window." },
-  { key: "vital", title: "Vital-sign alarm", help: "Uses a real device reading outside your limits." },
   { key: "fall", title: "Fall detected", help: "Only while the device is connected and the page is open." },
   { key: "jolt", title: "Sudden impact", help: "Uses the phone motion detector in this browser." },
   {
@@ -173,7 +172,7 @@ function AutomaticAlerts() {
           identityName,
           automationEnabled: enabled,
           testMode,
-          triggers: triggers as ("sos" | "vital" | "fall" | "jolt" | "stillness")[],
+          triggers: triggers as ("sos" | "fall" | "jolt" | "stillness")[],
           countdownSeconds: countdown,
           includeLocation,
           escalateAfterSeconds: escalateAfter,

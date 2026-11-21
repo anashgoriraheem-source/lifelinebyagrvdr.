@@ -1,12 +1,6 @@
 import { z } from "zod";
 import { LOCALE_CODES } from "@/i18n/locales";
 
-const threshold = z.object({
-  below: z.number().finite().nullable(),
-  above: z.number().finite().nullable(),
-  above2: z.number().finite().nullable().optional(),
-});
-
 const contact = z.object({
   id: z.string().max(120),
   name: z.string().trim().max(120),
@@ -31,9 +25,6 @@ export const persistedSettingsSchema = z.object({
   contacts: z.array(contact).max(50).optional(),
   countryCode: z.enum(["IN", "US", "GB", "EU", "AU"]).optional(),
   countdownSeconds: z.number().int().min(0).max(60).optional(),
-  thresholds: z
-    .object({ bp: threshold, hr: threshold, spo2: threshold, glucose: threshold })
-    .optional(),
   profile: z
     .object({
       name: z.string().trim().max(120),

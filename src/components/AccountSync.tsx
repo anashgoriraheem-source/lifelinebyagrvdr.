@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { readSafetyAccount, saveSafetyPreferences } from "@/lib/account.functions";
 import { contactsFromRows } from "@/lib/accountContacts";
 import { appStore, deviceLocalSafetySnapshot, set } from "@/lib/store";
-import { disconnectWearable } from "@/core/ble/connect";
 import { stopTracking } from "@/lib/location";
 import { isLocaleCode } from "@/i18n/locales";
 
@@ -34,14 +33,11 @@ export function AccountSync() {
       if (!active || my !== generation) return;
       const user = data.user;
       if (appStore.state.userId === (user?.id ?? null)) return;
-      disconnectWearable();
       stopTracking();
       // Signed out: show what this device saved for itself rather than an empty
       // page. Those details are never uploaded without the explicit import.
       const local = user ? null : deviceLocalSafetySnapshot();
       set({
-        vitals: {},
-        history: { hr: [], spo2: [], bp: [], glucose: [] },
         location: { status: "idle", fix: null, error: null },
         userId: user?.id ?? null,
         userEmail: user?.email ?? null,

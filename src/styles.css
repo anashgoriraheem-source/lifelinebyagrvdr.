@@ -548,7 +548,11 @@ select:focus-visible {
     padding-bottom: env(safe-area-inset-bottom);
     z-index: 35;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .app-nav-link--practice,
+  .app-nav-link--account {
+    display: none;
   }
   .app-nav-link {
     justify-content: center;

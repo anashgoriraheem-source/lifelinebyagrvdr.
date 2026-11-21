@@ -78,7 +78,7 @@ async function timeline(eventId: string, userId: string, kind: string, detail = 
 export interface CreateIncidentInput {
   userId: string;
   idempotencyKey: string;
-  reasonType: "sos" | "vital" | "fall" | "jolt" | "stillness";
+  reasonType: "sos" | "fall" | "jolt" | "stillness";
   reasonLabel: string;
   reasonReading: string;
   isDemo: boolean;

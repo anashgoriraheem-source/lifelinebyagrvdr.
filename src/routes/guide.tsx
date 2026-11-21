@@ -26,6 +26,9 @@ export const Route = createFileRoute("/guide")({
 function GuidePage() {
   return (
     <main id="main-content" tabIndex={-1} className="pb-28">
+      <p className="mx-auto mt-6 max-w-6xl px-4 text-sm font-semibold uppercase tracking-[0.16em] text-primary sm:px-6">
+        Learning mode
+      </p>
       <FieldGuideMegaMenu />
       <section
         className="mx-auto mt-10 grid max-w-6xl gap-5 border-t border-border px-4 pt-8 sm:grid-cols-[1fr_auto] sm:px-6"

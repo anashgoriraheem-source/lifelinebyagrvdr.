@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "@/i18n";
 import { useApp } from "@/hooks/useApp";
-import { set } from "@/lib/store";
+import { loadSettings } from "@/lib/store";
 import { stopTracking } from "@/lib/location";
-import { disconnectWearable } from "@/core/ble/connect";
 import { Button } from "@/components/ui/button";
 export function RuntimeNotices() {
   const { t } = useI18n();
@@ -11,15 +10,14 @@ export function RuntimeNotices() {
   const [offline, setOffline] = useState(false);
   const [paused, setPaused] = useState(false);
   useEffect(() => {
+    const unloadSettings = loadSettings();
     const online = () => setOffline(!navigator.onLine);
     online();
     window.addEventListener("online", online);
     window.addEventListener("offline", online);
     const visibility = () => {
       if (document.visibilityState === "hidden") {
-        disconnectWearable();
         stopTracking();
-        set({ vitals: {}, history: { hr: [], spo2: [], bp: [], glucose: [] } });
         setPaused(true);
       }
     };
@@ -29,6 +27,7 @@ export function RuntimeNotices() {
         /* Offline page reports registration failure. */
       });
     return () => {
+      unloadSettings();
       window.removeEventListener("online", online);
       window.removeEventListener("offline", online);
       document.removeEventListener("visibilitychange", visibility);

@@ -4,24 +4,19 @@ import { useServerFn } from "@tanstack/react-start";
 import { getAlertSetup } from "@/lib/dispatch.functions";
 import type { AlertSetupView } from "@/lib/alertTypes";
 import { useApp } from "@/hooks/useApp";
-import { useNow } from "@/hooks/useNow";
-import { isStale } from "@/lib/detection";
 import { AlertStatusPanel } from "@/components/AlertStatusPanel";
 import { Button } from "@/components/ui/button";
 import { BellRing, CircleAlert, CircleCheck } from "lucide-react";
 
 /**
- * "Can Lifeline alert someone right now?" Facts only: the automation opt-in, the
- * provider state, the device link and the age of the last real reading. Nothing
+ * "Can Lifeline alert someone right now?" Facts only: the automation opt-in and
+ * provider state. Nothing
  * here claims background or unconscious-person protection.
  */
 export function AutomaticAlertStatus() {
   const load = useServerFn(getAlertSetup);
   const userId = useApp((s) => s.userId);
-  const device = useApp((s) => s.device);
-  const vitals = useApp((s) => s.vitals);
   const dispatch = useApp((s) => s.dispatch);
-  const now = useNow();
   const [setup, setSetup] = useState<AlertSetupView | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -43,12 +38,8 @@ export function AutomaticAlertStatus() {
     };
   }, [load, userId]);
 
-  const fresh = Object.entries(vitals).some(
-    ([k, r]) => r && !isStale(k as keyof typeof vitals, r, now),
-  );
   const automationOn = Boolean(setup?.settings?.automationEnabled);
   const providerReady = Boolean(setup?.provider.liveReady);
-  const deviceLinked = device.status === "connected";
 
   return (
     <section aria-labelledby="auto-alert-title" className="mt-8 rounded-lg border border-border p-4">
@@ -104,29 +95,10 @@ export function AutomaticAlertStatus() {
                   : " · setup steps are listed on the alert setup page"}
               </span>
             </li>
-            <li className="flex items-start gap-2">
-              {deviceLinked && fresh ? (
-                <CircleCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
-              ) : (
-                <CircleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
-              )}
-              <span>
-                <strong>
-                  {deviceLinked
-                    ? fresh
-                      ? "Device connected and sending readings"
-                      : "Device connected — waiting for a reading"
-                    : "No device connected"}
-                </strong>
-                {device.lastReadingAt
-                  ? ` · last reading ${new Date(device.lastReadingAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-                  : " · sensor alarms cannot fire without a real reading"}
-              </span>
-            </li>
           </ul>
           <p className="mt-3 text-xs text-muted-foreground">
-            Lifeline can only create an alert while this page or another Lifeline tab is open and
-            the device is connected. If the browser is closed, or the page is suspended, no alarm
+            Lifeline can only create an alert while this page or another Lifeline tab is open. If
+            the browser is closed, or the page is suspended, no alarm
             can be raised — this is not background monitoring.
           </p>
           {dispatch && <div className="mt-4">

@@ -8,13 +8,13 @@ import { useSpeech } from "@/hooks/useSpeech";
 import { SosButton } from "@/components/SosButton";
 import { Button } from "@/components/ui/button";
 import { HEALTH_SOURCES } from "@/data/health-sources";
+import { MEDICAL_TERMS, type MedicalTerm } from "@/data/medicalTerms";
 export const Route = createFileRoute("/assistant")({
   ssr: false,
   // The guide shelf links straight to one topic (`/assistant?guide=cpr`); any
   // other value is dropped, so a hand-edited URL cannot select an unknown guide.
   validateSearch: (search: Record<string, unknown>): { guide?: string } => ({
-    guide:
-      typeof search.guide === "string" && guideById(search.guide) ? search.guide : undefined,
+    guide: typeof search.guide === "string" && guideById(search.guide) ? search.guide : undefined,
   }),
   component: AssistantPage,
 });
@@ -45,6 +45,8 @@ function AssistantPage() {
   const [guideId, setGuideId] = useState(linkedGuide ?? "");
   const [urgent, setUrgent] = useState(false);
   const [unmatched, setUnmatched] = useState(false);
+  const [mode, setMode] = useState<"emergency" | "learning">("emergency");
+  const [termMatch, setTermMatch] = useState<MedicalTerm | null>(null);
   const speech = useSpeech("en-IN");
   const guide = GUIDES.find((g) => g.id === guideId);
   // A link from the guide shelf, pressed while this page is already open.
@@ -56,10 +58,72 @@ function AssistantPage() {
     setGuideId(id);
     setUnmatched(false);
   };
+  const searchLocalLibrary = (value: string) => {
+    const normalized = normaliseAssistantRequest(value, locale).toLocaleLowerCase();
+    if (mode === "emergency") {
+      const match = matchGuide(normalized);
+      setTermMatch(null);
+      choose(match?.id ?? "");
+      setUnmatched(!match);
+      return;
+    }
+
+    const words = normalized.split(/[^\p{L}\p{N}]+/u).filter((word) => word.length > 2);
+    const match = MEDICAL_TERMS.find((term) => {
+      const haystack = [term.term, term.definition, term.example, ...term.related]
+        .join(" ")
+        .toLocaleLowerCase();
+      return (
+        haystack.includes(normalized) ||
+        words.some((word) => term.term.toLocaleLowerCase().includes(word))
+      );
+    });
+    setTermMatch(match ?? null);
+    const guideMatch = matchGuide(normalized);
+    choose(guideMatch?.id ?? "");
+    setUnmatched(!match && !guideMatch);
+  };
   return (
     <main id="main-content" tabIndex={-1} className="mx-auto max-w-4xl px-4 pb-32 pt-8">
       <h1 className="font-display text-3xl font-bold">{t("release.aid")}</h1>
       <p className="mt-3">{t("release.noDelivery")}</p>
+      <section
+        className="mt-5 rounded-xl border border-border bg-card p-4"
+        aria-label="Choose guidance mode"
+      >
+        <h2 className="font-semibold">Choose how Lifeline helps</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant={mode === "emergency" ? "destructive" : "outline"}
+            aria-pressed={mode === "emergency"}
+            onClick={() => {
+              setMode("emergency");
+              setTermMatch(null);
+              setUnmatched(false);
+            }}
+          >
+            Emergency guidance
+          </Button>
+          <Button
+            type="button"
+            variant={mode === "learning" ? "default" : "outline"}
+            aria-pressed={mode === "learning"}
+            onClick={() => {
+              setMode("learning");
+              setUrgent(false);
+              setUnmatched(false);
+            }}
+          >
+            Educational library
+          </Button>
+        </div>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {mode === "emergency"
+            ? "Short, safety-first lookup. Emergency recognition and SOS remain available while using either mode."
+            : "Searches Lifeline’s offline first-aid guides and glossary. Generative AI is not enabled on this release."}
+        </p>
+      </section>
       <section className="mt-5 space-y-4 rounded-xl border border-critical p-4">
         <p>{t("release.urgent")}</p>
         <SosButton />
@@ -74,15 +138,14 @@ function AssistantPage() {
         className="mt-5 rounded-lg border border-border p-4"
         onSubmit={(e) => {
           e.preventDefault();
-          const normalized = normaliseAssistantRequest(question, locale);
           setUrgent(detectEmergency(question).emergent);
-          const g = matchGuide(normalized);
-          choose(g?.id ?? "");
-          setUnmatched(!g);
+          searchLocalLibrary(question);
         }}
       >
         <label htmlFor="first-aid-search" className="block font-semibold">
-          {t("chat.placeholder")}
+          {mode === "emergency"
+            ? "What is happening right now? Search emergency guidance"
+            : "Ask about a first-aid topic or medical term"}
         </label>
         <textarea
           id="first-aid-search"
@@ -98,9 +161,26 @@ function AssistantPage() {
         <p className="mt-3 text-sm">
           {locale === "hi"
             ? "यह खोज इसी डिवाइस पर होती है। बातचीत, प्रोफ़ाइल और रीडिंग किसी एआई सेवा को नहीं भेजी जातीं। यह लक्षणों का सुरक्षित होने का परीक्षण नहीं है।"
-            : "This search runs on this device. Chat, profile and readings are not sent to an AI service. A search result is not a safety assessment."}
+            : "This search runs on this device. Chat and profile details are not sent to an AI service. A search result is not a safety assessment."}
         </p>
       </form>
+      {termMatch && mode === "learning" && (
+        <article className="mt-4 rounded-xl border border-border bg-card p-5" lang="en">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+            {termMatch.category}
+          </p>
+          <h2 className="mt-1 text-xl font-bold">{termMatch.term}</h2>
+          <p className="mt-3">{termMatch.definition}</p>
+          <p className="mt-3 text-sm text-muted-foreground">Example: {termMatch.example}</p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Offline glossary entry · English · educational information, not diagnosis. See the{" "}
+            <Link className="underline" to="/terms">
+              full medical terminology library
+            </Link>
+            .
+          </p>
+        </article>
+      )}
       {urgent && (
         <p role="alert" className="mt-4 rounded-lg bg-critical-soft p-4">
           {t("release.urgent")}

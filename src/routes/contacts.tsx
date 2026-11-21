@@ -15,19 +15,17 @@ import {
   Pencil,
   Phone,
   Plus,
-  RotateCcw,
   Shield,
   Siren,
   Trash2,
   X,
 } from "lucide-react";
 import { useApp } from "@/hooks/useApp";
-import { DEFAULT_THRESHOLDS, EMERGENCY_BY_COUNTRY, RELATIONSHIPS } from "@/lib/fixtures";
+import { EMERGENCY_BY_COUNTRY, RELATIONSHIPS } from "@/lib/fixtures";
 import { appStore, emergencyNumbers, set } from "@/lib/store";
-import { VITAL_META, thresholdError } from "@/lib/detection";
 import { buildSosMessage, isValidPhone, smsHref, telHref } from "@/lib/sos";
 import { useI18n } from "@/i18n";
-import type { Contact, VitalKey } from "@/lib/types";
+import type { Contact } from "@/lib/types";
 
 export const Route = createFileRoute("/contacts")({
   ssr: false,
@@ -57,7 +55,6 @@ function Contacts() {
   const contacts = useApp((s) => s.contacts);
   const country = useApp((s) => s.countryCode);
   const countdown = useApp((s) => s.countdownSeconds);
-  const thresholds = useApp((s) => s.thresholds);
   const fix = useApp((s) => s.location.fix);
   const n = useApp(emergencyNumbers);
   const [editing, setEditing] = useState<Contact | "new" | null>(null);
@@ -79,16 +76,6 @@ function Contacts() {
   const shareLocation = useApp((s) => s.shareLocation);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
-  const [tErr, setTErr] = useState<Partial<Record<VitalKey, string | null>>>({});
-
-  /** Reject impossible or contradictory limits; keep the previous value when rejected. */
-  const editThreshold = (k: VitalKey, f: "below" | "above" | "above2", raw: string) =>
-    set((s) => {
-      const t = { ...s.thresholds[k], [f]: raw === "" ? null : Number(raw) };
-      const err = thresholdError(k, t);
-      setTErr((e) => ({ ...e, [k]: err }));
-      return err ? {} : { thresholds: { ...s.thresholds, [k]: t } };
-    });
 
   const move = (i: number, d: -1 | 1) =>
     set((s) => {
@@ -369,75 +356,6 @@ function Contacts() {
           onChange={(e) => set({ countdownSeconds: Number(e.target.value) })}
           className="mt-4 w-full accent-destructive"
         />
-      </section>
-
-      {/* Thresholds */}
-      <section className={`${card} mt-5`}>
-        <div className="flex items-center">
-          <h2 className="mr-auto font-display text-xl font-bold">{t("contacts.limitsHeading")}</h2>
-          <Button
-            onClick={() => set({ thresholds: DEFAULT_THRESHOLDS })}
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ring-border hover:bg-background"
-          >
-            <RotateCcw className="size-3.5" /> {t("contacts.reset")}
-          </Button>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {t("contacts.limitsBody", { account: userId ? t("contacts.limitsAccount") : "" })}
-        </p>
-        <table className="mt-4 w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-normal text-muted-foreground">
-              <th className="pb-2 font-semibold">{t("contacts.colVital")}</th>
-              <th className="pb-2 font-semibold">{t("contacts.colUnder")}</th>
-              <th className="pb-2 font-semibold">{t("contacts.colOver")}</th>
-              <th className="pb-2 font-semibold">{t("contacts.colSecond")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {(Object.keys(VITAL_META) as VitalKey[]).map((k) => (
-              <tr key={k}>
-                <td className="py-2.5 pr-2 font-medium">
-                  {VITAL_META[k].label}{" "}
-                  <span className="text-xs text-muted-foreground">{VITAL_META[k].unit}</span>
-                </td>
-                {(["below", "above"] as const).map((f) => (
-                  <td key={f} className="py-2.5 pr-2">
-                    <input
-                      type="number"
-                      value={thresholds[k][f] ?? ""}
-                      placeholder="—"
-                      aria-label={t(f === "below" ? "contacts.lowerLimit" : "contacts.upperLimit", {
-                        label: VITAL_META[k].label,
-                      })}
-                      onChange={(e) => editThreshold(k, f, e.target.value)}
-                      className="w-full max-w-20 rounded-lg border border-border px-2 py-1 font-mono"
-                    />
-                  </td>
-                ))}
-                <td className="py-2.5 pr-2">
-                  {k === "bp" ? (
-                    <input
-                      type="number"
-                      value={thresholds.bp.above2 ?? ""}
-                      placeholder="—"
-                      aria-label={t("contacts.diastolicLimit")}
-                      onChange={(e) => editThreshold("bp", "above2", e.target.value)}
-                      className="w-full max-w-20 rounded-lg border border-border px-2 py-1 font-mono"
-                    />
-                  ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {Object.values(tErr).some(Boolean) && (
-          <p role="alert" className="mt-2 text-xs font-semibold text-critical">
-            {t("contacts.rejected", { error: Object.values(tErr).find(Boolean) ?? "" })}
-          </p>
-        )}
       </section>
 
       {editing && (

@@ -12,17 +12,6 @@ import {
 } from "./knowledge";
 import { localeByCode, isLocaleCode } from "@/i18n/locales";
 
-const reading = z.object({
-  key: z.string().max(20),
-  label: z.string().min(1).max(40),
-  value: z.string().max(24),
-  unit: z.string().max(16),
-  source: z.string().max(120),
-  measuredAt: z.number().int().positive(),
-  quality: z.enum(["good", "uncertain", "stale"]),
-  stale: z.boolean(),
-});
-
 const deviceSnapshot = z.object({
   name: z.string().max(120).optional(),
   age: z.number().int().min(0).max(130).nullable().optional(),
@@ -43,7 +32,6 @@ const deviceSnapshot = z.object({
     )
     .max(50)
     .optional(),
-  readings: z.array(reading).max(8).optional(),
   incidents: z
     .array(
       z.object({
@@ -104,7 +92,6 @@ async function loadContext(
     allergies: snapshot?.allergies,
     medications: snapshot?.medications,
     contacts: snapshot?.contacts ?? [],
-    readings: (snapshot?.readings ?? []).map((r) => ({ ...r })),
     incidents: (snapshot?.incidents ?? []).map((i) => ({ ...i, startedAt: i.startedAt })),
   };
   if (!userId) return base;
@@ -274,7 +261,6 @@ export const askAssistant = createServerFn({ method: "POST" })
     if (context.signedIn) {
       if (context.name) groundedIn.add("profile");
       if (context.contacts.length) groundedIn.add("contacts");
-      if (context.readings.length) groundedIn.add("readings");
       if (context.incidents.length) groundedIn.add("incidents");
     }
     return {

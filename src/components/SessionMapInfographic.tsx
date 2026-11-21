@@ -23,9 +23,8 @@ import "../styles/session-map-infographic.css";
  * Session board — the adapted "Map Infographic" board.
  *
  * Layout, card shape, entrance, count-up and the pulsing pins are the original
- * design. What changed is the content: the pins are the places this tab's
- * location fixes actually came from, and the two counters read the app's own
- * live totals. The dot world is drawn from the app's verified 2° land grid
+ * design. The pins are the places this tab's location fixes actually came
+ * from. The dot world is drawn from the app's verified 2° land grid
  * (see `worldDots.ts`), so a pin sits on the place it describes instead of on a
  * decorative continent; no pin, number or coordinate is invented.
  */
@@ -75,7 +74,6 @@ function useCountUp(target: number | null, delay = COUNT_START_MS) {
 
 export function SessionMapInfographic() {
   const places = useApp((s) => s.places);
-  const readings = useApp((s) => s.device.readingCount ?? 0);
   const fix = useApp((s) => s.location.fix);
   const locationStatus = useApp((s) => s.location.status);
   const { locale } = useI18n();
@@ -91,7 +89,7 @@ export function SessionMapInfographic() {
 
   const pins = useMemo(() => sessionPins(places), [places]);
   const accuracy = fix ? Math.round(fix.accuracy) : null;
-  const countedReadings = useCountUp(readings);
+  const countedPlaces = useCountUp(pins.length);
   const countedAccuracy = useCountUp(accuracy);
 
   // Entrance, exactly as the board's original timing.
@@ -509,7 +507,7 @@ export function SessionMapInfographic() {
     };
   }, [pins]);
 
-  const readingValue = countedReadings == null ? "0" : String(Math.round(countedReadings));
+  const placeValue = countedPlaces == null ? "0" : String(Math.round(countedPlaces));
   const accuracyValue = countedAccuracy == null ? "—" : `±${Math.round(countedAccuracy)} m`;
 
   const labels = pins.map((pin) => {
@@ -545,9 +543,9 @@ export function SessionMapInfographic() {
         <div className="mig-badges">
           <span className="mig-ticker">
             <span className="mig-ticker-dot" aria-hidden="true" />
-            <span className="mig-val">{readingValue}</span>
+            <span className="mig-val">{placeValue}</span>
             <span className="mig-label">
-              {hi ? "इस कनेक्शन में रीडिंग" : "Readings this connection"}
+              {hi ? "इस टैब में स्थान" : "Places in this tab"}
             </span>
           </span>
           <span className="mig-ticker">
