@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useI18n } from "@/i18n";
 import { appStore, deleteDeviceLocalData } from "@/lib/store";
-import { disconnectWearable } from "@/core/ble/connect";
 import { stopTracking } from "@/lib/location";
 import { Button } from "@/components/ui/button";
 export function DevicePrivacy() {
@@ -15,10 +14,8 @@ export function DevicePrivacy() {
         exportedAt: new Date().toISOString(),
         profile: s.profile,
         contacts: s.contacts,
-        thresholds: s.thresholds,
         country: s.countryCode,
         language: s.language,
-        readingDays: s.readingDays,
         rawSavedSettings: localStorage.getItem("lifeline:settings:v1"),
       };
       const url = URL.createObjectURL(
@@ -54,7 +51,6 @@ export function DevicePrivacy() {
             <Button
               variant="destructive"
               onClick={() => {
-                disconnectWearable();
                 stopTracking();
                 setNotice(
                   t(deleteDeviceLocalData() ? "privacy.deleted" : "release.storageBlocked"),

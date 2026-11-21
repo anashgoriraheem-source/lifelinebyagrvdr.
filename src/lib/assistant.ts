@@ -5,10 +5,8 @@
  * not a doctor, no diagnoses, no dose changes, never discourage emergency care.
  */
 import { GUIDES, guideById, matchGuide, type Guide } from './firstAid'
-import { VITAL_META, formatReading, guideFor, isStale } from './detection'
 import { emergencyNumbers, type AppState } from './store'
 import { clockTime, mapsLink } from './sos'
-import type { VitalKey } from './types'
 
 export type Action =
   | { kind: 'call'; number: string; label: string }
@@ -23,7 +21,7 @@ export interface Reply {
   actions?: Action[]
 }
 
-export const QUICK_CHIPS = ["What's my status?", 'Explain this alert', 'What should I do?', 'Last 24 hours', 'Where am I?', 'Help me connect my watch']
+export const QUICK_CHIPS = ["What's my status?", 'Explain this alert', 'What should I do?', 'Last 24 hours', 'Where am I?', 'How do I prepare?']
 
 const has = (q: string, ...words: string[]) => words.some((w) => q.includes(w))
 
@@ -71,32 +69,25 @@ export function respond(input: string, s: AppState): Reply {
     }
   }
 
-  // 3. Status from real state — never invent numbers.
+  // 3. Status is limited to app activity; Lifeline does not monitor body metrics.
   if (has(q, 'status', 'how am i', 'my vitals', 'readings')) {
-    const parts = (Object.keys(VITAL_META) as VitalKey[]).map((k) => {
-      const r = s.vitals[k]
-      if (!r) return `${VITAL_META[k].label}: no data from a connected device`
-      if (isStale(k, r)) return `${VITAL_META[k].label}: signal lost (last ${clockTime(r.measuredAt)})`
-      return `${VITAL_META[k].label} ${formatReading(k, r)} ${r.unit}`
-    })
-    const src = s.demoMode ? ' These are demo readings, not real measurements.' : ''
-    return { text: `${prefix}${parts.join('. ')}.${src}` }
+    const active = s.alarm.phase !== 'idle'
+      ? 'An emergency alert is active.'
+      : 'There is no active emergency alert.'
+    return { text: `${prefix}${active} Lifeline does not measure or monitor body readings. I can help with emergency contacts, first-aid learning, and preparedness.` }
   }
 
   // 4. Alarm explanation and what to do.
   if (has(q, 'explain', 'why did', 'why alert', 'alert fired')) {
     const last = inAlarm ? s.alarm.reason : null
-    if (last) return { text: `The alarm fired because of ${last.label.toLowerCase()}: ${last.reading}. Lifeline alarms when a vital stays beyond your limit for 3 seconds, or on a detected fall, jolt or SOS press.` }
+    if (last) return { text: `The alarm fired because of ${last.label.toLowerCase()}: ${last.reading}.` }
     const lastLog = s.log.find((l) => l.kind === 'alarm' || l.kind === 'sos' || l.kind === 'cancel')
     return { text: lastLog ? `The most recent alert: ${lastLog.text} (${new Date(lastLog.at).toLocaleString()}).` : 'There are no recent alerts.' }
   }
   if (has(q, 'what should i do', 'what do i do', 'what now', 'first aid')) {
     const reason = s.alarm.reason
     let id: string | null = null
-    if (reason?.type === 'vital') {
-      const r = s.vitals[reason.vital]
-      id = r ? guideFor(reason.vital, r, s.thresholds[reason.vital]) : VITAL_META[reason.vital].guide
-    } else if (reason?.type === 'fall' || reason?.type === 'jolt') id = 'fall'
+    if (reason?.type === 'fall' || reason?.type === 'jolt' || reason?.type === 'stillness') id = 'fall'
     if (id) { const guide = guideById(id); if (guide) return guideReply(guide, s, prefix) }
     return {
       text: `${prefix}Tell me what is happening — for example "chest pain", "choking", "low sugar" or "not breathing" — and I'll guide you step by step. If anyone's life is at risk, call ${n.general} first.`,
@@ -117,9 +108,7 @@ export function respond(input: string, s: AppState): Reply {
   }
 
   if (has(q, 'connect', 'watch', 'bluetooth', 'pair', 'device', 'band')) {
-    return {
-      text: 'Lifeline reads standard Bluetooth health profiles: heart-rate straps, watches in heart-rate broadcast mode, pulse oximeters, BP cuffs and glucometers. Use Chrome or Edge on Android or desktop; iPhone Safari does not support Web Bluetooth, and there is no iOS native app. On Garmin, turn on "Broadcast Heart Rate". On Polar and Coros, enable HR sharing. Apple Watch, Galaxy Watch and Fitbit need their cloud or native connection. Open Monitor and select Connect wearable. Compatibility with specific watch models has not been tested — only measurements your device actually exposes can be read.',
-    }
+    return { text: 'Lifeline does not connect to smartwatches or display physiological measurements. Fall and movement detection uses the phone sensor only when the device and browser support it and permission is granted.' }
   }
 
   // 5. First-aid guides by keyword.

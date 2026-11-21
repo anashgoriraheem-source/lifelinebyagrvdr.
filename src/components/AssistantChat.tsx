@@ -18,11 +18,9 @@ import { useI18n } from "@/i18n";
 import { useSpeech } from "@/hooks/useSpeech";
 import { askAssistant, assistantStatus, type AssistantReply } from "@/lib/assistant.functions";
 import type { AssistantAnswer, PersonalContext } from "@/lib/knowledge";
-import { VITAL_META, formatReading, isStale } from "@/lib/detection";
 import { emergencyNumbers } from "@/lib/store";
 import { telHref } from "@/lib/sos";
 import { AiComposer, type OutgoingImage } from "@/components/AiComposer";
-import type { VitalKey } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type Message =
@@ -31,12 +29,9 @@ type Message =
 
 let seq = 0;
 
-const VITALS: VitalKey[] = ["bp", "glucose", "hr", "spo2"];
-
 function useDeviceSnapshot(): PersonalContext {
   const profile = useApp((s) => s.profile);
   const contacts = useApp((s) => s.contacts);
-  const vitals = useApp((s) => s.vitals);
   const log = useApp((s) => s.log);
   const signedIn = useApp((s) => Boolean(s.userId));
   const { formatDateTime } = useI18n();
@@ -57,22 +52,6 @@ function useDeviceSnapshot(): PersonalContext {
       email: Boolean(c.email && c.emailAlerts),
       confirmed: Boolean(c.confirmedAt),
     })),
-    readings: VITALS.flatMap((k) => {
-      const r = vitals[k];
-      if (!r) return [];
-      return [
-        {
-          key: k,
-          label: VITAL_META[k].label,
-          value: formatReading(k, r),
-          unit: VITAL_META[k].unit,
-          source: r.source,
-          measuredAt: r.measuredAt,
-          quality: r.quality,
-          stale: isStale(k, r, now),
-        },
-      ];
-    }),
     incidents: log
       .filter((e) => e.kind === "alarm" || e.kind === "sos")
       .slice(0, 3)
@@ -93,10 +72,6 @@ function devicePayload(context: PersonalContext) {
     allergies: context.allergies,
     medications: context.medications,
     contacts: context.contacts,
-    readings: context.readings.map((r) => ({
-      ...r,
-      key: r.key as "bp" | "glucose" | "hr" | "spo2",
-    })),
     incidents: context.incidents,
   };
 }
@@ -215,7 +190,7 @@ export function AssistantChat({ variant = "inline", className }: Props) {
   const suggestions =
     locale === "en"
       ? [
-          "What do my latest readings say, and when were they measured?",
+          "How do I prepare for a medical emergency?",
           "Who will be contacted if I press SOS, and on which channels?",
           "What is the first aid for severe bleeding?",
         ]
@@ -535,9 +510,7 @@ function AssistantBubble({
                     ? "recordProfile"
                     : g === "contacts"
                       ? "recordContacts"
-                      : g === "readings"
-                        ? "recordReadings"
-                        : "recordIncidents"
+                      : "recordIncidents"
                 ],
             )
             .join(" · ")}

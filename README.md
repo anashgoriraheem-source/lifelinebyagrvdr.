@@ -2,10 +2,12 @@
 
 # Lifeline
 
-Emergency-support web app: readings from compatible Bluetooth health devices,
-emergency contacts with one-tap call/message drafts, explicit location sharing
-and offline first-aid guidance. Nothing is sent automatically and help is never
-claimed to be dispatched. Device support and its limits are documented in
+Emergency-support and medical-literacy web app: SOS actions, consent-based
+emergency contact workflows, phone motion monitoring while the page is open,
+location sharing when chosen, and offline first-aid guidance. Lifeline does not
+measure physiological readings or connect to smartwatches. Calls and messages
+are subject to the user's settings and platform/provider availability; delivery
+is never guaranteed. Sensor capabilities and limits are documented in
 [docs/device-support.md](./docs/device-support.md).
 
 This project was built with [Lovable](https://lovable.dev).

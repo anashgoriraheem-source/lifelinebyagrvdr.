@@ -4,7 +4,6 @@ import { rateKey, checkRateLimit } from "./rateLimit.server";
 import { buildSosMessage } from "./sos";
 import { appStore, set, loadSettings, deleteDeviceLocalData, emergencyNumbers } from "./store";
 import { detectEmergency } from "./knowledge";
-import { classify } from "./detection";
 const original = appStore.state;
 afterEach(() => {
   appStore.setState(() => original);
@@ -89,6 +88,7 @@ describe("Release safety and privacy boundaries", () => {
     localStorage.setItem("unrelated-app-key", "KEEP");
     localStorage.setItem("lifeline:settings:v1", "{}");
     localStorage.setItem("lifeline:reading-days:v1", "{}");
+    localStorage.setItem("lifeline:medical-term-bookmarks:v1", '["cpr"]');
     set({
       contacts: [
         {
@@ -105,22 +105,7 @@ describe("Release safety and privacy boundaries", () => {
     expect(appStore.state.contacts).toEqual([]);
     expect(localStorage.getItem("unrelated-app-key")).toBe("KEEP");
     expect(localStorage.getItem("lifeline:settings:v1")).toBeNull();
-  });
-  it("keeps uncertain device packets out of automatic medical alarms", () => {
-    expect(
-      classify(
-        "hr",
-        {
-          value: 250,
-          unit: "bpm",
-          source: "synthetic",
-          measuredAt: Date.now(),
-          receivedAt: Date.now(),
-          quality: "uncertain",
-        },
-        { below: 40, above: 140 },
-      ),
-    ).toBe("unknown");
+    expect(localStorage.getItem("lifeline:medical-term-bookmarks:v1")).toBeNull();
   });
   it.each([
     "crushing chest pain",

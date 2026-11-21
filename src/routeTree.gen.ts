@@ -17,8 +17,10 @@ import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as MonitorRouteImport } from './routes/monitor'
 import { Route as PracticeRouteImport } from './routes/practice'
+import { Route as PreparednessRouteImport } from './routes/preparedness'
 import { Route as SaathRouteImport } from './routes/saath'
 import { Route as ScheduleRouteImport } from './routes/schedule'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TranslateRouteImport } from './routes/translate'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiAlertsTickRouteImport } from './routes/api/alerts/tick'
@@ -66,6 +68,11 @@ const PracticeRoute = PracticeRouteImport.update({
   path: '/practice',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PreparednessRoute = PreparednessRouteImport.update({
+  id: '/preparedness',
+  path: '/preparedness',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SaathRoute = SaathRouteImport.update({
   id: '/saath',
   path: '/saath',
@@ -74,6 +81,11 @@ const SaathRoute = SaathRouteImport.update({
 const ScheduleRoute = ScheduleRouteImport.update({
   id: '/schedule',
   path: '/schedule',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TranslateRoute = TranslateRouteImport.update({
@@ -116,8 +128,10 @@ export interface FileRoutesByFullPath {
   '/guide': typeof GuideRoute
   '/monitor': typeof MonitorRoute
   '/practice': typeof PracticeRoute
+  '/preparedness': typeof PreparednessRoute
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
+  '/terms': typeof TermsRoute
   '/translate': typeof TranslateRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/alerts/tick': typeof ApiAlertsTickRoute
@@ -134,8 +148,10 @@ export interface FileRoutesByTo {
   '/guide': typeof GuideRoute
   '/monitor': typeof MonitorRoute
   '/practice': typeof PracticeRoute
+  '/preparedness': typeof PreparednessRoute
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
+  '/terms': typeof TermsRoute
   '/translate': typeof TranslateRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/alerts/tick': typeof ApiAlertsTickRoute
@@ -153,8 +169,10 @@ export interface FileRoutesById {
   '/guide': typeof GuideRoute
   '/monitor': typeof MonitorRoute
   '/practice': typeof PracticeRoute
+  '/preparedness': typeof PreparednessRoute
   '/saath': typeof SaathRoute
   '/schedule': typeof ScheduleRoute
+  '/terms': typeof TermsRoute
   '/translate': typeof TranslateRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/api/alerts/tick': typeof ApiAlertsTickRoute
@@ -173,8 +191,10 @@ export interface FileRouteTypes {
     | '/guide'
     | '/monitor'
     | '/practice'
+    | '/preparedness'
     | '/saath'
     | '/schedule'
+    | '/terms'
     | '/translate'
     | '/auth/callback'
     | '/api/alerts/tick'
@@ -191,8 +211,10 @@ export interface FileRouteTypes {
     | '/guide'
     | '/monitor'
     | '/practice'
+    | '/preparedness'
     | '/saath'
     | '/schedule'
+    | '/terms'
     | '/translate'
     | '/auth/callback'
     | '/api/alerts/tick'
@@ -209,8 +231,10 @@ export interface FileRouteTypes {
     | '/guide'
     | '/monitor'
     | '/practice'
+    | '/preparedness'
     | '/saath'
     | '/schedule'
+    | '/terms'
     | '/translate'
     | '/auth/callback'
     | '/api/alerts/tick'
@@ -228,8 +252,10 @@ export interface RootRouteChildren {
   GuideRoute: typeof GuideRoute
   MonitorRoute: typeof MonitorRoute
   PracticeRoute: typeof PracticeRoute
+  PreparednessRoute: typeof PreparednessRoute
   SaathRoute: typeof SaathRoute
   ScheduleRoute: typeof ScheduleRoute
+  TermsRoute: typeof TermsRoute
   TranslateRoute: typeof TranslateRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   ApiAlertsTickRoute: typeof ApiAlertsTickRoute
@@ -296,6 +322,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PracticeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/preparedness': {
+      id: '/preparedness'
+      path: '/preparedness'
+      fullPath: '/preparedness'
+      preLoaderRoute: typeof PreparednessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/saath': {
       id: '/saath'
       path: '/saath'
@@ -308,6 +341,13 @@ declare module '@tanstack/react-router' {
       path: '/schedule'
       fullPath: '/schedule'
       preLoaderRoute: typeof ScheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/translate': {
@@ -364,8 +404,10 @@ const rootRouteChildren: RootRouteChildren = {
   GuideRoute: GuideRoute,
   MonitorRoute: MonitorRoute,
   PracticeRoute: PracticeRoute,
+  PreparednessRoute: PreparednessRoute,
   SaathRoute: SaathRoute,
   ScheduleRoute: ScheduleRoute,
+  TermsRoute: TermsRoute,
   TranslateRoute: TranslateRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   ApiAlertsTickRoute: ApiAlertsTickRoute,

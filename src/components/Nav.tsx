@@ -4,40 +4,26 @@ import {
   BellRing,
   BookOpen,
   GraduationCap,
+  BookText,
   HeartPulse,
   House,
   Languages,
   LifeBuoy,
+  ClipboardCheck,
   Sparkles,
   UserRound,
   Users,
 } from "lucide-react";
 import { useApp } from "@/hooks/useApp";
-import { useNow } from "@/hooks/useNow";
-import { isStale } from "@/lib/detection";
 import { useI18n } from "@/i18n";
 import { LanguagePicker } from "@/components/LanguagePicker";
 
 export function Nav() {
   const demo = useApp((s) => s.demoMode);
   const alarm = useApp((s) => s.alarm.phase);
-  const device = useApp((s) => s.device.status);
-  const vitals = useApp((s) => s.vitals);
-  const now = useNow();
   const { t } = useI18n();
-  const fresh = Object.entries(vitals).some(
-    ([k, r]) => r && !isStale(k as keyof typeof vitals, r, now),
-  );
   const status =
-    alarm !== "idle"
-      ? t("safety.alertActive")
-      : demo
-        ? t("status.demo")
-        : device === "connected" && fresh
-          ? t("status.receiving")
-          : device === "connected"
-            ? t("status.waiting")
-            : t("status.inactive");
+    alarm !== "idle" ? t("safety.alertActive") : demo ? t("status.demo") : t("status.inactive");
   return (
     <header className="relative z-30 border-b border-border bg-background">
       <a href="#main-content" className="skip-link">
@@ -60,7 +46,7 @@ export function Nav() {
           </Link>
           <Link to="/monitor" className="app-nav-link">
             <Activity className="size-4" aria-hidden="true" />
-            {t("nav.monitor")}
+            Emergency
           </Link>
           <Link to="/assistant" className="app-nav-link">
             <Sparkles className="size-4" aria-hidden="true" />
@@ -68,13 +54,25 @@ export function Nav() {
           </Link>
           <Link to="/guide" className="app-nav-link">
             <BookOpen className="size-4" aria-hidden="true" />
-            Field guide
+            Learn
           </Link>
           <Link to="/practice" className="app-nav-link app-nav-link--practice">
             <GraduationCap className="size-4" aria-hidden="true" />
             Practice
           </Link>
-          <Link to="/contacts" className="app-nav-link">
+          <span className="nav-optional">
+            <Link to="/preparedness" className="app-nav-link">
+              <ClipboardCheck className="size-4" aria-hidden="true" />
+              Preparedness
+            </Link>
+          </span>
+          <span className="nav-optional">
+            <Link to="/terms" className="app-nav-link">
+              <BookText className="size-4" aria-hidden="true" />
+              Medical terms
+            </Link>
+          </span>
+          <Link to="/contacts" className="app-nav-link app-nav-link--contacts">
             <Users className="size-4" aria-hidden="true" />
             {t("nav.contacts")}
           </Link>
@@ -84,7 +82,7 @@ export function Nav() {
               Alerts
             </Link>
           </span>
-          <Link to="/account" className="app-nav-link">
+          <Link to="/account" className="app-nav-link app-nav-link--account">
             <UserRound className="size-4" aria-hidden="true" />
             {t("nav.account")}
           </Link>
@@ -108,6 +106,21 @@ export function Nav() {
             {t("nav.more")}
           </summary>
           <div className="absolute end-0 top-full z-50 min-w-44 rounded-lg border border-border bg-card p-2">
+            <Link to="/contacts" className="app-nav-link">
+              Emergency contacts
+            </Link>
+            <Link to="/practice" className="app-nav-link">
+              Practice centre
+            </Link>
+            <Link to="/preparedness" className="app-nav-link">
+              Preparedness centre
+            </Link>
+            <Link to="/terms" className="app-nav-link">
+              Medical terms
+            </Link>
+            <Link to="/account" className="app-nav-link">
+              Account and privacy
+            </Link>
             <Link to="/alerts" className="app-nav-link">
               Automatic alerts
             </Link>

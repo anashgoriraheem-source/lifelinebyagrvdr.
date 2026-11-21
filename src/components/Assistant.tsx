@@ -26,7 +26,7 @@ export function Assistant() {
     {
       id: seq++,
       role: 'assistant',
-      text: 'How can I help? Tell me what is happening, or ask about your readings.',
+      text: 'How can I help? Ask about first aid, emergency preparedness, or what to do next.',
     },
   ])
   const [input, setInput] = useState('')

@@ -41,7 +41,7 @@ export const getProviderStatus = createServerFn({ method: "GET" }).handler(
   },
 );
 
-const triggerSchema = z.enum(["sos", "vital", "fall", "jolt", "stillness"]);
+const triggerSchema = z.enum(["sos", "fall", "jolt", "stillness"]);
 
 export const getAlertSetup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

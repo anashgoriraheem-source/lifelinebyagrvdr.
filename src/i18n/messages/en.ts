@@ -50,7 +50,7 @@ export const en = {
   "chat.title": "Lifeline assistant",
   "chat.subtitle":
     "Health information and first aid, grounded in Lifeline’s sources and your own records.",
-  "chat.placeholder": "Ask about first aid, your readings or your setup",
+  "chat.placeholder": "Ask about first aid, emergency preparedness or what to do next",
   "chat.send": "Send message",
   "chat.thinking": "Looking through your Lifeline records and sources…",
   "chat.empty": "Ask a question, or choose a starting point below.",

@@ -17,16 +17,6 @@ export interface PersonalContext {
     email: boolean;
     confirmed: boolean;
   }[];
-  readings: {
-    key: string;
-    label: string;
-    value: string;
-    unit: string;
-    source: string;
-    measuredAt: number;
-    quality: "good" | "uncertain" | "stale";
-    stale: boolean;
-  }[];
   incidents: { reason: string; status: string; startedAt: string }[];
 }
 export interface AssistantAnswer {
@@ -35,7 +25,7 @@ export interface AssistantAnswer {
   escalate: boolean;
   text: string;
   sources: HealthSource[];
-  groundedIn: ("profile" | "contacts" | "readings" | "incidents")[];
+  groundedIn: ("profile" | "contacts" | "incidents")[];
   languageFallback: boolean;
   limitation?: string;
   guideId?: string;

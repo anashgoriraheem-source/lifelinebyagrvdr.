@@ -15,7 +15,6 @@ import type { AlarmReason } from "@/lib/types";
 /** Which sensor (or person) opened this alarm, said plainly. */
 const ALARM_SOURCE: Record<AlarmReason["type"], string> = {
   sos: "the SOS button / SOS बटन",
-  vital: "a device reading outside your limits / सीमा से बाहर रीडिंग",
   fall: "the fall detector / गिरने का पता लगाना",
   jolt: "a possible impact on the motion sensor / संभावित टक्कर",
   stillness: "60 seconds without movement on the motion sensor / 60 सेकंड बिना हलचल",

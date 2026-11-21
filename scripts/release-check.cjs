@@ -1,5 +1,5 @@
 /* Run against a LOCAL server only: npm run dev -- --host 127.0.0.1
- * Synthetic chooser/packet fixtures, never real devices or emergency actions.
+ * Synthetic motion traces, never real devices or emergency actions.
  * Output is evidence from this run, NOT WCAG or clinical certification. */
 const { chromium } = require("@playwright/test");
 const { default: AxeBuilder } = require("@axe-core/playwright");
@@ -14,67 +14,17 @@ fs.mkdirSync(out, { recursive: true });
 const evidence = {
   browser: null,
   platform: process.platform,
-  hardware: "None; synthetic browser fixtures only",
+  hardware: "None; synthetic motion traces only",
   matrix: [],
   journeys: [],
   errors: [],
   externalRequests: [],
   limitations: [
     "No NVDA, JAWS, VoiceOver or TalkBack testing",
-    "No physical Bluetooth hardware",
+    "No physical motion-sensor hardware",
     "No live provider or backend testing",
   ],
 };
-function fixture() {
-  let mode = "ok",
-    requests = 0;
-  const ch = new EventTarget();
-  ch.startNotifications = async () => ch;
-  const d = new EventTarget();
-  d.name = "SYNTHETIC TEST SENSOR";
-  d.id = "synthetic";
-  d.gatt = {
-    connected: false,
-    disconnect() {
-      this.connected = false;
-    },
-    async connect() {
-      if (mode === "range") throw new DOMException("fixture", "NetworkError");
-      return {
-        connected: true,
-        async getPrimaryService(uuid) {
-          if (mode === "incompatible" || uuid !== 0x180d)
-            throw new DOMException("fixture", "NotFoundError");
-          return { getCharacteristic: async () => ch };
-        },
-      };
-    },
-  };
-  const bt = {
-    async requestDevice() {
-      requests++;
-      if (mode === "cancel") throw new DOMException("fixture", "NotFoundError");
-      if (mode === "denied") throw new DOMException("fixture", "NotAllowedError");
-      return d;
-    },
-  };
-  Object.defineProperty(navigator, "bluetooth", { configurable: true, value: bt });
-  window.__ble = {
-    setMode(v) {
-      mode = v;
-    },
-    get requests() {
-      return requests;
-    },
-    emit(bytes) {
-      ch.value = new DataView(new Uint8Array(bytes).buffer);
-      ch.dispatchEvent(new Event("characteristicvaluechanged"));
-    },
-    lose() {
-      d.dispatchEvent(new Event("gattserverdisconnected"));
-    },
-  };
-}
 (async () => {
   const browser = await chromium.launch({ headless: true });
   evidence.browser = browser.version();
@@ -91,7 +41,6 @@ function fixture() {
     }
     return route.continue();
   });
-  await context.addInitScript(fixture);
   const page = await context.newPage();
   page.setDefaultTimeout(8000);
   page.on("pageerror", (e) => evidence.errors.push(e.message));
@@ -108,66 +57,24 @@ function fixture() {
       evidence.journeys.push({ name, result: "failed", error: e.message });
     }
   };
-  await step("Guided pairing does not open chooser before user action", async () => {
+  await step("Emergency page keeps SOS available and states motion-monitor limits", async () => {
     await go("/monitor");
-    assert.equal(await page.evaluate(() => window.__ble.requests), 0);
-    await page.getByRole("button", { name: "Open the device list", exact: true }).click();
-    await page.getByText("Connected to SYNTHETIC TEST SENSOR.", { exact: false }).waitFor();
-    assert.equal(await page.evaluate(() => window.__ble.requests), 1);
-    assert.match(await page.locator("main").innerText(), /Waiting for a reading/);
-  });
-  await step("Valid synthetic reading is visibly unverified, not medically normal", async () => {
-    await page.evaluate(() => window.__ble.emit([0, 72]));
-    await page
-      .getByText("Unverified measurement — not used for automatic alarms", { exact: true })
-      .waitFor();
-    assert.match(await page.locator("main").innerText(), /72/);
-  });
-  await step("Malformed reading is rejected and announced", async () => {
-    await page.evaluate(() => window.__ble.emit([0]));
-    await page.getByText("A reading could not be understood.", { exact: false }).waitFor();
-    const status = page
-      .locator('[role="status"]')
-      .filter({ hasText: "A reading could not be understood" });
-    assert.equal(await status.getAttribute("aria-live"), "polite");
-  });
-  await step("Connection loss clears readings and has a manual retry", async () => {
-    await page.evaluate(() => window.__ble.lose());
-    await page
-      .getByText("The connection to SYNTHETIC TEST SENSOR was lost.", { exact: false })
-      .waitFor();
-    assert(
-      await page.getByRole("button", { name: "Open the device list", exact: true }).isEnabled(),
-    );
-    assert.equal(await page.evaluate(() => window.__ble.requests), 1);
-  });
-  for (const [mode, text] of [
-    ["cancel", "No device was chosen"],
-    ["denied", "Permission was blocked"],
-    ["range", "The device could not be reached"],
-    ["incompatible", "Lifeline could not receive a supported reading"],
-  ])
-    await step(`Synthetic pairing recovery: ${mode}`, async () => {
-      await go("/monitor");
-      await page.evaluate((v) => window.__ble.setMode(v), mode);
-      await page.getByRole("button", { name: "Open the device list", exact: true }).click();
-      await page.getByText(text, { exact: false }).waitFor();
-      assert(
-        await page.getByRole("button", { name: "Open the device list", exact: true }).isEnabled(),
-      );
-    });
-  await step("Unsupported browser retains no-device and first-aid paths", async () => {
-    await page.addInitScript(() => Reflect.deleteProperty(navigator, "bluetooth"));
-    await go("/monitor");
-    await page
-      .getByText("This browser cannot connect to health devices.", { exact: false })
-      .waitFor();
-    assert(
-      await page.getByRole("link", { name: "Continue without a device", exact: true }).isVisible(),
-    );
     assert(
       await page.getByRole("button", { name: "Open emergency options", exact: true }).isVisible(),
     );
+    assert.match(await page.locator("main").innerText(), /phone motion sensor|motion sensor/i);
+    assert.match(await page.locator("main").innerText(), /nothing runs in the background/i);
+    assert.doesNotMatch(
+      await page.locator("main").innerText(),
+      /heart rate|blood oxygen|blood pressure/i,
+    );
+  });
+  await step("Synthetic motion tests never open an alarm or contact anyone", async () => {
+    await go("/monitor");
+    await page.getByRole("button", { name: "60 s lying still", exact: true }).click();
+    await page.getByText("Test: 60 s lying still", { exact: true }).waitFor();
+    assert.match(await page.locator("main").innerText(), /Test only — nothing was sent or called/);
+    assert.equal(await page.getByRole("dialog").count(), 0);
   });
   await step(
     "Keyboard opens emergency dialog; focus is contained; drafts exclude private data by default",
@@ -207,7 +114,9 @@ function fixture() {
     async () => {
       await go("/assistant");
       await page
-        .getByLabel("Ask about first aid, your readings or your setup", { exact: false })
+        .getByLabel("Ask about first aid, emergency preparedness or what to do next", {
+          exact: false,
+        })
         .fill("crushing chest pain");
       await page.getByRole("button", { name: "Send message", exact: true }).click();
       await page.locator("[role=alert]").waitFor();
@@ -224,7 +133,7 @@ function fixture() {
     await page.waitForFunction(() => document.documentElement.lang === "hi-IN");
     await page.reload();
     await page.waitForFunction(() => document.documentElement.lang === "hi-IN");
-    assert.match(await page.locator("main").innerText(), /डिवाइस की रीडिंग/);
+    assert.match(await page.locator("main").innerText(), /गति और गिरने के संकेत/);
   });
   await step("Skip link receives keyboard focus and reaches main", async () => {
     await go("/");
@@ -252,6 +161,7 @@ function fixture() {
         "/contacts",
         "/account",
         "/assistant",
+        "/terms",
         "/translate",
         "/saath",
       ]) {
